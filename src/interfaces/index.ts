@@ -10,6 +10,7 @@ export interface Cliente {
     userId: number;
     zipcode: string;
     street: string;
+    number: string;
     complement?: string;
     city: string;
     estate: string;
