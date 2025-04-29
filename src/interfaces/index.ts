@@ -5,6 +5,19 @@ export interface User {
     password: string;
 }
 
+export interface Cliente {
+    id: number;
+    userId: number;
+    zipcode: string;
+    street: string;
+    complement?: string;
+    city: string;
+    estate: string;
+    cpf: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
 export interface Post {
     id: number;
     title: string;
