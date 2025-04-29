@@ -1,0 +1,26 @@
+{
+  "name": "my-vercel-express-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/api/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/api/index.js",
+    "dev": "ts-node src/api/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "sequelize": "^6.6.5",
+    "mysql2": "^2.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.4",
+    "ts-node": "^10.4.0",
+    "@types/node": "^16.11.7",
+    "@types/express": "^4.17.13"
+  },
+  "engines": {
+    "node": "14.x"
+  },
+  "license": "MIT"
+}
