@@ -50,3 +50,20 @@ export interface AgendaParceiro {
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+export interface Agendamento {
+    id: number;
+    serviceIds: number[];
+    clientId: number;
+    agendaId: number;
+    partnerId: number;
+    specialtyId: number;
+    availableDate: Date;
+    startTime: string;
+    endTime: string;
+    description: string;
+    value: string;
+    status: 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO';
+    createdAt?: Date;
+    updatedAt?: Date;
+}
