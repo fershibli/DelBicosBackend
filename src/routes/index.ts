@@ -8,3 +8,4 @@ export function setRoutes(app: Router) {
     app.get('/', indexController.getIndex.bind(indexController));
     // Add more routes here as needed
 }
+
