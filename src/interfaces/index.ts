@@ -37,3 +37,16 @@ export interface Post {
     content: string;
     userId: number;
 }
+
+export interface AgendaParceiro {
+    id: number;
+    partnerId: number;
+    availableDays: string[];
+    workingHours: {
+        start: string; 
+        end: string;
+    };
+    description:string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
