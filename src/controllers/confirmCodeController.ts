@@ -1,7 +1,7 @@
-import { CustomRequest, CustomResponse } from '../api/index'; 
+import { Request, Response } from 'express';
 import User from '../models/User';
 
-export const verifyCode = async (req: CustomRequest<{ phoneNumber: string; code: string }>, res: CustomResponse) => {
+export const verifyCode = async (req: Request<{ phoneNumber: string; code: string }>, res: Response) => {
   const { phoneNumber, code } = req.body;
 
   if (!phoneNumber || !code || code.length !== 4) {
@@ -9,7 +9,7 @@ export const verifyCode = async (req: CustomRequest<{ phoneNumber: string; code:
   }
 
   try {
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ where: { phoneNumber } });
 
     if (user) {
       return res.status(200).json({

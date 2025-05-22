@@ -1,6 +1,12 @@
 import express from 'express';
 import { setRoutes } from '../routes';
-import { sequelize } from '../config/database';
+import { Sequelize } from 'sequelize';
+
+// Example: replace with your actual database connection details
+const sequelize = new Sequelize('database', 'username', 'password', {
+    host: 'localhost',
+    dialect: 'mysql', // or 'postgres', 'sqlite', etc.
+});
 import { Request } from 'express';
 import { Response } from 'express';
 
@@ -16,7 +22,7 @@ sequelize.authenticate()
     .then(() => {
         console.log('Database connection established successfully.');
     })
-    .catch(err=> {
+    .catch((err: unknown) => {
         console.error('Unable to connect to the database:', err);
     });
 

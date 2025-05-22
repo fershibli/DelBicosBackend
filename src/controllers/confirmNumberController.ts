@@ -9,7 +9,7 @@ export const confirmNumber = async (req: CustomRequest<{ phoneNumber: string }>,
   }
 
   try {
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ where: { phoneNumber } });
 
     if (user) {
       return res.status(200).json({ exists: true, message: 'Usuário existente, envie o código SMS' });

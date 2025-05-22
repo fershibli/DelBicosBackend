@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const confirmNumberController_1 = require("../controllers/confirmNumberController");
+const confirmCodeController_1 = require("../controllers/confirmCodeController");
+const registerController_1 = require("../controllers/registerController");
+const router = (0, express_1.Router)();
+router.post('/confirm-number', confirmNumberController_1.confirmNumber);
+router.post('/verify-code', confirmCodeController_1.verifyCode);
+router.post('/register', registerController_1.register);
+exports.default = router;

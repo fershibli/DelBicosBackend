@@ -7,6 +7,6 @@ const router = Router();
 
 router.post('/confirm-number', confirmNumber);
 router.post('/verify-code', verifyCode);
-router.post('/register', register);
+router.post('/users', register); // Ajustado para /users conforme README
 
 export default router;

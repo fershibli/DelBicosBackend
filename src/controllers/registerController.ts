@@ -1,7 +1,10 @@
-import { CustomRequest, CustomResponse, User } from '../api/index';
-import UserModel from '../models/User';
+import { User as UserInterface } from '../interfaces';
+import { Request, Response } from 'express';
+import User from '../models/User';
 
-export const register = async (req: CustomRequest<User>, res: CustomResponse) => {
+// If you have a custom response type, import it here. Otherwise, use Express' Response type.
+type CustomResponse = Response;
+export const register = async (req: Request<UserInterface>, res: CustomResponse) => {
   const { phoneNumber, firstName, lastName, birthDate, gender, location, email, password } = req.body;
 
   if (!phoneNumber || !firstName || !lastName || !birthDate || !gender || !location || !email || !password) {
@@ -9,12 +12,12 @@ export const register = async (req: CustomRequest<User>, res: CustomResponse) =>
   }
 
   try {
-    const existingUser = await UserModel.findOne({ $or: [{ phoneNumber }, { email }] });
+    const existingUser = await User.findOne({ where: { phoneNumber } });
     if (existingUser) {
       return res.status(400).json({ message: 'Número ou e-mail já registrado' });
     }
 
-    const user = new UserModel({
+    const user = await User.create({
       phoneNumber,
       firstName,
       lastName,
@@ -25,8 +28,13 @@ export const register = async (req: CustomRequest<User>, res: CustomResponse) =>
       password,
     });
 
-    await user.save();
-    res.status(201).json({ message: 'Usuário registrado com sucesso' });
+    res.status(201).json({
+      id: user.id,
+      name: user.firstName,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Erro no servidor', error });
   }
