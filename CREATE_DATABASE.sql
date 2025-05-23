@@ -92,7 +92,7 @@ CREATE TABLE professional_availability (
 );
 
 /*
-  -- Exemplo 1: profissional disponível de segunda a sexta-feira, das 9h às 18h:
+  -- Exemplo 1: profissional disponível de segunda a sexta-feira, das 9h às 18h, válido por 2024 inteiro:
 
 INSERT INTO professional_availability (
     professional_id,
@@ -173,4 +173,17 @@ CREATE TABLE appointment (
     FOREIGN KEY (address_id) REFERENCES address(id),
     INDEX idx_appointment_times (professional_id, start_time, end_time),
     INDEX idx_status_check (status, start_time)
-) ENGINE=InnoDB;
+) 
+
+CREATE TABLE admin_service_order (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(1000) NOT NULL,
+    status ENUM('pending', 'in_progress', 'completed', 'canceled') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointment_id) REFERENCES appointment(id),
+    INDEX idx_status_check (status, created_at),
+    INDEX idx_appointment_check (appointment_id, status)
+)
