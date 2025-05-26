@@ -1,3 +1,6 @@
+![DelBicos_LogoH](https://github.com/user-attachments/assets/0f1d991d-5e5c-4990-884a-1d27d4aaaf71)
+
+
 # DelBicos Backend
 
 This is a TypeScript Express application adapted for deployment on Vercel. The application uses Sequelize for database interactions and follows a structured directory layout for better organization.
