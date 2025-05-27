@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { CustomRequest, CustomResponse } from '../interfaces';
 import User from '../models/User';
 
-export const verifyCode = async (req: Request<{ phoneNumber: string; code: string }>, res: Response) => {
+export const verifyCode = async (req: CustomRequest<{ phoneNumber: string; code: string }>, res: CustomResponse) => {
   const { phoneNumber, code } = req.body;
 
   if (!phoneNumber || !code || code.length !== 4) {

@@ -20,11 +20,11 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(400).json({ message: 'Preencha todos os campos' });
     }
     try {
-        const existingUser = yield User_1.default.findOne({ $or: [{ phoneNumber }, { email }] });
+        const existingUser = yield User_1.default.findOne({ where: { phoneNumber } });
         if (existingUser) {
             return res.status(400).json({ message: 'Número ou e-mail já registrado' });
         }
-        const user = new User_1.default({
+        const user = yield User_1.default.create({
             phoneNumber,
             firstName,
             lastName,
@@ -34,8 +34,13 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             email,
             password,
         });
-        yield user.save();
-        res.status(201).json({ message: 'Usuário registrado com sucesso' });
+        res.status(201).json({
+            id: user.id,
+            name: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        });
     }
     catch (error) {
         res.status(500).json({ message: 'Erro no servidor', error });

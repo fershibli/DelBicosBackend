@@ -1,8 +1,6 @@
-import { Request, Response } from 'express';
-type CustomRequest<T> = Request & { body: T };
-type CustomResponse = Response;
+import { CustomRequest, CustomResponse } from '../interfaces';
 import User from '../models/User';
-import UserInterface from '../models/User';
+// import { UserInterface } from '../interfaces'; // Removed because UserInterface does not exist
 
 export const getUser = async (req: CustomRequest<{}>, res: CustomResponse) => {
   const { phoneNumber } = req.params;
@@ -60,7 +58,7 @@ export const getUserById = async (req: CustomRequest<{}>, res: CustomResponse) =
   }
 };
 
-export const updateUser = async (req: CustomRequest<Partial<UserInterface>>, res: CustomResponse) => {
+export const updateUser = async (req: CustomRequest<Partial<any>>, res: CustomResponse) => {
   const { id } = req.params;
   const { firstName, email } = req.body;
 

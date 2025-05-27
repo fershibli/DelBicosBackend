@@ -4,25 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const routes_1 = require("../routes");
-const sequelize_1 = require("sequelize");
-// Example: replace with your actual database connection details
-const sequelize = new sequelize_1.Sequelize('database', 'username', 'password', {
-    host: 'localhost',
-    dialect: 'mysql', // or 'postgres', 'sqlite', etc.
-});
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const database_1 = __importDefault(require("../config/database"));
+const authRoutes_1 = __importDefault(require("../routes/authRoutes"));
+const userRoutes_1 = __importDefault(require("../routes/userRoutes"));
+dotenv_1.default.config();
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 3000;
+// Middleware
+app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-(0, routes_1.setRoutes)(app);
-sequelize.authenticate()
-    .then(() => {
-    console.log('Database connection established successfully.');
-})
-    .catch((err) => {
-    console.error('Unable to connect to the database:', err);
+// Sincronizar o banco de dados
+database_1.default.sync({ force: false }).then(() => {
+    console.log(`Banco de dados sincronizado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}.`);
 });
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Rotas
+app.use('/api/auth', authRoutes_1.default);
+app.use('/api', userRoutes_1.default);
 exports.default = app;

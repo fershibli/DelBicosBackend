@@ -7,5 +7,5 @@ const registerController_1 = require("../controllers/registerController");
 const router = (0, express_1.Router)();
 router.post('/confirm-number', confirmNumberController_1.confirmNumber);
 router.post('/verify-code', confirmCodeController_1.verifyCode);
-router.post('/register', registerController_1.register);
+router.post('/users', registerController_1.register); // Ajustado para /users conforme README
 exports.default = router;

@@ -1,52 +1,31 @@
-import express from 'express';
-import { setRoutes } from '../routes';
-import { Sequelize } from 'sequelize';
+import express, { Express } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import sequelize from '../config/database';
+import authRoutes from '../routes/authRoutes';
+import userRoutes from '../routes/userRoutes';
 
-// Example: replace with your actual database connection details
-const sequelize = new Sequelize('database', 'username', 'password', {
-    host: 'localhost',
-    dialect: 'mysql', // or 'postgres', 'sqlite', etc.
-});
-import { Request } from 'express';
-import { Response } from 'express';
+dotenv.config();
 
+const app: Express = express();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
+// Middleware
+app.use(cors());
 app.use(express.json());
+// Rotas
+app.use('/api/auth', authRoutes);
+app.use('/api', userRoutes);
 
-setRoutes(app);
-
-sequelize.authenticate()
-    .then(() => {
-        console.log('Database connection established successfully.');
-    })
-    .catch((err: unknown) => {
-        console.error('Unable to connect to the database:', err);
-    });
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+sequelize.sync({ force: false }).then(() => {
+  console.log(`Banco de dados sincronizado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}.`);
+}).catch((error) => {
+  console.error('Erro ao sincronizar o banco de dados:', error);
 });
 
-export interface CustomRequest<T> extends Omit<Request, 'body'> {
-    body: T;
-}
-  
-  export interface CustomResponse extends Response {
-    // Pode adicionar propriedades customizadas se necessário
-  }
-  
-  export interface User {
-    phoneNumber: string;
-    firstName?: string;
-    lastName?: string;
-    birthDate?: string;
-    gender?: string;
-    location?: string;
-    email?: string;
-    password?: string;
-  }
+app.use(cors({
+  origin: 'http://localhost:19006', // Porta padrão do Expo Web
+  methods: ['GET', 'POST', 'PUT'],
+  credentials: true
+}))
 
 export default app;

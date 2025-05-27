@@ -1,4 +1,4 @@
-import { CustomRequest, CustomResponse } from '../api/index';
+import { CustomRequest, CustomResponse } from '../interfaces';
 import User from '../models/User';
 
 export const confirmNumber = async (req: CustomRequest<{ phoneNumber: string }>, res: CustomResponse) => {

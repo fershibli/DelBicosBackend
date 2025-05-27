@@ -1,10 +1,7 @@
-import { User as UserInterface } from '../interfaces';
-import { Request, Response } from 'express';
+import { CustomRequest, CustomResponse, User as UserInterface } from '../interfaces';
 import User from '../models/User';
 
-// If you have a custom response type, import it here. Otherwise, use Express' Response type.
-type CustomResponse = Response;
-export const register = async (req: Request<UserInterface>, res: CustomResponse) => {
+export const register = async (req: CustomRequest<UserInterface>, res: CustomResponse) => {
   const { phoneNumber, firstName, lastName, birthDate, gender, location, email, password } = req.body;
 
   if (!phoneNumber || !firstName || !lastName || !birthDate || !gender || !location || !email || !password) {

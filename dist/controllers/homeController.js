@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUser = void 0;
+exports.updateUser = exports.getUserById = exports.getAllUsers = exports.getUser = void 0;
 const User_1 = __importDefault(require("../models/User"));
+// import { UserInterface } from '../interfaces'; // Removed because UserInterface does not exist
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { phoneNumber } = req.params;
     try {
-        const user = yield User_1.default.findOne({ phoneNumber });
+        const user = yield User_1.default.findOne({ where: { phoneNumber } });
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
@@ -31,3 +32,61 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getUser = getUser;
+const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield User_1.default.findAll();
+        res.status(200).json(users.map((user) => ({
+            id: user.id,
+            name: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        })));
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Erro no servidor', error });
+    }
+});
+exports.getAllUsers = getAllUsers;
+const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const user = yield User_1.default.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+        res.status(200).json({
+            id: user.id,
+            name: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Erro no servidor', error });
+    }
+});
+exports.getUserById = getUserById;
+const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { firstName, email } = req.body;
+    try {
+        const user = yield User_1.default.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+        yield user.update({ firstName, email });
+        res.status(200).json({
+            id: user.id,
+            name: user.firstName,
+            email: user.email,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Erro no servidor', error });
+    }
+});
+exports.updateUser = updateUser;

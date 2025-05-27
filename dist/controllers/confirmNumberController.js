@@ -20,7 +20,7 @@ const confirmNumber = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return res.status(400).json({ message: 'Número de telefone inválido' });
     }
     try {
-        const user = yield User_1.default.findOne({ phoneNumber });
+        const user = yield User_1.default.findOne({ where: { phoneNumber } });
         if (user) {
             return res.status(200).json({ exists: true, message: 'Usuário existente, envie o código SMS' });
         }

@@ -4,4 +4,7 @@ const express_1 = require("express");
 const homeController_1 = require("../controllers/homeController");
 const router = (0, express_1.Router)();
 router.get('/user/:phoneNumber', homeController_1.getUser);
+router.get('/users', homeController_1.getAllUsers);
+router.get('/users/:id', homeController_1.getUserById);
+router.put('/users/:id', homeController_1.updateUser);
 exports.default = router;

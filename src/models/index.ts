@@ -1,47 +1,18 @@
-import { Sequelize } from 'sequelize';
+import { Request, Response } from 'express';
 
-const sequelize = new Sequelize('database_name', 'username', 'password', {
-  host: 'localhost',
-  dialect: 'mysql', // or 'postgres', 'sqlite', etc.
-});
+export interface CustomRequest<T> extends Request {
+  body: T;
+}
 
-const User = sequelize.define('User', {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  username: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-  password: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-});
+export interface CustomResponse extends Response {}
 
-const Post = sequelize.define('Post', {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  title: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-  content: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
-  userId: {
-    type: Sequelize.INTEGER,
-    references: {
-      model: User,
-      key: 'id',
-    },
-  },
-});
-
-export { sequelize, User, Post };
+export interface User {
+  phoneNumber: string;
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  gender?: string;
+  location?: string;
+  email?: string;
+  password?: string;
+}
