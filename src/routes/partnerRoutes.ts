@@ -1,7 +1,8 @@
 import express from 'express';
-import { getPartnerProfile } from '../controllers/partnerController';
+import { getPartnerProfile, createPartnerWithServices } from '../controllers/partnerController';
 const router = express.Router();
 
 router.get('/:id', getPartnerProfile);
+router.post('/', createPartnerWithServices)
 
 export default router;
