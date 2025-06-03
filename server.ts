@@ -4,6 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './src/routes/authRoutes';
 import userRoutes from './src/routes/userRoutes';
+import partnerRoutes from './src/routes/partnerRoutes'; // <- Adicione esta linha
+
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -25,6 +27,7 @@ mongoose.connect(process.env.MONGO_URI as string, {
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/partners', partnerRoutes);
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 5000;
