@@ -19,6 +19,8 @@ CREATE TABLE address (
   FOREIGN KEY (user_id) REFERENCES users(id),
   INDEX active_index_address (active),
 )
+
+CREATE SPATIAL INDEX idx_location ON address(lat, lng);
 */
 
 interface IAddress {
@@ -117,7 +119,19 @@ AddressModel.init(
     },
   },
   {
-    sequelize, // Pass the `sequelize` instance
+    sequelize,
     modelName: "Address",
+    tableName: "address",
+    indexes: [
+      {
+        name: "active_index_address",
+        fields: ["active"],
+      },
+      {
+        name: "idx_location",
+        fields: ["lat", "lng"],
+        using: "SPATIAL",
+      },
+    ],
   }
 );
