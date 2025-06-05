@@ -8,6 +8,7 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only ./server.ts",
     "migration:create": "npx sequelize-cli migration:generate --name",
+    "migration:undo": "npx sequelize-cli db:migrate:undo",
     "migrate": "npx sequelize-cli db:migrate"
   },
   "dependencies": {
