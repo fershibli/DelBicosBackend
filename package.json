@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/api/index.js",
-    "dev": "ts-node src/api/index.ts"
+    "dev": "ts-node src/api/index.ts",
+    "migration:create": "npx sequelize-cli migration:generate --name",
+    "migrate": "npx sequelize-cli db:migrate"
   },
   "dependencies": {
     "cors": "^2.8.5",
