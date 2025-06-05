@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
-import sequelize from "../config/database"; // Adjust the import path as necessary
+import sequelize from "../config/database";
 
 /*
 CREATE TABLE users (
