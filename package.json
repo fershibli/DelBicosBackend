@@ -2,11 +2,11 @@
   "name": "my-vercel-express-app",
   "version": "1.0.0",
   "description": "",
-  "main": "src/api/index.ts",
+  "main": "server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/api/index.js",
-    "dev": "ts-node src/api/index.ts",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only ./server.ts",
     "migration:create": "npx sequelize-cli migration:generate --name",
     "migrate": "npx sequelize-cli db:migrate"
   },
