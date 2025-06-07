@@ -9,8 +9,8 @@ CREATE TABLE service (
     price DECIMAL(10, 2) NOT NULL,
     duration INT NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    category_id INT NOT NULL,
-    FOREIGN KEY (category_id) REFERENCES category(id),
+    subcategory_id INT NOT NULL,
+    FOREIGN KEY (subcategory_id) REFERENCES subcategory(id),
     INDEX active_index_service (active)
 );
 */
@@ -22,7 +22,7 @@ export interface IService {
   price: number;
   duration: number;
   active?: boolean;
-  category_id: number;
+  subcategory_id: number;
 }
 
 type ServiceCreationalAttributes = Optional<
@@ -37,7 +37,7 @@ export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
   public price!: number;
   public duration!: number;
   public active?: boolean;
-  public category_id!: number;
+  public subcategory_id!: number;
 
   // Timestamps
   public readonly createdAt!: Date;
@@ -72,11 +72,11 @@ ServiceModel.init(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-    category_id: {
+    subcategory_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "category",
+        model: "subcategory",
         key: "id",
       },
     },
