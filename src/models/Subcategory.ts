@@ -2,49 +2,43 @@ import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
 
 /*
-CREATE TABLE service (
+CREATE TABLE subcategory (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    duration INT NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    subcategory_id INT NOT NULL,
-    FOREIGN KEY (subcategory_id) REFERENCES subcategory(id),
-    INDEX active_index_service (active)
+    category_id INT NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES category(id),
+    INDEX active_index_subcategory (active)
 );
 */
 
-export interface IService {
+export interface ISubCategory {
   id?: number;
   title: string;
   description?: string;
-  price: number;
-  duration: number;
+  category_id: number;
   active?: boolean;
-  subcategory_id: number;
 }
 
-type ServiceCreationalAttributes = Optional<
-  IService,
-  "id" | "description" | "active"
->;
+type SubCategoryCreationalAttributes = Optional<ISubCategory, "id" | "active">;
 
-export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
+export class SubCategoryModel extends Model<
+  ISubCategory,
+  SubCategoryCreationalAttributes
+> {
   public id!: number;
   public title!: string;
   public description?: string;
-  public price!: number;
-  public duration!: number;
+  public category_id!: number;
   public active?: boolean;
-  public subcategory_id!: number;
 
   // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
 
-ServiceModel.init(
+SubCategoryModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -60,36 +54,22 @@ ServiceModel.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    duration: {
+    category_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: "category",
+        key: "id",
+      },
     },
     active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-    subcategory_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "subcategory",
-        key: "id",
-      },
-    },
   },
   {
     sequelize,
-    tableName: "service",
+    tableName: "subcategory",
     timestamps: true,
-    indexes: [
-      {
-        name: "active_index_service",
-        fields: ["active"],
-      },
-    ],
   }
 );

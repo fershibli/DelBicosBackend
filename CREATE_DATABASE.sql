@@ -62,6 +62,16 @@ CREATE TABLE category (
     INDEX active_index_category (active)
 );
 
+CREATE TABLE subcategory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    category_id INT NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES category(id),
+    INDEX active_index_subcategory (active)
+);
+
 CREATE TABLE service (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -69,10 +79,11 @@ CREATE TABLE service (
     price DECIMAL(10, 2) NOT NULL,
     duration INT NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    category_id INT NOT NULL,
-    FOREIGN KEY (category_id) REFERENCES category(id),
+    subcategory_id INT NOT NULL,
+    FOREIGN KEY (subcategory_id) REFERENCES subcategory(id),
     INDEX active_index_service (active)
 );
+
 
 CREATE TABLE professional_availability (
     id INT AUTO_INCREMENT PRIMARY KEY,
