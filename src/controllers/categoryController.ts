@@ -12,7 +12,7 @@ export class CategoryController {
       return res.status(201).json(newCategory);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: "Failed to create category" });
+      return res.status(500).json({ error: "Falha ao criar categoria" });
     }
   }
 
@@ -23,7 +23,7 @@ export class CategoryController {
       });
       return res.json(categories);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch categories" });
+      return res.status(500).json({ error: "Falha ao buscar categorias" });
     }
   }
 
@@ -34,10 +34,10 @@ export class CategoryController {
         where: { id, active: true },
       });
       if (!category)
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: "Categoria não encontrada" });
       return res.json(category);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to fetch category" });
+      return res.status(500).json({ error: "Falha ao buscar categoria" });
     }
   }
 
@@ -47,12 +47,12 @@ export class CategoryController {
       const { title, description, active } = req.body;
       const category = await CategoryModel.findByPk(id);
       if (!category)
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: "Categoria não encontrada" });
 
       await category.update({ title, description, active });
       return res.json(category);
     } catch (error) {
-      return res.status(500).json({ error: "Failed to update category" });
+      return res.status(500).json({ error: "Falha ao atualizar categoria" });
     }
   }
 
@@ -61,12 +61,12 @@ export class CategoryController {
       const { id } = req.params;
       const category = await CategoryModel.findByPk(id);
       if (!category)
-        return res.status(404).json({ error: "Category not found" });
+        return res.status(404).json({ error: "Categoria não encontrada" });
 
       await category.update({ active: false });
       return res.status(204).send();
     } catch (error) {
-      return res.status(500).json({ error: "Failed to delete category" });
+      return res.status(500).json({ error: "Falha ao excluir categoria" });
     }
   }
 }
