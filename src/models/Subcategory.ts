@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
+import { CategoryModel } from "./Category";
 
 /*
 CREATE TABLE subcategory (
@@ -58,7 +59,7 @@ SubCategoryModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "category",
+        model: CategoryModel,
         key: "id",
       },
     },
