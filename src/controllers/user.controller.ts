@@ -1,8 +1,10 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { UserModel, IUser } from "../models/User";
 import { AddressModel, IAddress } from "../models/Address";
 import { ClientModel, IClient } from "../models/Client";
+import { ITokenPayload } from "../interfaces/authentication.interface";
 
 export const signUpUser = async (
   req: Request,
@@ -65,12 +67,30 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json({
-      message: "Login successful",
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
+    const secretKey = process.env.SECRET_KEY || "secret";
+    const expiresIn = process.env.EXPIRES_IN || "1h"; // Default to 1 hour if not set
+    const options: jwt.SignOptions = {
+      expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
+    };
+
+    const tokenPayload: ITokenPayload = {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+    };
+
+    jwt.sign(tokenPayload, secretKey, options, (err, token) => {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
+      res.status(200).json({
+        message: "Login successful",
+        token: token,
+      });
     });
   } catch (error) {
     console.error("Error logging in user:", error);
