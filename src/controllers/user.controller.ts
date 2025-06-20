@@ -55,3 +55,34 @@ export const signUpUser = async (
     });
   }
 };
+
+export const logInUser = async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body as { email: string; password: string };
+  try {
+    const user = await UserModel.findOne({ where: { email } });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "Invalid password" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    });
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
