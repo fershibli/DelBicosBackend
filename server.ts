@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
+import addressRoutes from "./src/routes/addressRoutes";
 import serviceRoutes from './src/routes/serviceRoutes';
 import categoryRoutes from "./src/routes/categoryRoutes";
 import subcategoryRoutes from "./src/routes/subcategoryRoutes";
@@ -32,6 +33,7 @@ app.use("/api/user", userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/subcategories', subcategoryRoutes);
+app.use('/api/address', addressRoutes);
 
 
 // Iniciar o servidor
