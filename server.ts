@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
 import serviceRoutes from './src/routes/serviceRoutes';
+import categoryRoutes from "./src/routes/categoryRoutes";
 import subcategoryRoutes from "./src/routes/serviceRoutes";
 
 
@@ -29,6 +30,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/categories', categoryRoutes);
 app.use('/api/subcategories', subcategoryRoutes);
 
 
