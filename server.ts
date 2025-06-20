@@ -4,6 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
+import serviceRoutes from './src/routes/serviceRoutes';
+
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -25,6 +27,8 @@ app.use(express.json());
 // Rotas
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use('/api/services', serviceRoutes);
+
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 3000;
