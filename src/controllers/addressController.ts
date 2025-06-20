@@ -19,7 +19,7 @@ export const getAddressById = async (req: Request, res: Response) => {
   const address = await AddressModel.findByPk(req.params.id);
   address
     ? res.json(address)
-    : res.status(404).json({ error: "Address not found" });
+    : res.status(404).json({ error: "Endereço não encontrado" });
 };
 
 export const updateAddress = async (req: Request, res: Response) => {
@@ -28,13 +28,13 @@ export const updateAddress = async (req: Request, res: Response) => {
     await address.update(req.body);
     res.json(address);
   } else {
-    res.status(404).json({ error: "Address not found" });
+    res.status(404).json({ error: "Endereço não encontrado" });
   }
 };
 
 export const deleteAddress = async (req: Request, res: Response) => {
   const deleted = await AddressModel.destroy({ where: { id: req.params.id } });
   deleted
-    ? res.json({ message: "Address deleted" })
-    : res.status(404).json({ error: "Address not found" });
+    ? res.json({ message: "Endereço deletado"})
+    : res.status(404).json({ error: "Endereço não encontrado" });
 };
