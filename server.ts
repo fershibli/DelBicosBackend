@@ -2,7 +2,6 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
 
 // Carregar variáveis de ambiente
@@ -23,7 +22,6 @@ app.use(express.json());
 //   .catch((err: any) => console.error('Erro ao conectar ao MongoDB:', err));
 
 // Rotas
-app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
 // Iniciar o servidor
