@@ -5,17 +5,25 @@ export class SubCategoryController {
   async create(req: Request, res: Response) {
     try {
       const { title, description, category_id } = req.body;
+
       const newSubcategory = await SubCategoryModel.create({
         title,
         description,
         category_id,
       });
+
       return res.status(201).json(newSubcategory);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: "Failed to create subcategory" });
+    } catch (error: any) {
+      console.error("Erro ao criar subcategoria:", error);
+      return res.status(500).json({
+        error: "Erro ao criar subcategoria",
+        message: error.message,
+        sql: error?.sql,
+        sqlMessage: error?.original?.sqlMessage,
+      });
     }
   }
+
 
   async getAll(req: Request, res: Response) {
     try {
