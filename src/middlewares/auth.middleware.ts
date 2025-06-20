@@ -19,7 +19,7 @@ export default async function auth(
       token,
       process.env.SECRET_KEY || "secret"
     ) as ITokenPayload;
-    req.usuario = decoded.usuario;
+    req.user = decoded.user;
     next();
   } catch (error) {
     res.status(403).json({
