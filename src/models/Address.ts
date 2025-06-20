@@ -23,7 +23,7 @@ CREATE TABLE address (
 CREATE SPATIAL INDEX idx_location ON address(lat, lng);
 */
 
-interface IAddress {
+export interface IAddress {
   id?: number;
   lat: number;
   lng: number;
