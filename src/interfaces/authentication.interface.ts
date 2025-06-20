@@ -1,11 +1,14 @@
 import { Request } from "express";
 
 export interface ITokenPayload {
-  usuario: {
-    id: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
   };
 }
 
 export interface AuthenticatedRequest extends Request {
-  usuario?: ITokenPayload["usuario"];
+  user?: ITokenPayload["user"];
 }
