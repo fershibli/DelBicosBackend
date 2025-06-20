@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import { UserModel, IUser } from "../models/User";
 import { AddressModel, IAddress } from "../models/Address";
@@ -21,11 +22,13 @@ export const signUpUser = async (
   };
   try {
     // Create user
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     const user = await UserModel.create({
       name,
       email,
       phone,
-      password,
+      password: hashedPassword,
     });
 
     // Create address
