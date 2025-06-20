@@ -6,7 +6,7 @@ import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
 import serviceRoutes from './src/routes/serviceRoutes';
 import categoryRoutes from "./src/routes/categoryRoutes";
-import subcategoryRoutes from "./src/routes/serviceRoutes";
+import subcategoryRoutes from "./src/routes/subcategoryRoutes";
 
 
 // Carregar variáveis de ambiente
