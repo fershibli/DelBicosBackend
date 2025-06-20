@@ -30,7 +30,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use('/api/services', serviceRoutes);
-app.use('/categories', categoryRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/subcategories', subcategoryRoutes);
 
 
