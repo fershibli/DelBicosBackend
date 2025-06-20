@@ -8,10 +8,6 @@ export const signUpUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // receives from the request body name, email, phone, password, cpf and address, but address has the following properties: lat, lng, street, number, complement, neighborhood, city, state, country_iso, postal_code
-  // first step: create user and save it to the database, store id in variable userId
-  // second step: create address and save it to the database, store id in variable addressId
-  // last step: create client with userId, addressId and cpf, save it to the database
   const { name, email, phone, password, cpf, address } = req.body as {
     name: string;
     email: string;
