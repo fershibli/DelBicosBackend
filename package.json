@@ -18,7 +18,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
-    "mysql2": "^2.2.5",
+    "mysql2": "^2.3.3",
     "sequelize": "^6.6.5"
   },
   "devDependencies": {
