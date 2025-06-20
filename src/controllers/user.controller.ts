@@ -16,8 +16,8 @@ export const signUpUser = async (
     cpf: string;
     address: IAddress;
   };
+
   try {
-    // Create user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = await UserModel.create({
@@ -27,13 +27,11 @@ export const signUpUser = async (
       password: hashedPassword,
     });
 
-    // Create address
     const newAddress = await AddressModel.create({
       ...address,
-      user_id: user.id, // Associate address with the user
+      user_id: user.id,
     });
 
-    // Create client
     const client = await ClientModel.create({
       user_id: user.id,
       main_address_id: newAddress.id,
