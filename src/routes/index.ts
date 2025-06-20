@@ -15,7 +15,7 @@ export function setRoutes(app: Router) {
     app.use('/services', serviceRoutes);
     app.use('/categories', categoryRoutes);
     app.use('/subcategories', subcategoryRoutes);
-    app.use('/users', userRoutes);
+    app.use('/user', userRoutes);
     // Add more routes here as needed
 }
 
