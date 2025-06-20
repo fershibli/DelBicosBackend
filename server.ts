@@ -1,12 +1,16 @@
 import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
-import authRoutes from "./src/routes/authRoutes";
+import * as dotenv from "dotenv";
 import userRoutes from "./src/routes/userRoutes";
 
-// Carregar variáveis de ambiente
-dotenv.config();
+const result = dotenv.config();
+if (result.error) {
+  throw result.error;
+}
+
+console.log("Variáveis de ambiente carregadas com sucesso");
+console.log("Ambiente:", process.env.ENVIRONMENT);
 
 const app: Express = express();
 
@@ -23,11 +27,16 @@ app.use(express.json());
 //   .catch((err: any) => console.error('Erro ao conectar ao MongoDB:', err));
 
 // Rotas
-app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
-// Iniciar o servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+const isServerless = process.env.ENVIRONMENT !== "development";
+
+if (!isServerless) {
+  app.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
+  });
+} else {
+  console.log("Servidor rodando em ambiente serverless");
+}
+
+export default app;
