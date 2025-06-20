@@ -8,6 +8,7 @@ import addressRoutes from "./src/routes/addressRoutes";
 import serviceRoutes from './src/routes/serviceRoutes';
 import categoryRoutes from "./src/routes/categoryRoutes";
 import subcategoryRoutes from "./src/routes/subcategoryRoutes";
+import professionalRoutes from "./src/routes/professionalRoutes";
 
 
 // Carregar variáveis de ambiente
@@ -34,6 +35,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/subcategories', subcategoryRoutes);
 app.use('/api/address', addressRoutes);
+app.use('/api/professionals', professionalRoutes);
 
 
 // Iniciar o servidor
