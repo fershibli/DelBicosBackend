@@ -42,3 +42,24 @@ export const deleteAppointment = async (req: Request, res: Response) => {
     res.status(404).json({ error: "Agendamento não encontrado" });
   }
 };
+
+export const confirmAppointment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const appointment = await AppointmentModel.findByPk(id);
+    if (!appointment) {
+      return res.status(404).json({ error: "Agendamento não encontrado" });
+    }
+    if (appointment.status !== "pending") {
+      return res
+        .status(400)
+        .json({ error: `Não é possível aceitar um agendamento com status '${appointment.status}'` });
+    }
+    appointment.status = "confirmed";
+    await appointment.save();
+    res.json(appointment);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao confirmar agendamento" });
+  }
+};
