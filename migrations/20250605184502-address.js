@@ -70,14 +70,11 @@ module.exports = {
       name: "active_index_address",
     });
     await queryInterface.addIndex("address", ["lat", "lng"], {
-      type: "SPATIAL",
       name: "idx_location",
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("address");
-    await queryInterface.removeIndex("address", "active_index_address");
-    await queryInterface.removeIndex("address", "idx_location");
   },
 };

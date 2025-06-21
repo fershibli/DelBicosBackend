@@ -38,6 +38,5 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("users");
-    await queryInterface.removeIndex("users", "active_index_users");
   },
 };
