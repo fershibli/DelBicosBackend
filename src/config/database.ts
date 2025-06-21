@@ -1,8 +1,9 @@
 import { Sequelize } from 'sequelize';
 
-const sequelize = new Sequelize('database_name', 'username', 'password', {
-  host: 'localhost',
-  dialect: 'mysql', // or 'postgres', 'sqlite', etc.
+const sequelize = new Sequelize('dougl947_Delbicos', 'dougl947_ScrumMaster', 'LUJZXeiw!j+W', {
+  host: '162.241.2.230',
+  dialect: 'mysql',
+  logging: false, // opcional: desativa logs SQL no console
 });
 
 export const connectDatabase = async () => {
