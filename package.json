@@ -12,6 +12,7 @@
     "migrate": "npx sequelize-cli db:migrate"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "expo": "^52.0.46",
@@ -24,7 +25,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.23",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^16.11.7",
     "@types/sequelize": "^4.28.20",
