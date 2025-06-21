@@ -135,70 +135,8 @@ const router = Router();
  *         message: "Usuário registrado com sucesso"
  */
 
-/**
- * @swagger
- * /user/register:
- *   post:
- *     summary: Registra um novo usuário
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RegisterRequest'
- *     responses:
- *       201:
- *         description: Usuário registrado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/RegisterResponse'
- *      400:
- *        description: Dados inválidos
- *      500:
- *       description: Erro no servidor
- * */
-
 router.post("/register", signUpUser);
 
-/**
- * @swagger
- * /user/login:
- *   post:
- *     summary: Realiza o login do usuário
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               phoneNumber:
- *                 type: string
- *                 minLength: 10
- *               password:
- *                 type: string
- *                 minLength: 6
- *             required:
- *               - phoneNumber
- *               - password
- *     responses:
- *       200:
- *         description: Login bem-sucedido
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
 router.post("/login", logInUser);
 
 /**
