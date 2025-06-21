@@ -1,9 +1,9 @@
 import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import swaggerOptions from './src/config/swagger';
 import authRoutes from "./src/routes/authRoutes";
+import * as dotenv from "dotenv";
 import userRoutes from "./src/routes/userRoutes";
 import addressRoutes from "./src/routes/addressRoutes";
 import serviceRoutes from './src/routes/serviceRoutes';
@@ -17,8 +17,13 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from 'swagger-ui-express';
 
 
-// Carregar variáveis de ambiente
-dotenv.config();
+const result = dotenv.config();
+if (result.error) {
+  throw result.error;
+}
+
+console.log("Variáveis de ambiente carregadas com sucesso");
+console.log("Ambiente:", process.env.ENVIRONMENT);
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
@@ -37,7 +42,6 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //   .catch((err: any) => console.error('Erro ao conectar ao MongoDB:', err));
 
 // Rotas
-app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -49,8 +53,14 @@ app.use("/api/appointments", appointmentRoutes);
 app.use('/api/professionals', professionalRoutes);
 
 
-// Iniciar o servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+const isServerless = process.env.ENVIRONMENT !== "development";
+
+if (!isServerless) {
+  app.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
+  });
+} else {
+  console.log("Servidor rodando em ambiente serverless");
+}
+
+export default app;
