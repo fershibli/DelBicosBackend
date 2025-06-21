@@ -70,7 +70,6 @@ module.exports = {
       name: "active_index_address",
     });
     await queryInterface.addIndex("address", ["lat", "lng"], {
-      type: "SPATIAL",
       name: "idx_location",
     });
   },
