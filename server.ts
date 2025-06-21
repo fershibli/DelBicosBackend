@@ -38,10 +38,10 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/subcategories', subcategoryRoutes);
 app.use('/api/address', addressRoutes);
-app.use('/api/professionals', professionalRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/professional_availabilities', professionalAvailabilityRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use('/api/professionals', professionalRoutes);
 
 
 // Iniciar o servidor

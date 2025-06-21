@@ -22,10 +22,10 @@ export function setRoutes(app: Router) {
     app.use('/subcategories', subcategoryRoutes);
     app.use('/user', userRoutes);
     app.use('/address', addressRoutes);
-    app.use('/professionals', professionalRoutes);
     app.use('/clients', clientsRoutes);
     app.use("/professional_availabilities", professionalAvailabilityRoutes);
     app.use("/api/appointments", appointmentRoutes);
+    app.use('/api/professionals', professionalRoutes);
     // Add more routes here as needed
 }
 
