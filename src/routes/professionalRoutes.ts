@@ -1,18 +1,16 @@
-import { Router } from "express";
+import express from "express";
 import {
+  getProfessionals,
   createProfessional,
-  getAllProfessionals,
-  getProfessionalById,
   updateProfessional,
   deleteProfessional,
 } from "../controllers/professionalController";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", createProfessional);
-router.get("/", getAllProfessionals);
-router.get("/:id", getProfessionalById);
-router.put("/:id", updateProfessional);
-router.delete("/:id", deleteProfessional);
+router.get("/professionals", getProfessionals);
+router.post("/professionals", createProfessional);
+router.put("/professionals/:id", updateProfessional);
+router.delete("/professionals/:id", deleteProfessional);
 
 export default router;
