@@ -2,20 +2,6 @@
 
 const { DataTypes } = require("sequelize");
 
-/*
-CREATE TABLE service (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
-    duration INT NOT NULL,
-    active BOOLEAN DEFAULT TRUE,
-    category_id INT NOT NULL,
-    FOREIGN KEY (category_id) REFERENCES category(id),
-    INDEX active_index_service (active)
-);
- */
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -62,6 +48,5 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("service");
-    await queryInterface.removeIndex("service", "active_index_service");
   },
 };
