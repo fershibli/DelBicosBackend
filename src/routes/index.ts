@@ -7,6 +7,7 @@ import subcategoryRoutes from "./subcategoryRoutes";
 import addressRoutes from "./addressRoutes";
 import professionalRoutes from "./professionalRoutes";
 import clientsRoutes from "./clientRoutes";
+import professionalAvailabilityRoutes from "./professionalAvailabilityRoutes";
 
 
 
@@ -22,6 +23,7 @@ export function setRoutes(app: Router) {
     app.use('/address', addressRoutes);
     app.use('/professionals', professionalRoutes);
     app.use('/clients', clientsRoutes);
+    app.use("/professional_availabilities", professionalAvailabilityRoutes);
     // Add more routes here as needed
 }
 
