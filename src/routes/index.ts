@@ -24,8 +24,8 @@ export function setRoutes(app: Router) {
     app.use('/address', addressRoutes);
     app.use('/clients', clientsRoutes);
     app.use("/professional_availabilities", professionalAvailabilityRoutes);
-    app.use("/api/appointments", appointmentRoutes);
-    app.use('/api/professionals', professionalRoutes);
+    app.use("/appointments", appointmentRoutes);
+    app.use('/professionals', professionalRoutes);
     // Add more routes here as needed
 }
 
