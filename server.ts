@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import swaggerOptions from './src/config/swagger';
 import authRoutes from "./src/routes/authRoutes";
 import userRoutes from "./src/routes/userRoutes";
 import addressRoutes from "./src/routes/addressRoutes";
@@ -12,16 +13,20 @@ import professionalRoutes from "./src/routes/professionalRoutes";
 import clientsRoutes from "./src/routes/clientRoutes";
 import professionalAvailabilityRoutes from "./src/routes/professionalAvailabilityRoutes";
 import appointmentRoutes from "./src/routes/appointmentRoutes";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from 'swagger-ui-express';
 
 
 // Carregar variáveis de ambiente
 dotenv.config();
 
 const app: Express = express();
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // // Conectar ao MongoDB
 // mongoose.connect(process.env.MONGO_URI as string, {
