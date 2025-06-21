@@ -11,6 +11,7 @@ import subcategoryRoutes from "./src/routes/subcategoryRoutes";
 import professionalRoutes from "./src/routes/professionalRoutes";
 import clientsRoutes from "./src/routes/clientRoutes";
 import professionalAvailabilityRoutes from "./src/routes/professionalAvailabilityRoutes";
+import appointmentRoutes from "./src/routes/appointmentRoutes";
 
 
 // Carregar variáveis de ambiente
@@ -40,6 +41,7 @@ app.use('/api/address', addressRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/professional_availabilities', professionalAvailabilityRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 
 // Iniciar o servidor
