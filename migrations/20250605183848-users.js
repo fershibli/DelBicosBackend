@@ -16,6 +16,11 @@ module.exports = {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
+      email: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        unique: true,
+      },
       phone: {
         type: DataTypes.STRING(13),
         allowNull: false,
@@ -28,6 +33,16 @@ module.exports = {
       active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
     await queryInterface.addIndex("users", ["active"], {
