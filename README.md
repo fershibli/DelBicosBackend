@@ -26,13 +26,12 @@ This is a TypeScript Express application adapted for deployment on Vercel. The a
 
 ## 👥 Team
 
-|       Nome       | Função           |
-| :--------------: | ---------------- |
-| Fernando Chibli  | _Product Owner_  |
-|  Douglas Wenzel  | _Scrum Master_   |
-| Andreza Oliveira | _Desenvolvedora_ |
-| Gustavo Ferreira | _Desenvolvedor_  |
-|   Isabel Maito   | _Desenvolvedora_ |
+|                        Nome                        | Função                      |
+| :------------------------------------------------: | --------------------------- |
+|  [Fernando Chibli](https://github.com/fershibli)   | _Product Owner & FullStack_ |
+| [Douglas Wenzel](https://github.com/douglaswenzel) | _Scrum Master & FullStack_  |
+|  [Gustavo Ferreira](https://github.com/Gspedine)   | _Desenvolvedor FullStack_   |
+|   [Isabel Maito](https://github.com/isabelmaito)   | _Desenvolvedora FullStack_  |
 
 <br>
 
