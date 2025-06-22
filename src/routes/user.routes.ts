@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { confirmNumber } from "../controllers/confirmNumberController";
-import { verifyCode } from "../controllers/confirmCodeController";
+import { confirmNumber } from "../controllers/confirmNumber.controller";
+import { verifyCode } from "../controllers/confirmCode.controller";
 import { logInUser, signUpUser } from "../controllers/user.controller";
 
 const router = Router();

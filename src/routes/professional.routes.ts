@@ -4,7 +4,7 @@ import {
   createProfessional,
   updateProfessional,
   deleteProfessional,
-} from "../controllers/professionalController";
+} from "../controllers/professional.controller";
 
 const router = express.Router();
 
@@ -60,7 +60,7 @@ const router = express.Router();
  *         cnpj: "12345678000199"
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     ProfessionalInput:
  *       type: object
  *       required:

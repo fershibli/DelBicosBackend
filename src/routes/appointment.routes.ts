@@ -6,7 +6,7 @@ import {
   updateAppointment,
   deleteAppointment,
   confirmAppointment,
-} from "../controllers/appointmentController";
+} from "../controllers/appointment.controller";
 
 const router = Router();
 
@@ -84,7 +84,7 @@ const router = Router();
  *         notes: "Cliente preferencial"
  *         createdAt: "2023-12-01T10:00:00.000Z"
  *         updatedAt: "2023-12-01T10:00:00.000Z"
- * 
+ *
  *     AppointmentInput:
  *       type: object
  *       required:

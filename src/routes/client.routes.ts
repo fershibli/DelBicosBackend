@@ -5,7 +5,7 @@ import {
   getClientById,
   updateClient,
   deleteClient,
-} from "../controllers/clientController";
+} from "../controllers/client.controller";
 
 const router = Router();
 
@@ -76,7 +76,7 @@ const router = Router();
  *         active: true
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     ClientInput:
  *       type: object
  *       required:
