@@ -20,6 +20,8 @@ export default async function auth(
       process.env.SECRET_KEY || "secret"
     ) as ITokenPayload;
     req.user = decoded.user;
+    req.client = decoded.client;
+    req.address = decoded.address;
     next();
   } catch (error) {
     res.status(403).json({
