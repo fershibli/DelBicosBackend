@@ -15,6 +15,7 @@ module.exports = {
       { type: Sequelize.QueryTypes.SELECT }
     );
     const addressIds = addresses.map((address) => address.id);
+    // fake CPFs
     const cpfs = [
       "53898278999",
       "18869131459",
