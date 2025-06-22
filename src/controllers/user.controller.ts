@@ -67,6 +67,15 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const client = await ClientModel.findOne({ where: { user_id: user.id } });
+
+    if (!client) {
+      res.status(404).json({ message: "Client not found" });
+      return;
+    }
+
+    const address = await AddressModel.findByPk(client.main_address_id);
+
     const secretKey = process.env.SECRET_KEY || "secret";
     const expiresIn = process.env.EXPIRES_IN || "1h"; // Default to 1 hour if not set
     const options: jwt.SignOptions = {
@@ -80,22 +89,26 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
         email: user.email,
         phone: user.phone,
       },
+      client: {
+        id: client.id,
+        cpf: client.cpf,
+      },
+      address: address
+        ? {
+            lat: address.lat,
+            lng: address.lng,
+            city: address.city,
+            state: address.state,
+            country_iso: address.country_iso,
+          }
+        : undefined,
     };
 
-    jwt.sign(tokenPayload, secretKey, options, async (err, token) => {
+    jwt.sign(tokenPayload, secretKey, options, (err, token) => {
       if (err) {
         console.error(err);
         throw err;
       }
-
-      const client = await ClientModel.findOne({ where: { user_id: user.id } });
-
-      if (!client) {
-        res.status(404).json({ message: "Client not found" });
-        return;
-      }
-
-      const address = await AddressModel.findByPk(client.main_address_id);
 
       res.status(200).json({
         message: "Login successful",
