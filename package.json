@@ -7,9 +7,17 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only ./server.ts",
-    "migration:create": "npx sequelize-cli migration:generate --name",
-    "migration:undo": "npx sequelize-cli db:migrate:undo",
-    "migrate": "npx sequelize-cli db:migrate"
+    "migrate:db:create": "npx sequelize-cli db:create",
+    "migrate": "npx sequelize-cli db:migrate",
+    "migrate:new": "npx sequelize-cli migration:generate --name",
+    "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "migrate:reset": "npm run migrate:undo:all && npm run migrate",
+    "seed:create": "npx sequelize-cli seed:generate --name",
+    "seed:undo:all": "npx sequelize-cli db:seed:undo:all",
+    "seed:undo": "npx sequelize-cli db:seed:undo",
+    "seed": "npx sequelize-cli db:seed:all",
+    "seed:reset": "npm run seed:undo:all && npm run seed"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

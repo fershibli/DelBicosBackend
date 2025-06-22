@@ -46,7 +46,6 @@ module.exports = {
       },
     });
     await queryInterface.addIndex("users", ["active"], {
-      unique: true,
       name: "active_index_users",
     });
   },
