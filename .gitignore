@@ -6,3 +6,6 @@ yarn.lock
 
 ## MacOS ##
 .DS_Store
+
+## Project Files ##
+.env

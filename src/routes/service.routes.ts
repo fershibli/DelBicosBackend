@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   getAllServices,
   getServiceById,
   createService,
   updateService,
-  deleteService
-} from '../controllers/serviceControllers';
+  deleteService,
+} from "../controllers/service.controller";
 
 /**
  * @swagger
@@ -68,7 +68,7 @@ import {
  *         subcategory_id: 3
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     ServiceInput:
  *       type: object
  *       required:
@@ -120,7 +120,7 @@ const router = Router();
  *       500:
  *         description: Erro ao buscar serviços
  */
-router.get('/', getAllServices);
+router.get("/", getAllServices);
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.get('/', getAllServices);
  *       500:
  *         description: Erro ao buscar serviço
  */
-router.get('/:id', getServiceById);
+router.get("/:id", getServiceById);
 
 /**
  * @swagger
@@ -186,7 +186,7 @@ router.get('/:id', getServiceById);
  *       500:
  *         description: Erro ao criar serviço
  */
-router.post('/', createService);
+router.post("/", createService);
 
 /**
  * @swagger
@@ -219,7 +219,7 @@ router.post('/', createService);
  *       500:
  *         description: Erro ao atualizar serviço
  */
-router.put('/:id', updateService);
+router.put("/:id", updateService);
 
 /**
  * @swagger
@@ -250,6 +250,6 @@ router.put('/:id', updateService);
  *       500:
  *         description: Erro ao deletar serviço
  */
-router.delete('/:id', deleteService);
+router.delete("/:id", deleteService);
 
 export default router;

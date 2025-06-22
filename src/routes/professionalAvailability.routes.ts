@@ -5,7 +5,7 @@ import {
   getAvailabilityById,
   updateAvailability,
   deleteAvailability,
-} from "../controllers/professionalAvailabilityController";
+} from "../controllers/professionalAvailability.controller";
 
 const router = Router();
 
@@ -68,7 +68,7 @@ const router = Router();
  *         active: true
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     ProfessionalAvailabilityInput:
  *       type: object
  *       required:

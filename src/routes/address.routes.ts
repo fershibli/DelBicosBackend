@@ -5,7 +5,7 @@ import {
   getAddressById,
   updateAddress,
   deleteAddress,
-} from "../controllers/addressController";
+} from "../controllers/address.controller";
 
 const router = express.Router();
 
@@ -101,7 +101,7 @@ const router = express.Router();
  *         active: true
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     AddressInput:
  *       type: object
  *       required:

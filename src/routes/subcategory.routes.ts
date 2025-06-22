@@ -1,8 +1,13 @@
 import { Router } from "express";
-import { SubCategoryController } from "../controllers/subCategoryController";
+import {
+  createSubCategory,
+  deleteSubCategory,
+  getAllSubCategories,
+  getByIdSubCategory,
+  updateSubCategory,
+} from "../controllers/subCategory.controller";
 
 const router = Router();
-const controller = new SubCategoryController();
 
 /**
  * @swagger
@@ -57,7 +62,7 @@ const controller = new SubCategoryController();
  *         active: true
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
- * 
+ *
  *     SubcategoryInput:
  *       type: object
  *       required:
@@ -122,7 +127,7 @@ const controller = new SubCategoryController();
  *       500:
  *         description: Erro interno do servidor
  */
-router.post("/", controller.create.bind(controller));
+router.post("/", createSubCategory);
 
 /**
  * @swagger
@@ -148,7 +153,7 @@ router.post("/", controller.create.bind(controller));
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/", controller.getAll.bind(controller));
+router.get("/", getAllSubCategories);
 
 /**
  * @swagger
@@ -175,7 +180,7 @@ router.get("/", controller.getAll.bind(controller));
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/:id", controller.getById.bind(controller));
+router.get("/:id", getByIdSubCategory);
 
 /**
  * @swagger
@@ -210,7 +215,7 @@ router.get("/:id", controller.getById.bind(controller));
  *       500:
  *         description: Erro interno do servidor
  */
-router.put("/:id", controller.update.bind(controller));
+router.put("/:id", updateSubCategory);
 
 /**
  * @swagger
@@ -233,6 +238,6 @@ router.put("/:id", controller.update.bind(controller));
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete("/:id", controller.delete.bind(controller));
+router.delete("/:id", deleteSubCategory);
 
 export default router;
