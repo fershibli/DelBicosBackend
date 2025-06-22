@@ -115,9 +115,11 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
         token: token,
         user: {
           id: user.id,
+          client_id: client.id,
           name: user.name,
           email: user.email,
           phone: user.phone,
+          cpf: client.cpf,
           address: address || null,
         },
       });
