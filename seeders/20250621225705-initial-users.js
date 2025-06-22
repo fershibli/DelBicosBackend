@@ -5,7 +5,6 @@ const bcrypt = require("bcryptjs");
 module.exports = {
   async up(queryInterface, Sequelize) {
     const salt = await bcrypt.genSalt(10);
-    const currentDate = new Date();
     await queryInterface.bulkInsert("users", [
       {
         name: "Fernando",
