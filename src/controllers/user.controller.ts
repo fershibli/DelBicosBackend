@@ -82,14 +82,31 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       },
     };
 
-    jwt.sign(tokenPayload, secretKey, options, (err, token) => {
+    jwt.sign(tokenPayload, secretKey, options, async (err, token) => {
       if (err) {
         console.error(err);
         throw err;
       }
+
+      const client = await ClientModel.findOne({ where: { user_id: user.id } });
+
+      if (!client) {
+        res.status(404).json({ message: "Client not found" });
+        return;
+      }
+
+      const address = await AddressModel.findByPk(client.main_address_id);
+
       res.status(200).json({
         message: "Login successful",
         token: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: address || null,
+        },
       });
     });
   } catch (error) {
