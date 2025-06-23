@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { ProfessionalModel } from "./Professional";
 
 /*
 CREATE TABLE amenities (
@@ -57,3 +58,10 @@ AmenitiesModel.init(
     timestamps: true,
   }
 );
+
+AmenitiesModel.belongsToMany(ProfessionalModel, {
+  through: "professional_amenities",
+  as: "professionals",
+  foreignKey: "amenity_id",
+});
+
