@@ -1,17 +1,8 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-
-/*
-CREATE TABLE professional (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    main_address_id INT,
-    cpf VARCHAR(14) UNIQUE NOT NULL,
-    cnpj VARCHAR(18) UNIQUE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (main_address_id) REFERENCES address(id),
-)
-*/
+import { UserModel } from "./User";
+import { AddressModel } from "./Address";
+import { ServiceModel } from "./Service";
 
 export interface IProfessional {
   id?: number;
@@ -36,9 +27,25 @@ export class ProfessionalModel extends Model<
   public cpf!: string;
   public cnpj?: string;
 
-  // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  static associate() {
+    ProfessionalModel.belongsTo(UserModel, {
+      foreignKey: "user_id",
+      as: "User",
+    });
+
+    ProfessionalModel.belongsTo(AddressModel, {
+      foreignKey: "main_address_id",
+      as: "address",
+    });
+
+    ProfessionalModel.hasMany(ServiceModel, {
+      foreignKey: "professional_id",
+      as: "services",
+    });
+  }
 }
 
 ProfessionalModel.init(
@@ -52,18 +59,10 @@ ProfessionalModel.init(
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: "users",
-        key: "id",
-      },
     },
     main_address_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      references: {
-        model: "address",
-        key: "id",
-      },
     },
     cpf: {
       type: DataTypes.STRING(14),
