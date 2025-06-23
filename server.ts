@@ -7,6 +7,7 @@ import serviceRoutes from "./src/routes/service.routes";
 import categoryRoutes from "./src/routes/category.routes";
 import subcategoryRoutes from "./src/routes/subcategory.routes";
 import professionalRoutes from "./src/routes/professional.routes";
+import professionalDTORoutes from "./src/routes/ProfessionalDTO.routes";
 import clientsRoutes from "./src/routes/client.routes";
 import professionalAvailabilityRoutes from "./src/routes/professionalAvailability.routes";
 import appointmentRoutes from "./src/routes/appointment.routes";
@@ -49,6 +50,7 @@ app.use("/api/clients", clientsRoutes);
 app.use("/api/professional_availabilities", professionalAvailabilityRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
+app.use("/api/professional_dto", professionalDTORoutes);
 
 const isServerless = process.env.ENVIRONMENT !== "development";
 
