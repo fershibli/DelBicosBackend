@@ -110,3 +110,20 @@
       res.status(500).json({ error: "Erro ao remover profissional" });
     }
   };
+
+export const getProfessionalById = async (req: Request, res: Response) => {
+  try {
+    const professional = await ProfessionalModel.findByPk(req.params.id, {
+      include: [{ model: UserModel, as: 'User' }],
+    });
+
+    if (!professional) {
+      return res.status(404).json({ error: 'Professional not found' });
+    }
+
+    res.json(professional);
+  } catch (err) {
+    console.error('Erro ao buscar profissional:', err);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
