@@ -3,6 +3,8 @@ import { ProfessionalModel } from "../models/ProfessionalDTO";
 import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
+import { AmenitiesModel } from "../models/Amenities";
+import { GalleryModel } from "../models/Gallery";
 
 export class ProfessionalDTOController {
   async create(req: Request, res: Response) {
@@ -21,6 +23,8 @@ export class ProfessionalDTOController {
           { model: UserModel, as: "User" },
           { model: AddressModel, as: "address" },
           { model: ServiceModel, as: "services" },
+          { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
+          { model: GalleryModel, as: "gallery" },
         ],
       });
       return res.json(professionals);
@@ -37,6 +41,8 @@ export class ProfessionalDTOController {
           { model: UserModel, as: "User" },
           { model: AddressModel, as: "address" },
           { model: ServiceModel, as: "services" },
+          { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
+          { model: GalleryModel, as: "gallery" },
         ],
       });
 
@@ -60,16 +66,17 @@ export class ProfessionalDTOController {
       if (!updated) {
         return res.status(404).json({ message: "Profissional não encontrado" });
       }
+        const professional = await ProfessionalModel.findByPk(id, {
+          include: [
+            { model: UserModel, as: "User" },
+            { model: AddressModel, as: "address" },
+            { model: ServiceModel, as: "services" },
+            { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
+            { model: GalleryModel, as: "gallery" },
+          ],
+        });
 
-      const updatedProfessional = await ProfessionalModel.findByPk(id, {
-        include: [
-          { model: UserModel, as: "User" },
-          { model: AddressModel, as: "address" },
-          { model: ServiceModel, as: "services" },
-        ],
-      });
-
-      return res.json(updatedProfessional);
+      return res.json(professional);
     } catch (error) {
       return res.status(500).json({ error: "Erro ao atualizar profissional", details: error });
     }
