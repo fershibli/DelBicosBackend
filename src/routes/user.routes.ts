@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
 import { verifyCode } from "../controllers/confirmCode.controller";
-import { logInUser, signUpUser } from "../controllers/user.controller";
+import { getUserById, logInUser, signUpUser } from "../controllers/user.controller";
 
 const router = Router();
 
@@ -191,5 +191,42 @@ router.post("/confirm-number", confirmNumber);
  *         description: Erro no servidor
  */
 router.post("/verify-code", verifyCode);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Retorna um usuário pelo ID
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Usuário encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro ao buscar usuário
+ */
+router.get("/:id", getUserById);
+
 
 export default router;
