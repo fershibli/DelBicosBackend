@@ -4,6 +4,7 @@ import {
   createProfessional,
   updateProfessional,
   deleteProfessional,
+  getProfessionalById
 } from "../controllers/professional.controller";
 
 const router = express.Router();
@@ -127,7 +128,7 @@ const router = express.Router();
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/professionals", getProfessionals);
+router.get("/", getProfessionals);
 
 /**
  * @swagger
@@ -153,7 +154,7 @@ router.get("/professionals", getProfessionals);
  *       500:
  *         description: Erro ao criar profissional
  */
-router.post("/professionals", createProfessional);
+router.post("/", createProfessional);
 
 /**
  * @swagger
@@ -188,7 +189,7 @@ router.post("/professionals", createProfessional);
  *       500:
  *         description: Erro ao atualizar profissional
  */
-router.put("/professionals/:id", updateProfessional);
+router.put("/:id", updateProfessional);
 
 /**
  * @swagger
@@ -219,6 +220,48 @@ router.put("/professionals/:id", updateProfessional);
  *       500:
  *         description: Erro ao remover profissional
  */
-router.delete("/professionals/:id", deleteProfessional);
+router.delete("/:id", deleteProfessional);
+
+/**
+ * @swagger
+ * /professionals/{id}:
+ *   get:
+ *     summary: Retorna um profissional pelo ID
+ *     tags: [Professionals]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do profissional a ser retornado
+ *     responses:
+ *       200:
+ *         description: Profissional retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Professional'
+ *                 - type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       description: Dados do usuário associado
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         name:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         phone:
+ *                           type: string
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro ao buscar profissional
+ */
+router.get("/:id", getProfessionalById);
 
 export default router;
