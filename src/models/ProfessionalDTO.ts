@@ -13,6 +13,8 @@ import { AddressModel } from "./Address";
 import { ServiceModel } from "./Service";
 import { AmenitiesModel } from "./Amenities";
 import { GalleryModel } from "./Gallery";
+import { ProfessionalAmenityModel } from "./ProfessionalAmenities";
+import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
 
 export interface ProfessionalAttributes {
   id: number;
@@ -130,3 +132,8 @@ ProfessionalModel.belongsToMany(AmenitiesModel, {
   foreignKey: "professional_id",
   otherKey: "amenity_id",
 });
+
+ProfessionalModel.hasMany(ProfessionalAvailabilityModel, {
+    foreignKey: 'professional_id',
+    as: 'availabilities'
+  });
