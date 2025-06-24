@@ -5,6 +5,7 @@ import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
 import { AmenitiesModel } from "../models/Amenities";
 import { GalleryModel } from "../models/Gallery";
+import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
 export class ProfessionalDTOController {
   async create(req: Request, res: Response) {
@@ -25,6 +26,7 @@ export class ProfessionalDTOController {
           { model: ServiceModel, as: "services" },
           { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
           { model: GalleryModel, as: "gallery" },
+          { model: ProfessionalAvailabilityModel, as: "availabilities" },
         ],
       });
       return res.json(professionals);
@@ -33,28 +35,54 @@ export class ProfessionalDTOController {
     }
   }
 
-  async findById(req: Request, res: Response) {
-    try {
-      const id = Number(req.params.id);
-      const professional = await ProfessionalModel.findByPk(id, {
-        include: [
-          { model: UserModel, as: "User" },
-          { model: AddressModel, as: "address" },
-          { model: ServiceModel, as: "services" },
-          { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-          { model: GalleryModel, as: "gallery" },
-        ],
-      });
+async findById(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const professional = await ProfessionalModel.findByPk(id, {
+      include: [
+        { 
+          model: UserModel,
+          as: 'User' 
+        },
+        { 
+          model: AddressModel,
+          as: 'address' 
+        },
+        { 
+          model: ServiceModel,
+          as: 'services' 
+        },
+        {
+          model: AmenitiesModel,
+          as: 'amenities',
+          through: { attributes: [] } // Para relações many-to-many
+        },
+        { 
+          model: GalleryModel,
+          as: 'gallery' 
+        },
+        { 
+          model: ProfessionalAvailabilityModel,
+          as: 'availabilities',
+          where: { is_available: true }, // Opcional: filtrar apenas disponíveis
+          required: false // Para LEFT JOIN em vez de INNER JOIN
+        }
+      ]
+    });
 
-      if (!professional) {
-        return res.status(404).json({ message: "Profissional não encontrado" });
-      }
-
-      return res.json(professional);
-    } catch (error) {
-      return res.status(500).json({ error: "Erro ao buscar profissional", details: error });
+    if (!professional) {
+      return res.status(404).json({ message: "Profissional não encontrado" });
     }
+
+    return res.json(professional);
+  } catch (error) {
+    console.error('Erro detalhado:', error);
+    return res.status(500).json({ 
+      error: "Erro ao buscar profissional",
+      details: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
   }
+}
 
   async update(req: Request, res: Response) {
     try {
@@ -73,6 +101,7 @@ export class ProfessionalDTOController {
             { model: ServiceModel, as: "services" },
             { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
             { model: GalleryModel, as: "gallery" },
+            { model: ProfessionalAvailabilityModel, as: "availabilities" },
           ],
         });
 
