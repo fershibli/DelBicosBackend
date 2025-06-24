@@ -76,6 +76,10 @@ ProfessionalModel.init(
       allowNull: true,
       unique: true,
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     sequelize,
