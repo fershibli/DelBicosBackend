@@ -4,8 +4,14 @@ import { GalleryModel } from "../models/Gallery";
 export class GalleryController {
   async create(req: Request, res: Response) {
     try {
-      const { professional_id, image_url } = req.body;
-      const newImage = await GalleryModel.create({ professional_id, url: image_url });
+      const { professional_id, url } = req.body;
+
+      if (!professional_id || !url) {
+        return res.status(400).json({ error: "Campos 'professional_id' e 'url' são obrigatórios." });
+      }
+
+      const newImage = await GalleryModel.create({ professional_id, url });
+
       return res.status(201).json(newImage);
     } catch (error) {
       console.error("Erro ao criar imagem da galeria:", error);
