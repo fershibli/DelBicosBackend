@@ -17,6 +17,7 @@ import amenitiesRoutes from "./src/routes/amenities.route";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
+import professionalAmenityRoutes from "./src/routes/professionalAmenity.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -55,6 +56,8 @@ app.use("/api/professionals", professionalRoutes);
 app.use("/api/professional_dto", professionalDTORoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/amenities", amenitiesRoutes);
+app.use("/api/professional-amenities", professionalAmenityRoutes);
+
 
 const isServerless = process.env.ENVIRONMENT !== "development";
 
