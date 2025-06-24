@@ -20,12 +20,13 @@ export interface ProfessionalAttributes {
   main_address_id: number;
   cpf: string;
   cnpj: string;
+  description?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface ProfessionalCreationAttributes
-  extends Optional<ProfessionalAttributes, "id" | "main_address_id" | "cnpj"> {}
+  extends Optional<ProfessionalAttributes, "id" | "main_address_id" | "cnpj" | "description" > {}
 
 export class ProfessionalModel extends Model<
   ProfessionalAttributes,
@@ -36,6 +37,7 @@ export class ProfessionalModel extends Model<
   public main_address_id!: number;
   public cpf!: string;
   public cnpj!: string;
+  public description?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -86,6 +88,10 @@ ProfessionalModel.init(
       type: DataTypes.STRING(18),
       allowNull: true,
       unique: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     createdAt: "",
     updatedAt: "",
