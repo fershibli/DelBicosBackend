@@ -27,6 +27,7 @@ export class ProfessionalModel extends Model<
   public main_address_id?: number;
   public cpf!: string;
   public cnpj?: string;
+  public description?: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
