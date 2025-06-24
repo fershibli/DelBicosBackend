@@ -15,7 +15,7 @@ export interface IProfessional {
 
 type ProfessionalCreationalAttributes = Optional<
   IProfessional,
-  "id" | "main_address_id" | "cnpj"
+  "id" | "main_address_id" | "cnpj" | "description"
 >;
 
 export class ProfessionalModel extends Model<
