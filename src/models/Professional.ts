@@ -87,3 +87,8 @@ ProfessionalModel.init(
     timestamps: true,
   }
 );
+
+ProfessionalModel.hasMany(ProfessionalModel, {
+    foreignKey: 'professional_id',
+    as: 'availabilities'
+  });
