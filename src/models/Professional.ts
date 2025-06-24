@@ -10,6 +10,7 @@ export interface IProfessional {
   main_address_id?: number;
   cpf: string;
   cnpj?: string;
+  description?: string;
 }
 
 type ProfessionalCreationalAttributes = Optional<
