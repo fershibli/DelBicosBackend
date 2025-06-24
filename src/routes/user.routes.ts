@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
 import { verifyCode } from "../controllers/confirmCode.controller";
-import { getUserById, logInUser, signUpUser } from "../controllers/user.controller";
+import { getUserById, logInUser, signUpUser, updateUser } from "../controllers/user.controller";
 
 const router = Router();
 
@@ -227,6 +227,7 @@ router.post("/verify-code", verifyCode);
  *         description: Erro ao buscar usuário
  */
 router.get("/:id", getUserById);
+router.put("/:id", updateUser);
 
 
 export default router;
