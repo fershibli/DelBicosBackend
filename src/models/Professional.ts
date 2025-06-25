@@ -14,7 +14,21 @@ import { ServiceModel } from "./Service";
 import { AmenitiesModel } from "./Amenities";
 import { GalleryModel } from "./Gallery";
 import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
-import { models } from "mongoose";
+
+/*
+CREATE TABLE professional (
+  id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  user_id INT NOT NULL,
+  main_address_id INT DEFAULT NULL,
+  cpf VARCHAR(14) NOT NULL UNIQUE,
+  cnpj VARCHAR(18) UNIQUE,
+  description TEXT,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_professional_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_professional_address FOREIGN KEY (main_address_id) REFERENCES addresses(id)
+);
+*/
 
 export interface IProfessional {
   id?: number;
