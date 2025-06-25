@@ -4,7 +4,7 @@ import {
   deleteProfessionalAmenity,
   getAllProfessionalAmenities,
   getProfessionalAmenityById,
-} from "../controllers/professionalAmenityController";
+} from "../controllers/professionalAmenity.controller";
 
 const router = Router();
 

@@ -67,3 +67,4 @@ GalleryModel.init(
     timestamps: true,
   }
 );
+
