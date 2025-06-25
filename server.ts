@@ -54,7 +54,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/amenities", amenitiesRoutes);
-app.use("/api/professional-amenities", professionalAmenityRoutes);
+app.use("/api/professional_amenities", professionalAmenityRoutes);
 
 
 const isServerless = process.env.ENVIRONMENT !== "development";
