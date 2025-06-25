@@ -59,9 +59,4 @@ AmenitiesModel.init(
   }
 );
 
-AmenitiesModel.belongsToMany(ProfessionalModel, {
-  through: "professional_amenities",
-  as: "professionals",
-  foreignKey: "amenity_id",
-});
 
