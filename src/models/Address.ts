@@ -35,7 +35,7 @@ export interface IAddress {
   state: string;
   country_iso: string;
   postal_code: string;
-  user_id: number;
+  user_id?: number;
   active?: boolean;
 }
 
