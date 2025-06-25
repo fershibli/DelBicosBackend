@@ -88,10 +88,6 @@ export const signUpUser = async (
         },
       });
     });
-
-    res.status(201).json({
-      message: "User created successfully",
-    });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({
