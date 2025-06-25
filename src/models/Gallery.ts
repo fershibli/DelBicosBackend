@@ -67,8 +67,3 @@ GalleryModel.init(
     timestamps: true,
   }
 );
-
-GalleryModel.belongsTo(ProfessionalModel, {
-  foreignKey: "professional_id",
-  as: "professional",
-});
