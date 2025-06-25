@@ -124,8 +124,3 @@ ServiceModel.init(
     ],
   }
 );
-
-ServiceModel.belongsTo(ProfessionalModel, {
-  foreignKey: 'professional_id',
-  as: 'professional'
-});
