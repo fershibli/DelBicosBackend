@@ -146,8 +146,3 @@ ProfessionalAvailabilityModel.init(
     timestamps: true,
   }
 );
-
-  ProfessionalAvailabilityModel.belongsTo(ProfessionalModel, {
-    foreignKey: 'professional_id',
-    as: 'professional'
-  });
