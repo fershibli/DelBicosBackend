@@ -1,17 +1,21 @@
 import { Request, Response } from 'express';
 import { ServiceModel } from '../models/Service';
 import { SubCategoryModel } from '../models/Subcategory';
+import { ProfessionalModel } from '../models/Professional';
 
-export async function getAllServices(req: Request, res: Response) {
+export async function getAllServices(req: Request, res: Response): Promise<Response> {
   try {
     const services = await ServiceModel.findAll();
-    res.json(services);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar serviços' });
+    return res.json(services);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).json({ error: 'Erro ao buscar serviços', details: error.message });
+    }
+    return res.status(500).json({ error: 'Erro desconhecido ao buscar serviços' });
   }
 }
 
-export async function getServiceById(req: Request, res: Response) {
+export async function getServiceById(req: Request, res: Response): Promise<Response> {
   try {
     const { id } = req.params;
     const service = await ServiceModel.findByPk(id);
@@ -20,56 +24,56 @@ export async function getServiceById(req: Request, res: Response) {
       return res.status(404).json({ error: 'Serviço não encontrado' });
     }
 
-    res.json(service);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar serviço' });
+    return res.json(service);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).json({ error: 'Erro ao buscar serviço', details: error.message });
+    }
+    return res.status(500).json({ error: 'Erro desconhecido ao buscar serviço' });
   }
 }
 
-export async function createService(req: Request, res: Response) {
+export async function createService(req: Request, res: Response): Promise<Response> {
   try {
-    const { title, description, price, duration, active, subcategory_id } = req.body;
-
-    // Validação dos campos obrigatórios
-    if (!title || !price || !duration || !subcategory_id) {
-      return res.status(400).json({
-        error: "Campos obrigatórios faltando",
-        required: ["title", "price", "duration", "subcategory_id"]
-      });
+    const { professional_id, subcategory_id } = req.body;
+    
+    if (!professional_id) {
+      return res.status(400).json({ error: "professional_id é obrigatório" });
+    }
+    
+    if (!subcategory_id) {
+      return res.status(400).json({ error: "subcategory_id é obrigatório" });
     }
 
-    // Verifica se a subcategoria existe
-    const subcategoryExists = await SubCategoryModel.findByPk(subcategory_id);
-    if (!subcategoryExists) {
-      return res.status(404).json({
-        error: "Subcategoria não encontrada",
-        subcategory_id
-      });
+    const professional = await ProfessionalModel.findByPk(professional_id);
+    if (!professional) {
+      return res.status(404).json({ error: "Profissional não encontrado" });
     }
 
-    const newService = await ServiceModel.create({
-      title,
-      description: description || null,
-      price: parseFloat(price),
-      duration: parseInt(duration),
-      active: active !== undefined ? active : true,
-      subcategory_id
-    });
+    const subcategory = await SubCategoryModel.findByPk(subcategory_id);
+    if (!subcategory) {
+      return res.status(404).json({ error: "Subcategoria não encontrada" });
+    }
 
-    return res.status(201).json(newService);
-  } catch (error) {
-    console.error("Erro detalhado:", error);
-    return res.status(500).json({
-      error: "Erro ao criar serviço",
-      details: error instanceof Error ? error.message : String(error),
-      stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
-    });
+    const service = await ServiceModel.create(req.body);
+    return res.status(201).json(service);
+    
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).json({ 
+        error: 'Erro ao criar serviço',
+        message: error.message,
+        details: error instanceof Error && 'errors' in error ? error.errors : undefined
+      });
+    }
+    return res.status(500).json({ error: 'Erro desconhecido ao criar serviço' });
   }
 }
-export async function updateService(req: Request, res: Response) {
+
+export async function updateService(req: Request, res: Response): Promise<Response> {
   try {
     const { id } = req.params;
-    const { title, description, price, duration, active, subcategory_id } = req.body;
+    const { title, description, price, duration, active, subcategory_id, professional_id } = req.body;
 
     const service = await ServiceModel.findByPk(id);
 
@@ -77,18 +81,30 @@ export async function updateService(req: Request, res: Response) {
       return res.status(404).json({ error: 'Serviço não encontrado' });
     }
 
-    await service.update({
-      title,
-      description,
-      price,
-      duration,
-      active,
-      subcategory_id
-    });
+    if (professional_id) {
+      const professional = await ProfessionalModel.findByPk(professional_id);
+      if (!professional) {
+        return res.status(404).json({ error: "Profissional não encontrado" });
+      }
+    }
 
-    res.json(service);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao atualizar serviço' });
+    if (subcategory_id) {
+      const subcategory = await SubCategoryModel.findByPk(subcategory_id);
+      if (!subcategory) {
+        return res.status(404).json({ error: "Subcategoria não encontrada" });
+      }
+    }
+
+    await service.update(req.body);
+    return res.json(service);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).json({ 
+        error: 'Erro ao atualizar serviço',
+        details: error.message 
+      });
+    }
+    return res.status(500).json({ error: 'Erro desconhecido ao atualizar serviço' });
   }
 }
 

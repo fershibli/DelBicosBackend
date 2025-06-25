@@ -153,14 +153,30 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const user = await UserModel.findByPk(req.params.id);
-  if (user) {
-    await user.update(req.body);
+  try {
+    const user = await UserModel.findByPk(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { name, email, phone, avatarImg, bannerImg } = req.body;
+
+    await user.update({
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(phone && { phone }),
+      ...(avatarImg && { avatarImg }),
+      ...(bannerImg && { bannerImg }),
+    });
+
     res.json(user);
-  } else {
-    res.status(404).json({ error: "User not found" });
+  } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
+    res.status(500).json({ error: "Erro interno ao atualizar usuário" });
   }
 };
+
 
 export const deleteUser = async (req: Request, res: Response) => {
   const deleted = await UserModel.destroy({ where: { id: req.params.id } });

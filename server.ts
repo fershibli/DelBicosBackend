@@ -11,9 +11,12 @@ import clientsRoutes from "./src/routes/client.routes";
 import professionalAvailabilityRoutes from "./src/routes/professionalAvailability.routes";
 import appointmentRoutes from "./src/routes/appointment.routes";
 import userRoutes from "./src/routes/user.routes";
+import galleryRoutes from "./src/routes/gallery.routes";
+import amenitiesRoutes from "./src/routes/amenities.route";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
+import professionalAmenityRoutes from "./src/routes/professionalAmenity.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -49,6 +52,10 @@ app.use("/api/clients", clientsRoutes);
 app.use("/api/professional_availabilities", professionalAvailabilityRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
+app.use("/api/gallery", galleryRoutes);
+app.use("/api/amenities", amenitiesRoutes);
+app.use("/api/professional_amenities", professionalAmenityRoutes);
+
 
 const isServerless = process.env.ENVIRONMENT !== "development";
 
