@@ -1,8 +1,20 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import {
+  DataTypes,
+  Model,
+  Optional,
+  Association,
+  HasManyGetAssociationsMixin,
+  BelongsToGetAssociationMixin,
+  BelongsToManyGetAssociationsMixin,
+} from "sequelize";
 import { sequelize } from "../config/database";
 import { UserModel } from "./User";
 import { AddressModel } from "./Address";
 import { ServiceModel } from "./Service";
+import { AmenitiesModel } from "./Amenities";
+import { GalleryModel } from "./Gallery";
+import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
+import { models } from "mongoose";
 
 export interface IProfessional {
   id?: number;
@@ -18,10 +30,7 @@ type ProfessionalCreationalAttributes = Optional<
   "id" | "main_address_id" | "cnpj" | "description"
 >;
 
-export class ProfessionalModel extends Model<
-  IProfessional,
-  ProfessionalCreationalAttributes
-> {
+export class ProfessionalModel extends Model<IProfessional, ProfessionalCreationalAttributes> {
   public id!: number;
   public user_id!: number;
   public main_address_id?: number;
@@ -31,6 +40,28 @@ export class ProfessionalModel extends Model<
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public User?: UserModel;
+  public address?: AddressModel;
+  public services?: ServiceModel[];
+  public amenities?: AmenitiesModel[];
+  public gallery?: GalleryModel[];
+  public availabilities?: ProfessionalAvailabilityModel[];
+
+  public getUser!: BelongsToGetAssociationMixin<UserModel>;
+  public getAddress!: BelongsToGetAssociationMixin<AddressModel>;
+  public getServices!: HasManyGetAssociationsMixin<ServiceModel>;
+  public getAmenities!: BelongsToManyGetAssociationsMixin<AmenitiesModel>;
+  public getGallery!: HasManyGetAssociationsMixin<GalleryModel>;
+
+  public static associations: {
+    User: Association<ProfessionalModel, UserModel>;
+    address: Association<ProfessionalModel, AddressModel>;
+    services: Association<ProfessionalModel, ServiceModel>;
+    amenities: Association<ProfessionalModel, AmenitiesModel>;
+    gallery: Association<ProfessionalModel, GalleryModel>;
+    availabilities: Association<ProfessionalModel, ProfessionalAvailabilityModel>;
+  };
 
   static associate() {
     ProfessionalModel.belongsTo(UserModel, {
@@ -46,6 +77,23 @@ export class ProfessionalModel extends Model<
     ProfessionalModel.hasMany(ServiceModel, {
       foreignKey: "professional_id",
       as: "services",
+    });
+
+    ProfessionalModel.hasMany(GalleryModel, {
+      foreignKey: "professional_id",
+      as: "gallery",
+    });
+
+    ProfessionalModel.belongsToMany(AmenitiesModel, {
+      through: "professional_amenities",
+      as: "amenities",
+      foreignKey: "professional_id",
+      otherKey: "amenity_id",
+    });
+
+    ProfessionalModel.hasMany(ProfessionalAvailabilityModel, {
+      foreignKey: "professional_id",
+      as: "availabilities",
     });
   }
 }
@@ -85,10 +133,8 @@ ProfessionalModel.init(
     sequelize,
     tableName: "professional",
     timestamps: true,
+    modelName: "Professional",
+    freezeTableName: true,
   }
 );
 
-ProfessionalModel.hasMany(ProfessionalModel, {
-    foreignKey: 'professional_id',
-    as: 'availabilities'
-  });
