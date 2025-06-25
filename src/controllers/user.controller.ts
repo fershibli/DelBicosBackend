@@ -75,7 +75,7 @@ export const signUpUser = async (
       }
 
       res.status(200).json({
-        message: "Login successful",
+        message: "Registration successful. Login-in user.",
         token: token,
         user: {
           id: user.id,
