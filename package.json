@@ -20,6 +20,7 @@
     "seed:reset": "npm run seed:undo:all && npm run seed"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
