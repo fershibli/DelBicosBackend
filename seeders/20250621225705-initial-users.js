@@ -30,6 +30,24 @@ module.exports = {
         phone: "5511966666666",
         password: await bcrypt.hash("1234", salt),
       },
+      {
+        name: "Eduardo",
+        email: "eduardo@delbicos.com.br",
+        phone: "5511955555555",
+        password: await bcrypt.hash("1234", salt),
+      },
+      {
+        name: "Iago",
+        email: "iago@delbicos.com.br",
+        phone: "5511944444444",
+        password: await bcrypt.hash("1234", salt),
+      },
+      {
+        name: "Lucas",
+        email: "lucas@delbicos.com.br",
+        phone: "5511933333333",
+        password: await bcrypt.hash("1234", salt),
+      },
     ]);
   },
 
