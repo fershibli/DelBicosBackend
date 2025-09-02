@@ -11,6 +11,7 @@ console.log({
   password: process.env.SEQUELIZE_DB_PASS,
   database: process.env.SEQUELIZE_DB_NAME,
   host: process.env.SEQUELIZE_HOST,
+  port: process.env.SEQUELIZE_PORT,
   dialect: process.env.SEQUELIZE_DIALECT || "mysql",
 });
 
@@ -20,6 +21,7 @@ module.exports = {
     password: process.env.SEQUELIZE_DB_PASS,
     database: process.env.SEQUELIZE_DB_NAME,
     host: process.env.SEQUELIZE_HOST,
+    port: process.env.SEQUELIZE_PORT,
     dialect: process.env.SEQUELIZE_DIALECT || "mysql",
   },
   test: {
@@ -27,6 +29,7 @@ module.exports = {
     password: process.env.SEQUELIZE_DB_PASS,
     database: process.env.SEQUELIZE_DB_NAME,
     host: process.env.SEQUELIZE_HOST,
+    port: process.env.SEQUELIZE_PORT,
     dialect: process.env.SEQUELIZE_DIALECT || "mysql",
   },
   production: {
@@ -34,6 +37,7 @@ module.exports = {
     password: process.env.SEQUELIZE_DB_PASS,
     database: process.env.SEQUELIZE_DB_NAME,
     host: process.env.SEQUELIZE_HOST,
+    port: process.env.SEQUELIZE_PORT,
     dialect: process.env.SEQUELIZE_DIALECT || "mysql",
   },
 };
