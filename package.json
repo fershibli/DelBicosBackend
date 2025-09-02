@@ -17,7 +17,15 @@
     "seed:undo:all": "npx sequelize-cli db:seed:undo:all",
     "seed:undo": "npx sequelize-cli db:seed:undo",
     "seed": "npx sequelize-cli db:seed:all",
-    "seed:reset": "npm run seed:undo:all && npm run seed"
+    "seed:reset": "npm run seed:undo:all && npm run seed",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:restart": "docker-compose restart",
+    "docker:clean": "docker-compose down -v --remove-orphans",
+    "docker:clean:images": "docker-compose down && docker system prune -f",
+    "docker:clean:all": "docker-compose down -v --remove-orphans && docker system prune -af --volumes",
+    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -28,6 +36,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.1",
     "mysql2": "^2.3.3",
+    "pg": "^8.16.3",
     "sequelize": "^6.6.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
@@ -36,6 +45,7 @@
     "@types/express": "^4.17.23",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^16.11.7",
+    "@types/pg": "^8.15.5",
     "@types/sequelize": "^4.28.20",
     "@types/swagger-jsdoc": "^6.0.4",
     "nodemon": "^3.1.10",

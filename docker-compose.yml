@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres
+    container_name: postgres-delbicos
+    environment:
+      POSTGRES_DB: delbicos
+      POSTGRES_USER: delbicos
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: "--auth-host=md5"
+    ports:
+      - "15432:5432"
+    restart: unless-stopped

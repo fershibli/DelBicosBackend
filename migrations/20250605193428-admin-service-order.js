@@ -41,20 +41,6 @@ module.exports = {
         defaultValue: DataTypes.NOW,
       },
     });
-    await queryInterface.addIndex(
-      "admin_service_order",
-      ["status", "created_at"],
-      {
-        name: "idx_status_check",
-      }
-    );
-    await queryInterface.addIndex(
-      "admin_service_order",
-      ["appointment_id", "status"],
-      {
-        name: "idx_appointment_check",
-      }
-    );
   },
 
   async down(queryInterface, Sequelize) {
