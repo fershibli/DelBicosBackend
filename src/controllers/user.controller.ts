@@ -40,8 +40,53 @@ export const signUpUser = async (
       cpf,
     });
 
-    res.status(201).json({
-      message: "User created successfully",
+    const secretKey = process.env.SECRET_KEY || "secret";
+    const expiresIn = process.env.EXPIRES_IN || "1h"; // Default to 1 hour if not set
+    const options: jwt.SignOptions = {
+      expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
+    };
+
+    const tokenPayload: ITokenPayload = {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+      client: {
+        id: client.id,
+        cpf: client.cpf,
+      },
+      address: newAddress
+        ? {
+            lat: newAddress.lat,
+            lng: newAddress.lng,
+            city: newAddress.city,
+            state: newAddress.state,
+            country_iso: newAddress.country_iso,
+          }
+        : undefined,
+    };
+
+    jwt.sign(tokenPayload, secretKey, options, (err, token) => {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
+
+      res.status(200).json({
+        message: "Registration successful. Login-in user.",
+        token: token,
+        user: {
+          id: user.id,
+          client_id: client.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          cpf: client.cpf,
+          address: address || null,
+        },
+      });
     });
   } catch (error) {
     console.error("Error creating user:", error);
