@@ -26,8 +26,10 @@
     "docker:clean:images": "docker-compose down && docker system prune -f",
     "docker:clean:all": "docker-compose down -v --remove-orphans && docker system prune -af --volumes",
     "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d"
+  
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
