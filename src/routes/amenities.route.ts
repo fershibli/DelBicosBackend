@@ -1,13 +1,18 @@
 import { Router } from "express";
-import { AmenitiesController } from "../controllers/amenities.controller";
+import { 
+  createAmenity, 
+  getAllAmenities, 
+  getByIdAmenity, 
+  updateAmenity, 
+  deleteAmenity 
+} from "../controllers/amenities.controller";
 
 const router = Router();
-const controller = new AmenitiesController();
 
-router.post("/", controller.create);
-router.get("/", controller.index);
-router.get("/:id", controller.show);
-router.put("/:id", controller.update);
-router.delete("/:id", controller.delete);
+router.post("/", createAmenity);
+router.get("/", getAllAmenities);
+router.get("/:id", getByIdAmenity);
+router.put("/:id", updateAmenity);
+router.delete("/:id", deleteAmenity);
 
 export default router;
