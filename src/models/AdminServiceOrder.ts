@@ -11,8 +11,6 @@ CREATE TABLE admin_service_order (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (appointment_id) REFERENCES appointment(id),
-    INDEX idx_status_check (status, created_at),
-    INDEX idx_appointment_check (appointment_id, status)
 )
 */
 
@@ -97,16 +95,6 @@ AdminServiceOrderModel.init(
     underscored: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-    indexes: [
-      {
-        name: "idx_status_check",
-        fields: ["status", "created_at"],
-      },
-      {
-        name: "idx_appointment_check",
-        fields: ["appointment_id", "status"],
-      },
-    ],
     timestamps: false,
   }
 );

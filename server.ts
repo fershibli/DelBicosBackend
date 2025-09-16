@@ -17,6 +17,8 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import professionalAmenityRoutes from "./src/routes/professionalAmenity.routes";
+import emailRouter from "./src/routes/email.routes";
+import authRouter from "./src/routes/auth.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -56,6 +58,8 @@ app.use("/api/gallery", galleryRoutes);
 app.use("/api/amenities", amenitiesRoutes);
 app.use("/api/professional_amenities", professionalAmenityRoutes);
 
+app.use("/api/email", emailRouter);
+app.use("/auth", authRouter);
 
 const isServerless = process.env.ENVIRONMENT !== "development";
 
