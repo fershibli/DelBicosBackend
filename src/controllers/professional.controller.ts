@@ -5,7 +5,7 @@ import { AddressModel } from "../models/Address";
 import { ProfessionalModel } from "../models/Professional";
 import { ServiceModel } from "../models/Service";
 import { AmenitiesModel } from "../models/Amenities";
-import { GalleryModel } from "../models/Gallery";
+import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
 ProfessionalModel.belongsTo(UserModel, { foreignKey: "user_id", as: "User" });
@@ -17,7 +17,7 @@ ProfessionalModel.belongsToMany(AmenitiesModel, {
   otherKey: "amenity_id",
   as: "amenities",
 });
-ProfessionalModel.hasMany(GalleryModel, { foreignKey: "professional_id", as: "gallery" });
+ProfessionalModel.hasMany(ProfessionalGalleryModel, { foreignKey: "professional_id", as: "gallery" });
 ProfessionalModel.hasMany(ProfessionalAvailabilityModel, { foreignKey: "professional_id", as: "availabilities" });
 
 export const getProfessionals = async (req: Request, res: Response) => {
@@ -38,7 +38,7 @@ export const getProfessionals = async (req: Request, res: Response) => {
       { model: AddressModel, as: "address", attributes: ["lat", "lng", "city"], required: false },
       { model: ServiceModel, as: "services" },
       { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-      { model: GalleryModel, as: "gallery" },
+      { model: ProfessionalGalleryModel, as: "gallery" },
       { model: ProfessionalAvailabilityModel, as: "availabilities" },
     ];
 
@@ -77,7 +77,7 @@ export const getProfessionalById = async (req: Request, res: Response) => {
         { model: AddressModel, as: "address" },
         { model: ServiceModel, as: "services" },
         { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-        { model: GalleryModel, as: "gallery" },
+        { model: ProfessionalGalleryModel, as: "gallery" },
         {
           model: ProfessionalAvailabilityModel,
           as: "availabilities",
@@ -123,7 +123,7 @@ export const updateProfessional = async (req: Request, res: Response) => {
         { model: AddressModel, as: "address" },
         { model: ServiceModel, as: "services" },
         { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-        { model: GalleryModel, as: "gallery" },
+        { model: ProfessionalGalleryModel, as: "gallery" },
         { model: ProfessionalAvailabilityModel, as: "availabilities" },
       ],
     });

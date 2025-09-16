@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { ProfessionalModel } from "./Professional";
 
 /*
 CREATE TABLE gallery (
@@ -15,7 +14,7 @@ CREATE TABLE gallery (
 );
 */
 
-export interface IGallery {
+export interface IProfessionalGallery {
   id?: number;
   professional_id: number;
   url: string;
@@ -23,9 +22,9 @@ export interface IGallery {
   active?: boolean;
 }
 
-type GalleryCreationAttributes = Optional<IGallery, "id" | "description" | "active">;
+type ProfessionalGalleryCreationAttributes = Optional<IProfessionalGallery, "id" | "description" | "active">;
 
-export class GalleryModel extends Model<IGallery, GalleryCreationAttributes> {
+export class ProfessionalGalleryModel extends Model<IProfessionalGallery, ProfessionalGalleryCreationAttributes> {
   public id!: number;
   public professional_id!: number;
   public url!: string;
@@ -36,7 +35,7 @@ export class GalleryModel extends Model<IGallery, GalleryCreationAttributes> {
   public readonly updatedAt!: Date;
 }
 
-GalleryModel.init(
+ProfessionalGalleryModel.init(
   {
     id: {
       type: DataTypes.INTEGER,

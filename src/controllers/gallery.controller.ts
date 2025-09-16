@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { GalleryModel } from "../models/Gallery";
+import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
 
 export class GalleryController {
   async create(req: Request, res: Response) {
@@ -10,7 +10,7 @@ export class GalleryController {
         return res.status(400).json({ error: "Campos 'professional_id' e 'url' são obrigatórios." });
       }
 
-      const newImage = await GalleryModel.create({ professional_id, url });
+      const newImage = await ProfessionalGalleryModel.create({ professional_id, url });
 
       return res.status(201).json(newImage);
     } catch (error) {
@@ -21,7 +21,7 @@ export class GalleryController {
 
   async index(req: Request, res: Response) {
     try {
-      const images = await GalleryModel.findAll();
+      const images = await ProfessionalGalleryModel.findAll();
       return res.json(images);
     } catch (error) {
       console.error("Erro ao listar imagens:", error);
@@ -32,7 +32,7 @@ export class GalleryController {
   async show(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const image = await GalleryModel.findByPk(id);
+      const image = await ProfessionalGalleryModel.findByPk(id);
       if (!image) return res.status(404).json({ error: "Imagem não encontrada" });
       return res.json(image);
     } catch (error) {
@@ -45,7 +45,7 @@ export class GalleryController {
     try {
       const { id } = req.params;
       const { image_url } = req.body;
-      const image = await GalleryModel.findByPk(id);
+      const image = await ProfessionalGalleryModel.findByPk(id);
       if (!image) return res.status(404).json({ error: "Imagem não encontrada" });
 
       await image.update({ url: image_url });
@@ -59,7 +59,7 @@ export class GalleryController {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const image = await GalleryModel.findByPk(id);
+      const image = await ProfessionalGalleryModel.findByPk(id);
       if (!image) return res.status(404).json({ error: "Imagem não encontrada" });
 
       await image.destroy();
