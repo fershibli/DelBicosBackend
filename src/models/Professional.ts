@@ -1,33 +1,17 @@
-import {
-  DataTypes,
-  Model,
-  Optional,
-  Association,
-  HasManyGetAssociationsMixin,
-  BelongsToGetAssociationMixin,
-  BelongsToManyGetAssociationsMixin,
-} from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { UserModel } from "./User";
-import { AddressModel } from "./Address";
-import { ServiceModel } from "./Service";
-import { AmenitiesModel } from "./Amenities";
-import { GalleryModel } from "./Gallery";
-import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
 
 /*
 CREATE TABLE professional (
-  id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-  user_id INT NOT NULL,
-  main_address_id INT DEFAULT NULL,
-  cpf VARCHAR(14) NOT NULL UNIQUE,
-  cnpj VARCHAR(18) UNIQUE,
-  description TEXT,
-  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_professional_user FOREIGN KEY (user_id) REFERENCES users(id),
-  CONSTRAINT fk_professional_address FOREIGN KEY (main_address_id) REFERENCES addresses(id)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    main_address_id INT,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    cnpj VARCHAR(18) UNIQUE,
+    description TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (main_address_id) REFERENCES address(id),
+)
 */
 
 export interface IProfessional {
@@ -44,7 +28,10 @@ type ProfessionalCreationalAttributes = Optional<
   "id" | "main_address_id" | "cnpj" | "description"
 >;
 
-export class ProfessionalModel extends Model<IProfessional, ProfessionalCreationalAttributes> {
+export class ProfessionalModel extends Model<
+  IProfessional,
+  ProfessionalCreationalAttributes
+> {
   public id!: number;
   public user_id!: number;
   public main_address_id?: number;
@@ -52,64 +39,9 @@ export class ProfessionalModel extends Model<IProfessional, ProfessionalCreation
   public cnpj?: string;
   public description?: string;
 
+  // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-
-  public User?: UserModel;
-  public address?: AddressModel;
-  public services?: ServiceModel[];
-  public amenities?: AmenitiesModel[];
-  public gallery?: GalleryModel[];
-  public availabilities?: ProfessionalAvailabilityModel[];
-
-  public getUser!: BelongsToGetAssociationMixin<UserModel>;
-  public getAddress!: BelongsToGetAssociationMixin<AddressModel>;
-  public getServices!: HasManyGetAssociationsMixin<ServiceModel>;
-  public getAmenities!: BelongsToManyGetAssociationsMixin<AmenitiesModel>;
-  public getGallery!: HasManyGetAssociationsMixin<GalleryModel>;
-
-  public static associations: {
-    User: Association<ProfessionalModel, UserModel>;
-    address: Association<ProfessionalModel, AddressModel>;
-    services: Association<ProfessionalModel, ServiceModel>;
-    amenities: Association<ProfessionalModel, AmenitiesModel>;
-    gallery: Association<ProfessionalModel, GalleryModel>;
-    availabilities: Association<ProfessionalModel, ProfessionalAvailabilityModel>;
-  };
-
-  static associate() {
-    ProfessionalModel.belongsTo(UserModel, {
-      foreignKey: "user_id",
-      as: "User",
-    });
-
-    ProfessionalModel.belongsTo(AddressModel, {
-      foreignKey: "main_address_id",
-      as: "address",
-    });
-
-    ProfessionalModel.hasMany(ServiceModel, {
-      foreignKey: "professional_id",
-      as: "services",
-    });
-
-    ProfessionalModel.hasMany(GalleryModel, {
-      foreignKey: "professional_id",
-      as: "gallery",
-    });
-
-    ProfessionalModel.belongsToMany(AmenitiesModel, {
-      through: "professional_amenities",
-      as: "amenities",
-      foreignKey: "professional_id",
-      otherKey: "amenity_id",
-    });
-
-    ProfessionalModel.hasMany(ProfessionalAvailabilityModel, {
-      foreignKey: "professional_id",
-      as: "availabilities",
-    });
-  }
 }
 
 ProfessionalModel.init(
@@ -123,10 +55,18 @@ ProfessionalModel.init(
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
     },
     main_address_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      references: {
+        model: "address",
+        key: "id",
+      },
     },
     cpf: {
       type: DataTypes.STRING(14),
@@ -147,8 +87,6 @@ ProfessionalModel.init(
     sequelize,
     tableName: "professional",
     timestamps: true,
-    modelName: "Professional",
-    freezeTableName: true,
   }
 );
 
