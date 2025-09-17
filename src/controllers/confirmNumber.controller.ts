@@ -1,7 +1,7 @@
-import { CustomRequest, CustomResponse } from '../api/index';
-import User from '../models/User';
+import { Request, Response } from 'express';
+import { UserModel } from '../models/User';
 
-export const confirmNumber = async (req: CustomRequest<{ phoneNumber: string }>, res: CustomResponse) => {
+export const confirmNumber = async (req: Request, res: Response) => {
   const { phoneNumber } = req.body;
 
   if (!phoneNumber || phoneNumber.length < 10) {
@@ -9,7 +9,7 @@ export const confirmNumber = async (req: CustomRequest<{ phoneNumber: string }>,
   }
 
   try {
-    const user = await User.findOne({ phoneNumber });
+    const user = await UserModel.findOne({ where: { phone: phoneNumber } });
 
     if (user) {
       return res.status(200).json({ exists: true, message: 'Usuário existente, envie o código SMS' });
