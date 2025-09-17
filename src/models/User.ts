@@ -9,7 +9,7 @@ CREATE TABLE users (
     phone VARCHAR(13) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    avatarURI VARCHAR(255),
+    avatarUri VARCHAR(255),
     INDEX active_index_users (active)
 );
 */
