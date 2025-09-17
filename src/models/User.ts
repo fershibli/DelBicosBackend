@@ -21,7 +21,7 @@ export interface IUser {
   phone: string;
   password: string;
   active?: boolean;
-  avatarUri?: string;
+  avatarUri?: string | null;
 }
 
 type UserCreationalAttributes = Optional<IUser, "id" | "active">;
@@ -33,7 +33,7 @@ export class UserModel extends Model<IUser, UserCreationalAttributes> {
   public phone!: string;
   public password!: string;
   public active?: boolean;
-  public avatarUri?: string;
+  public avatarUri?: string | null;
 
   // Timestamps
   public readonly createdAt!: Date;
