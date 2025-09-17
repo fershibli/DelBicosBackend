@@ -9,24 +9,24 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     const { base64Image } = req.body;
 
     if (!base64Image) {
-      return res.status(400).json({ error: "Base64 image is required" });
+      return res.status(400).json({ error: "Imagem em base64 é obrigatória" });
     }
 
     const base64Regex = /^data:image\/(png|jpg|jpeg);base64,/;
     if (!base64Regex.test(base64Image)) {
       return res.status(400).json({ 
-        error: "Invalid base64 format. Expected format: data:image/(png|jpg|jpeg);base64,..." 
+        error: "Formato base64 inválido. Formato esperado: data:image/(png|jpg|jpeg);base64,..." 
       });
     }
 
     const user = await UserModel.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
     const matches = base64Image.match(/^data:image\/(png|jpg|jpeg);base64,/);
     if (!matches || matches.length < 2) {
-      return res.status(400).json({ error: "Invalid base64 format" });
+      return res.status(400).json({ error: "Formato base64 inválido" });
     }
 
     const imageType = matches[1];
@@ -47,12 +47,12 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     await user.update({ avatarUri: relativePath });
 
     res.status(200).json({
-      message: "Avatar uploaded successfully",
+      message: "Avatar enviado com sucesso",
       avatarUri: relativePath
     });
 
   } catch (error: any) {
-    console.error("Error uploading avatar:", error);
+    console.error("Erro ao enviar avatar:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -66,11 +66,11 @@ export const getAvatar = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
     if (!user.avatarUri) {
-      return res.status(404).json({ error: "Avatar not found for this user" });
+      return res.status(404).json({ error: "Avatar não encontrado para este usuário" });
     }
 
     res.status(200).json({
@@ -79,7 +79,7 @@ export const getAvatar = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    console.error("Error getting avatar:", error);
+    console.error("Erro ao buscar avatar:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -90,11 +90,11 @@ export const deleteAvatar = async (req: Request, res: Response) => {
 
     const user = await UserModel.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
     if (!user.avatarUri) {
-      return res.status(404).json({ error: "Avatar not found for this user" });
+      return res.status(404).json({ error: "Avatar não encontrado para este usuário" });
     }
 
     const filePath = path.join(__dirname, "..", "..", user.avatarUri);
@@ -112,10 +112,10 @@ export const deleteAvatar = async (req: Request, res: Response) => {
 
     await user.update({ avatarUri: null } as any);
 
-    res.status(200).json({ message: "Avatar deleted successfully" });
+    res.status(200).json({ message: "Avatar deletado com sucesso" });
 
   } catch (error: any) {
-    console.error("Error deleting avatar:", error);
+    console.error("Erro ao deletar avatar:", error);
     res.status(500).json({ error: error.message });
   }
 };
