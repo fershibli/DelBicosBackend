@@ -1,13 +1,18 @@
 import { Router } from "express";
-import { GalleryController } from "../controllers/gallery.controller";
+import { 
+  createProfessionalGalleryImage, 
+  getAllProfessionalGalleryImages, 
+  getByIdProfessionalGalleryImage, 
+  updateProfessionalGalleryImage, 
+  deleteProfessionalGalleryImage 
+} from "../controllers/professionalGallery.controller";
 
 const router = Router();
-const controller = new GalleryController();
 
-router.post("/", controller.create);
-router.get("/", controller.index);
-router.get("/:id", controller.show);
-router.put("/:id", controller.update);
-router.delete("/:id", controller.delete);
+router.post("/", createProfessionalGalleryImage);
+router.get("/", getAllProfessionalGalleryImages);
+router.get("/:id", getByIdProfessionalGalleryImage);
+router.put("/:id", updateProfessionalGalleryImage);
+router.delete("/:id", deleteProfessionalGalleryImage);
 
 export default router;
