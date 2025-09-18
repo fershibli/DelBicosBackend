@@ -6,6 +6,8 @@ import { ServiceModel } from "./Service";
 import { AmenitiesModel } from "./Amenities";
 import { ProfessionalGalleryModel } from "./ProfessionalGallery";
 import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
+import { AppointmentModel } from "./Appointment";
+import { ProfessionalAvailabilityLockModel } from "./ProfessionalAvailabilityLock";
 
 /*
 CREATE TABLE professional (
@@ -97,8 +99,9 @@ ProfessionalModel.init(
 );
 
 
-ProfessionalModel.belongsTo(UserModel, { foreignKey: "user_id", as: "User" });
-ProfessionalModel.belongsTo(AddressModel, { foreignKey: "main_address_id", as: "address" });
+ProfessionalModel.belongsTo(UserModel, { foreignKey: "user_id", as: "user" });
+ProfessionalModel.belongsTo(AddressModel, { foreignKey: "main_address_id", as: "main_address" });
+ProfessionalModel.hasMany(AddressModel, { foreignKey: "professional_id", as: "addresses" });
 ProfessionalModel.hasMany(ServiceModel, { foreignKey: "professional_id", as: "services" });
 ProfessionalModel.belongsToMany(AmenitiesModel, {
   through: "professional_amenities",
@@ -108,3 +111,11 @@ ProfessionalModel.belongsToMany(AmenitiesModel, {
 });
 ProfessionalModel.hasMany(ProfessionalGalleryModel, { foreignKey: "professional_id", as: "gallery" });
 ProfessionalModel.hasMany(ProfessionalAvailabilityModel, { foreignKey: "professional_id", as: "availabilities" });
+ProfessionalModel.hasMany(ProfessionalAvailabilityLockModel, { 
+  foreignKey: "professional_id", 
+  as: "availability_locks" 
+});
+ProfessionalModel.hasMany(AppointmentModel, { 
+  foreignKey: "professional_id", 
+  as: "appointments" 
+});
