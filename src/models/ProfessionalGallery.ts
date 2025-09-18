@@ -62,7 +62,7 @@ ProfessionalGalleryModel.init(
   },
   {
     sequelize,
-    tableName: "gallery",
+    tableName: "professional_gallery",
     timestamps: true,
   }
 );
