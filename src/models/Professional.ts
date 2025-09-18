@@ -1,5 +1,11 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { UserModel } from "./User";
+import { AddressModel } from "./Address";
+import { ServiceModel } from "./Service";
+import { AmenitiesModel } from "./Amenities";
+import { ProfessionalGalleryModel } from "./ProfessionalGallery";
+import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
 
 /*
 CREATE TABLE professional (
@@ -90,3 +96,15 @@ ProfessionalModel.init(
   }
 );
 
+
+ProfessionalModel.belongsTo(UserModel, { foreignKey: "user_id", as: "User" });
+ProfessionalModel.belongsTo(AddressModel, { foreignKey: "main_address_id", as: "address" });
+ProfessionalModel.hasMany(ServiceModel, { foreignKey: "professional_id", as: "services" });
+ProfessionalModel.belongsToMany(AmenitiesModel, {
+  through: "professional_amenities",
+  foreignKey: "professional_id",
+  otherKey: "amenity_id",
+  as: "amenities",
+});
+ProfessionalModel.hasMany(ProfessionalGalleryModel, { foreignKey: "professional_id", as: "gallery" });
+ProfessionalModel.hasMany(ProfessionalAvailabilityModel, { foreignKey: "professional_id", as: "availabilities" });

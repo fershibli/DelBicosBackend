@@ -8,17 +8,6 @@ import { AmenitiesModel } from "../models/Amenities";
 import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
-ProfessionalModel.belongsTo(UserModel, { foreignKey: "user_id", as: "User" });
-ProfessionalModel.belongsTo(AddressModel, { foreignKey: "main_address_id", as: "address" });
-ProfessionalModel.hasMany(ServiceModel, { foreignKey: "professional_id", as: "services" });
-ProfessionalModel.belongsToMany(AmenitiesModel, {
-  through: "professional_amenities",
-  foreignKey: "professional_id",
-  otherKey: "amenity_id",
-  as: "amenities",
-});
-ProfessionalModel.hasMany(ProfessionalGalleryModel, { foreignKey: "professional_id", as: "gallery" });
-ProfessionalModel.hasMany(ProfessionalAvailabilityModel, { foreignKey: "professional_id", as: "availabilities" });
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
