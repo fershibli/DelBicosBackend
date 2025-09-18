@@ -1,12 +1,6 @@
 import { Request, Response } from "express";
 import { Op, literal } from "sequelize";
-import { UserModel } from "../models/User";
-import { AddressModel } from "../models/Address";
 import { ProfessionalModel } from "../models/Professional";
-import { ServiceModel } from "../models/Service";
-import { AmenitiesModel } from "../models/Amenities";
-import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
-import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
 
 export const getProfessionals = async (req: Request, res: Response) => {
@@ -16,28 +10,36 @@ export const getProfessionals = async (req: Request, res: Response) => {
     const where: any = {};
     if (termo) {
       where[Op.or] = [
-        { '$User.name$': { [Op.like]: `%${termo}%` } },
-        { '$User.email$': { [Op.like]: `%${termo}%` } },
+        { '$user.name$': { [Op.like]: `%${termo}%` } },
+        { '$user.email$': { [Op.like]: `%${termo}%` } },
         { cpf: { [Op.like]: `%${termo}%` } },
       ];
     }
 
     const include = [
-      { model: UserModel, as: "User", attributes: ["name", "email"], required: false },
-      { model: AddressModel, as: "address", attributes: ["lat", "lng", "city"], required: false },
-      { model: ServiceModel, as: "services" },
-      { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-      { model: ProfessionalGalleryModel, as: "gallery" },
-      { model: ProfessionalAvailabilityModel, as: "availabilities" },
+      { 
+        association: "user", 
+        attributes: ["name", "email"], 
+        required: false 
+      },
+      { 
+        association: "main_address", 
+        attributes: ["lat", "lng", "city"], 
+        required: false 
+      },
+      { association: "services" },
+      { association: "amenities", through: { attributes: [] } },
+      { association: "gallery" },
+      { association: "availabilities" },
     ];
 
     const order: any[] = [];
     if (lat && lng) {
       const distance = literal(`
         6371 * acos(
-          cos(radians(${lat})) * cos(radians(address.lat)) *
-          cos(radians(address.lng) - radians(${lng})) +
-          sin(radians(${lat})) * sin(radians(address.lat))
+          cos(radians(${lat})) * cos(radians(main_address.lat)) *
+          cos(radians(main_address.lng) - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians(main_address.lat))
         )
       `);
       order.push([distance, "ASC"]);
@@ -62,14 +64,13 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
       include: [
-        { model: UserModel, as: "User" },
-        { model: AddressModel, as: "address" },
-        { model: ServiceModel, as: "services" },
-        { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-        { model: ProfessionalGalleryModel, as: "gallery" },
+        { association: "user" },
+        { association: "main_address" },
+        { association: "services" },
+        { association: "amenities", through: { attributes: [] } },
+        { association: "gallery" },
         {
-          model: ProfessionalAvailabilityModel,
-          as: "availabilities",
+          association: "availabilities",
           where: { is_available: true },
           required: false,
         },
@@ -108,12 +109,12 @@ export const updateProfessional = async (req: Request, res: Response) => {
 
     const updatedProfessional = await ProfessionalModel.findByPk(id, {
       include: [
-        { model: UserModel, as: "User" },
-        { model: AddressModel, as: "address" },
-        { model: ServiceModel, as: "services" },
-        { model: AmenitiesModel, as: "amenities", through: { attributes: [] } },
-        { model: ProfessionalGalleryModel, as: "gallery" },
-        { model: ProfessionalAvailabilityModel, as: "availabilities" },
+        { association: "user" },
+        { association: "main_address" },
+        { association: "services" },
+        { association: "amenities", through: { attributes: [] } },
+        { association: "gallery" },
+        { association: "availabilities" },
       ],
     });
 
