@@ -187,7 +187,7 @@ CREATE TABLE professional_availability_lock (
     FOREIGN KEY (professional_id) REFERENCES professional(id)
 );
 
-CREATE TABLE gallery (
+CREATE TABLE professional_gallery (
     id INT AUTO_INCREMENT PRIMARY KEY,
     professional_id INT NOT NULL,
     url VARCHAR(255) NOT NULL,
@@ -215,12 +215,12 @@ CREATE TABLE appointment (
 
 CREATE TABLE admin_service_order (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    admin_id INT NOT NULL,
     appointment_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description VARCHAR(1000) NOT NULL,
     status ENUM('pending', 'in_progress', 'completed', 'canceled') DEFAULT 'pending',
-    FOREIGN KEY (user_id) REFERENCES admin(id),
+    FOREIGN KEY (admin_id) REFERENCES admin(id),
     FOREIGN KEY (appointment_id) REFERENCES appointment(id),
     INDEX idx_status_check (status, INDEX idx_appointment_check (appointment_id, status)
 );
