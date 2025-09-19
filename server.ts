@@ -16,6 +16,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
+import bodyParser from 'body-parser';
 
 const result = dotenv.config();
 if (result.error) {
@@ -27,6 +28,13 @@ console.log("Ambiente:", process.env.ENVIRONMENT);
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
+// Aumentar o limite para 10MB (ou mais se necessário)
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
+// Ou se estiver usando express.json() diretamente:
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Middleware
 app.use(cors());
