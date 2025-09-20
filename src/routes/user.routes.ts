@@ -4,6 +4,7 @@ import { verifyCode } from "../controllers/confirmCode.controller";
 import { createUser, deleteUser, getAllUsers, getUserById, logInUser, signUpUser, updateUser } from "../controllers/user.controller";
 import { deleteAvatar, getAvatar, uploadAvatar } from "../controllers/avatar.controller";
 
+
 const router = Router();
 
 /**
