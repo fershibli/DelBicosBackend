@@ -179,7 +179,7 @@ const router = express.Router();
  *       500:
  *         description: Erro interno do servidor
  */
-router.post("/addresses", createAddress);
+router.post("/", createAddress);
 
 /**
  * @swagger
@@ -199,7 +199,7 @@ router.post("/addresses", createAddress);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/addresses", getAllAddresses);
+router.get("/", getAllAddresses);
 
 /**
  * @swagger
@@ -226,7 +226,7 @@ router.get("/addresses", getAllAddresses);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/addresses/:id", getAddressById);
+router.get("/:id", getAddressById);
 
 /**
  * @swagger
@@ -261,7 +261,7 @@ router.get("/addresses/:id", getAddressById);
  *       500:
  *         description: Erro interno do servidor
  */
-router.put("/addresses/:id", updateAddress);
+router.put("/:id", updateAddress);
 
 /**
  * @swagger
@@ -292,6 +292,6 @@ router.put("/addresses/:id", updateAddress);
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete("/addresses/:id", deleteAddress);
+router.delete("/:id", deleteAddress);
 
 export default router;
