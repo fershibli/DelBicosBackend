@@ -41,7 +41,7 @@ export const signUpUser = async (
     });
 
     const secretKey = process.env.SECRET_KEY || "secret";
-    const expiresIn = process.env.EXPIRES_IN || "1h"; // Default to 1 hour if not set
+    const expiresIn = process.env.EXPIRES_IN || "1h";
     const options: jwt.SignOptions = {
       expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
     };
@@ -75,7 +75,7 @@ export const signUpUser = async (
       }
 
       res.status(200).json({
-        message: "Registration successful. Login-in user.",
+        message: "Registro realizado com sucesso. Usuário logado.",
         token: token,
         user: {
           id: user.id,
@@ -89,10 +89,10 @@ export const signUpUser = async (
       });
     });
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Erro ao criar usuário:", error);
     res.status(500).json({
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Erro interno do servidor",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 };
@@ -102,27 +102,27 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await UserModel.findOne({ where: { email } });
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "Usuário não encontrado" });
       return;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      res.status(401).json({ message: "Invalid password" });
+      res.status(401).json({ message: "Senha inválida" });
       return;
     }
 
     const client = await ClientModel.findOne({ where: { user_id: user.id } });
 
     if (!client) {
-      res.status(404).json({ message: "Client not found" });
+      res.status(404).json({ message: "Cliente não encontrado" });
       return;
     }
 
     const address = await AddressModel.findByPk(client.main_address_id);
 
     const secretKey = process.env.SECRET_KEY || "secret";
-    const expiresIn = process.env.EXPIRES_IN || "1h"; // Default to 1 hour if not set
+    const expiresIn = process.env.EXPIRES_IN || "1h";
     const options: jwt.SignOptions = {
       expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
     };
@@ -156,7 +156,7 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       }
 
       res.status(200).json({
-        message: "Login successful",
+        message: "Login realizado com sucesso",
         token: token,
         user: {
           id: user.id,
@@ -170,10 +170,10 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       });
     });
   } catch (error) {
-    console.error("Error logging in user:", error);
+    console.error("Erro ao fazer login:", error);
     res.status(500).json({
-      message: "Internal server error",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Erro interno do servidor",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 };
@@ -194,7 +194,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   const user = await UserModel.findByPk(req.params.id);
-  user ? res.json(user) : res.status(404).json({ error: "User not found" });
+  user ? res.json(user) : res.status(404).json({ error: "Usuário não encontrado" });
 };
 
 export const updateUser = async (req: Request, res: Response) => {
@@ -203,13 +203,13 @@ export const updateUser = async (req: Request, res: Response) => {
     await user.update(req.body);
     res.json(user);
   } else {
-    res.status(404).json({ error: "User not found" });
+    res.status(404).json({ error: "Usuário não encontrado" });
   }
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
   const deleted = await UserModel.destroy({ where: { id: req.params.id } });
   deleted
-    ? res.json({ message: "User deleted" })
-    : res.status(404).json({ error: "User not found" });
+    ? res.json({ message: "Usuário deletado com sucesso" })
+    : res.status(404).json({ error: "Usuário não encontrado" });
 };

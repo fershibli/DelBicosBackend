@@ -1,15 +1,21 @@
 import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
 import { verifyCode } from "../controllers/confirmCode.controller";
-import { logInUser, signUpUser } from "../controllers/user.controller";
+import { createUser, deleteUser, getAllUsers, getUserById, logInUser, signUpUser, updateUser } from "../controllers/user.controller";
+import { deleteAvatar, getAvatar, uploadAvatar } from "../controllers/avatar.controller";
+
 
 const router = Router();
 
 /**
  * @swagger
  * tags:
- *   name: Authentication
- *   description: Autenticação e registro de usuários
+ *   - name: Authentication
+ *     description: Autenticação e registro de usuários
+ *   - name: Users
+ *     description: Gerenciamento de usuários
+ *   - name: Avatar
+ *     description: Upload e gerenciamento de avatares
  */
 
 /**
@@ -81,63 +87,282 @@ const router = Router();
  *           value:
  *             exists: false
  *
- *     RegisterRequest:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID do usuário
+ *         name:
+ *           type: string
+ *           description: Nome do usuário
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email do usuário
+ *         phone:
+ *           type: string
+ *           description: Telefone do usuário
+ *         active:
+ *           type: boolean
+ *           description: Status do usuário
+ *         avatarUri:
+ *           type: string
+ *           description: Caminho do avatar do usuário
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *       example:
+ *         id: 1
+ *         name: "João Silva"
+ *         email: "joao@email.com"
+ *         phone: "11999999999"
+ *         active: true
+ *         avatarUri: "avatarBucket/1/avatar.png"
+ *         createdAt: "2023-01-01T00:00:00.000Z"
+ *         updatedAt: "2023-01-01T00:00:00.000Z"
+ *
+ *     UserCreate:
  *       type: object
  *       required:
- *         - phoneNumber
- *         - firstName
- *         - lastName
- *         - birthDate
- *         - gender
- *         - location
+ *         - name
+ *         - email
+ *         - phone
+ *         - password
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 2
+ *         email:
+ *           type: string
+ *           format: email
+ *         phone:
+ *           type: string
+ *           minLength: 10
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *         active:
+ *           type: boolean
+ *       example:
+ *         name: "João Silva"
+ *         email: "joao@email.com"
+ *         phone: "11999999999"
+ *         password: "senha123"
+ *         active: true
+ *
+ *     UserUpdate:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 2
+ *         email:
+ *           type: string
+ *           format: email
+ *         phone:
+ *           type: string
+ *           minLength: 10
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *         active:
+ *           type: boolean
+ *         avatarUri:
+ *           type: string
+ *       example:
+ *         name: "João Silva Santos"
+ *         email: "joao.novo@email.com"
+ *
+ *     SignUpRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - phone
+ *         - password
+ *         - cpf
+ *         - address
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 2
+ *         email:
+ *           type: string
+ *           format: email
+ *         phone:
+ *           type: string
+ *           minLength: 10
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *         cpf:
+ *           type: string
+ *           minLength: 11
+ *           maxLength: 11
+ *         address:
+ *           type: object
+ *           required:
+ *             - lat
+ *             - lng
+ *             - city
+ *             - state
+ *             - country_iso
+ *           properties:
+ *             lat:
+ *               type: number
+ *               format: float
+ *             lng:
+ *               type: number
+ *               format: float
+ *             city:
+ *               type: string
+ *             state:
+ *               type: string
+ *             country_iso:
+ *               type: string
+ *               minLength: 2
+ *               maxLength: 2
+ *       example:
+ *         name: "João Silva"
+ *         email: "joao@email.com"
+ *         phone: "11999999999"
+ *         password: "senha123"
+ *         cpf: "12345678901"
+ *         address:
+ *           lat: -23.5505
+ *           lng: -46.6333
+ *           city: "São Paulo"
+ *           state: "SP"
+ *           country_iso: "BR"
+ *
+ *     LoginRequest:
+ *       type: object
+ *       required:
  *         - email
  *         - password
  *       properties:
- *         phoneNumber:
- *           type: string
- *           minLength: 10
- *         firstName:
- *           type: string
- *           minLength: 2
- *         lastName:
- *           type: string
- *           minLength: 2
- *         birthDate:
- *           type: string
- *           format: date
- *         gender:
- *           type: string
- *           enum: [male, female, other]
- *         location:
- *           type: string
  *         email:
  *           type: string
  *           format: email
  *         password:
  *           type: string
- *           minLength: 6
  *       example:
- *         phoneNumber: "11999999999"
- *         firstName: "João"
- *         lastName: "Silva"
- *         birthDate: "1990-01-01"
- *         gender: "male"
- *         location: "São Paulo"
- *         email: "joao@example.com"
+ *         email: "joao@email.com"
  *         password: "senha123"
  *
- *     RegisterResponse:
+ *     AuthResponse:
  *       type: object
  *       properties:
  *         message:
  *           type: string
+ *         token:
+ *           type: string
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             client_id:
+ *               type: integer
+ *             name:
+ *               type: string
+ *             email:
+ *               type: string
+ *             phone:
+ *               type: string
+ *             cpf:
+ *               type: string
+ *             address:
+ *               type: object
+ *               nullable: true
  *       example:
- *         message: "Usuário registrado com sucesso"
+ *         message: "Login realizado com sucesso"
+ *         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *         user:
+ *           id: 1
+ *           client_id: 1
+ *           name: "João Silva"
+ *           email: "joao@email.com"
+ *           phone: "11999999999"
+ *           cpf: "12345678901"
+ *           address:
+ *             lat: -23.5505
+ *             lng: -46.6333
+ *             city: "São Paulo"
+ *             state: "SP"
+ *             country_iso: "BR"
+ *
+ *     AvatarUploadRequest:
+ *       type: object
+ *       required:
+ *         - base64Image
+ *       properties:
+ *         base64Image:
+ *           type: string
+ *           description: Imagem em formato base64 com prefixo data:image/(png|jpg|jpeg);base64,
+ *       example:
+ *         base64Image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+ *
+ *     AvatarResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *         avatarUri:
+ *           type: string
+ *       example:
+ *         message: "Avatar enviado com sucesso"
+ *         avatarUri: "avatarBucket/1/avatar.png"
+ *
+ *     AvatarInfo:
+ *       type: object
+ *       properties:
+ *         userId:
+ *           type: integer
+ *         avatarUri:
+ *           type: string
+ *       example:
+ *         userId: 1
+ *         avatarUri: "avatarBucket/1/avatar.png"
+ *
+ *   responses:
+ *     NotFound:
+ *       description: Recurso não encontrado
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               error:
+ *                 type: string
+ *             example:
+ *               error: "Usuário não encontrado"
+ *
+ *     ServerError:
+ *       description: Erro interno do servidor
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               error:
+ *                 type: string
+ *             example:
+ *               error: "Erro interno do servidor"
+ *
+ *   parameters:
+ *     userIdParam:
+ *       in: path
+ *       name: id
+ *       required: true
+ *       schema:
+ *         type: integer
+ *       description: ID do usuário
  */
-
-router.post("/register", signUpUser);
-
-router.post("/login", logInUser);
 
 /**
  * @swagger
@@ -163,12 +388,11 @@ router.post("/login", logInUser);
  *       500:
  *         description: Erro no servidor
  */
-
 router.post("/confirm-number", confirmNumber);
 
 /**
  * @swagger
- * /auth/verify-code:
+ * /user/verify-code:
  *   post:
  *     summary: Verifica um código SMS e retorna informações do usuário se existir
  *     tags: [Authentication]
@@ -191,5 +415,261 @@ router.post("/confirm-number", confirmNumber);
  *         description: Erro no servidor
  */
 router.post("/verify-code", verifyCode);
+
+/**
+ * @swagger
+ * /user/register:
+ *   post:
+ *     summary: Registra um novo usuário com endereço e cliente
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SignUpRequest'
+ *     responses:
+ *       200:
+ *         description: Usuário registrado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Dados inválidos
+ *       500:
+ *         description: Erro no servidor
+ */
+router.post("/register", signUpUser);
+
+/**
+ * @swagger
+ * /user/login:
+ *   post:
+ *     summary: Realiza login do usuário
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login realizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: Credenciais inválidas
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.post("/login", logInUser);
+
+/**
+ * @swagger
+ * /user/{id}/avatar:
+ *   post:
+ *     summary: Faz upload de um avatar para o usuário
+ *     tags: [Avatar]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AvatarUploadRequest'
+ *     responses:
+ *       200:
+ *         description: Avatar enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AvatarResponse'
+ *       400:
+ *         description: Formato base64 inválido
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.post("/:id/avatar", uploadAvatar);
+
+/**
+ * @swagger
+ * /user/{id}/avatar:
+ *   get:
+ *     summary: Obtém informações do avatar do usuário
+ *     tags: [Avatar]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     responses:
+ *       200:
+ *         description: Informações do avatar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AvatarInfo'
+ *       404:
+ *         description: Usuário ou avatar não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.get("/:id/avatar", getAvatar);
+
+/**
+ * @swagger
+ * /user/{id}/avatar:
+ *   delete:
+ *     summary: Remove o avatar do usuário
+ *     tags: [Avatar]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     responses:
+ *       200:
+ *         description: Avatar deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *               example:
+ *                 message: "Avatar deletado com sucesso"
+ *       404:
+ *         description: Usuário ou avatar não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.delete("/:id/avatar", deleteAvatar);
+
+/**
+ * @swagger
+ * /user:
+ *   post:
+ *     summary: Cria um novo usuário (sem cliente/endereço)
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserCreate'
+ *     responses:
+ *       201:
+ *         description: Usuário criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Dados inválidos
+ *       500:
+ *         description: Erro no servidor
+ */
+router.post("/", createUser);
+
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     summary: Lista todos os usuários
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Lista de usuários
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Erro no servidor
+ */
+router.get("/", getAllUsers);
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   get:
+ *     summary: Obtém um usuário pelo ID
+ *     tags: [Users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     responses:
+ *       200:
+ *         description: Usuário encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.get("/:id", getUserById);
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   put:
+ *     summary: Atualiza um usuário
+ *     tags: [Users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserUpdate'
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.put("/:id", updateUser);
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   delete:
+ *     summary: Remove um usuário
+ *     tags: [Users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/userIdParam'
+ *     responses:
+ *       200:
+ *         description: Usuário deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *               example:
+ *                 message: "Usuário deletado com sucesso"
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.delete("/:id", deleteUser);
 
 export default router;
