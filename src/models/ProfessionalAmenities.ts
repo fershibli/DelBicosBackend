@@ -11,7 +11,10 @@ export interface IProfessionalAmenity {
 
 type CreationAttrs = Optional<IProfessionalAmenity, "id">;
 
-export class ProfessionalAmenityModel extends Model<IProfessionalAmenity, CreationAttrs> {
+export class ProfessionalAmenityModel extends Model<
+  IProfessionalAmenity,
+  CreationAttrs
+> {
   public id!: number;
   public professional_id!: number;
   public amenity_id!: number;
@@ -41,12 +44,12 @@ ProfessionalAmenityModel.init(
 );
 
 // ProfessionalAmenities relationships (junction table)
-  ProfessionalAmenityModel.belongsTo(ProfessionalModel, { 
-    foreignKey: "professional_id", 
-    as: "Professional" 
-  });
-  
-  ProfessionalAmenityModel.belongsTo(AmenitiesModel, { 
-    foreignKey: "amenity_id", 
-    as: "Amenity" 
-  });
+ProfessionalAmenityModel.belongsTo(ProfessionalModel, {
+  foreignKey: "professional_id",
+  as: "Professional",
+});
+
+ProfessionalAmenityModel.belongsTo(AmenitiesModel, {
+  foreignKey: "amenity_id",
+  as: "Amenity",
+});
