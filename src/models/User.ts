@@ -13,8 +13,8 @@ CREATE TABLE users (
     phone VARCHAR(13) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    avatarImg VARCHAR(255),
-    bannerImg VARCHAR(255),
+    avatarUri VARCHAR(255),
+    bannerUri VARCHAR(255),
     INDEX active_index_users (active)
 );
 */
@@ -26,13 +26,13 @@ export interface IUser {
   phone: string;
   password: string;
   active?: boolean;
-  avatarImg?: string;
-  bannerImg?: string;
+  avatarUri?: string;
+  bannerUri?: string;
 }
 
 type UserCreationalAttributes = Optional<
   IUser,
-  "id" | "active" | "avatarImg" | "bannerImg"
+  "id" | "active" | "avatarUri" | "bannerUri"
 >;
 
 export class UserModel extends Model<IUser, UserCreationalAttributes> {
@@ -42,8 +42,8 @@ export class UserModel extends Model<IUser, UserCreationalAttributes> {
   public phone!: string;
   public password!: string;
   public active?: boolean;
-  public avatarImg?: string;
-  public bannerImg?: string;
+  public avatarUri?: string;
+  public bannerUri?: string;
 
   // Timestamps
   public readonly createdAt!: Date;
@@ -80,11 +80,11 @@ UserModel.init(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
-    avatarImg: {
+    avatarUri: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    bannerImg: {
+    bannerUri: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },

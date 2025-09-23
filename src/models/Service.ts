@@ -11,7 +11,7 @@ CREATE TABLE service (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     duration INT NOT NULL,
-    bannerImg VARCHAR(255),
+    bannerUri VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
     subcategory_id INT NOT NULL,
     professional_id INT NOT NULL,
@@ -27,7 +27,7 @@ export interface IService {
   description?: string;
   price: number;
   duration: number;
-  bannerImg?: string;
+  bannerUri?: string;
   active?: boolean;
   subcategory_id: number;
   professional_id: number;
@@ -35,7 +35,7 @@ export interface IService {
 
 type ServiceCreationalAttributes = Optional<
   IService,
-  "id" | "description" | "bannerImg" | "active"
+  "id" | "description" | "bannerUri" | "active"
 >;
 
 export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
@@ -44,7 +44,7 @@ export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
   public description?: string;
   public price!: number;
   public duration!: number;
-  public bannerImg?: string;
+  public bannerUri?: string;
   public active?: boolean;
   public subcategory_id!: number;
   public professional_id!: number;
@@ -78,7 +78,7 @@ ServiceModel.init(
       allowNull: false,
       comment: "Duration in minutes",
     },
-    bannerImg: {
+    bannerUri: {
       type: DataTypes.STRING(255),
       allowNull: true,
       validate: {

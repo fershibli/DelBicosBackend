@@ -207,14 +207,14 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { name, email, phone, avatarImg, bannerImg } = req.body;
+    const { name, email, phone, avatarUri, bannerUri } = req.body;
 
     await user.update({
       ...(name && { name }),
       ...(email && { email }),
       ...(phone && { phone }),
-      ...(avatarImg && { avatarImg }),
-      ...(bannerImg && { bannerImg }),
+      ...(avatarUri && { avatarUri }),
+      ...(bannerUri && { bannerUri }),
     });
 
     res.json(user);

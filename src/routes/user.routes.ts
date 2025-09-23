@@ -117,10 +117,10 @@ const router = Router();
  *         active:
  *           type: boolean
  *           description: Status do usuário
- *         avatarImg:
+ *         avatarUri:
  *           type: string
  *           description: Caminho do avatar do usuário
- *        bannerImg:
+ *        bannerUri:
  *          type: string
  *          description: Caminho do banner do usuário
  *         createdAt:
@@ -135,7 +135,7 @@ const router = Router();
  *         email: "joao@email.com"
  *         phone: "11999999999"
  *         active: true
- *         avatarImg: "avatarBucket/1/avatar.png"
+ *         avatarUri: "avatarBucket/1/avatar.png"
  *         createdAt: "2023-01-01T00:00:00.000Z"
  *         updatedAt: "2023-01-01T00:00:00.000Z"
  *
@@ -185,7 +185,7 @@ const router = Router();
  *           minLength: 6
  *         active:
  *           type: boolean
- *         avatarImg:
+ *         avatarUri:
  *           type: string
  *       example:
  *         name: "João Silva Santos"
@@ -326,22 +326,22 @@ const router = Router();
  *       properties:
  *         message:
  *           type: string
- *         avatarImg:
+ *         avatarUri:
  *           type: string
  *       example:
  *         message: "Avatar enviado com sucesso"
- *         avatarImg: "avatarBucket/1/avatar.png"
+ *         avatarUri: "avatarBucket/1/avatar.png"
  *
  *     AvatarInfo:
  *       type: object
  *       properties:
  *         userId:
  *           type: integer
- *         avatarImg:
+ *         avatarUri:
  *           type: string
  *       example:
  *         userId: 1
- *         avatarImg: "avatarBucket/1/avatar.png"
+ *         avatarUri: "avatarBucket/1/avatar.png"
  *
  *   responses:
  *     NotFound:
