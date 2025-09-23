@@ -102,12 +102,12 @@ AdminServiceOrderModel.init(
   }
 );
 
-AdminServiceOrderModel.belongsTo(AdminModel, { 
-    foreignKey: "admin_id", 
-    as: "Admin" 
-  });
-  
-  AdminServiceOrderModel.belongsTo(AppointmentModel, { 
-    foreignKey: "appointment_id", 
-    as: "Appointment" 
-  });
+AdminServiceOrderModel.belongsTo(AdminModel, {
+  foreignKey: "admin_id",
+  as: "Admin",
+});
+
+AdminServiceOrderModel.belongsTo(AppointmentModel, {
+  foreignKey: "appointment_id",
+  as: "Appointment",
+});
