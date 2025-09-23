@@ -1,6 +1,8 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
 import { ProfessionalModel } from "./Professional";
+import { SubCategoryModel } from "./Subcategory";
+import { AppointmentModel } from "./Appointment";
 
 /*
 CREATE TABLE service (
@@ -110,8 +112,8 @@ ServiceModel.init(
     sequelize,
     tableName: "service",
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: "created_at",
+    updatedAt: "updated_at",
     indexes: [
       {
         name: "active_index_service",
@@ -124,3 +126,18 @@ ServiceModel.init(
     ],
   }
 );
+
+ServiceModel.belongsTo(SubCategoryModel, {
+  foreignKey: "subcategory_id",
+  as: "Subcategory",
+});
+
+ServiceModel.belongsTo(ProfessionalModel, {
+  foreignKey: "professional_id",
+  as: "Professional",
+});
+
+ServiceModel.hasMany(AppointmentModel, {
+  foreignKey: "service_id",
+  as: "Appointments",
+});
