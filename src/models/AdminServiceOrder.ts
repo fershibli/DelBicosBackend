@@ -1,22 +1,25 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { AdminModel } from "./Admin";
+import { AppointmentModel } from "./Appointment";
 
 /*
 CREATE TABLE admin_service_order (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
     appointment_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description VARCHAR(1000) NOT NULL,
     status ENUM('pending', 'in_progress', 'completed', 'canceled') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admin(id),
     FOREIGN KEY (appointment_id) REFERENCES appointment(id),
-)
+    INDEX idx_status_check (status, INDEX idx_appointment_check (appointment_id, status)
+);
 */
 
 export interface IAdminServiceOrder {
   id?: number;
-  user_id: number;
+  admin_id: number;
   appointment_id: number;
   title: string;
   description: string;
@@ -35,7 +38,7 @@ export class AdminServiceOrderModel extends Model<
   AdminServiceOrderCreationalAttributes
 > {
   public id!: number;
-  public user_id!: number;
+  public admin_id!: number;
   public appointment_id!: number;
   public title!: string;
   public description!: string;
@@ -52,7 +55,7 @@ AdminServiceOrderModel.init(
       primaryKey: true,
       allowNull: false,
     },
-    user_id: {
+    admin_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -98,3 +101,13 @@ AdminServiceOrderModel.init(
     timestamps: false,
   }
 );
+
+AdminServiceOrderModel.belongsTo(AdminModel, {
+  foreignKey: "admin_id",
+  as: "Admin",
+});
+
+AdminServiceOrderModel.belongsTo(AppointmentModel, {
+  foreignKey: "appointment_id",
+  as: "Appointment",
+});

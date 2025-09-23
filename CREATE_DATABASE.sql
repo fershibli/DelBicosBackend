@@ -6,29 +6,28 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
     avatarUri VARCHAR(255),
+    bannerUri VARCHAR(255),
     INDEX active_index_users (active)
 );
 
 CREATE TABLE address (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  lat DECIMAL(10,8) NOT NULL,
-  lng DECIMAL(11,8) NOT NULL
-  street VARCHAR(255) NOT NULL,
-  number VARCHAR(10) NOT NULL,
-  complement VARCHAR(255),
-  neighborhood VARCHAR(100) NOT NULL,
-  city VARCHAR(100) NOT NULL,
-  state VARCHAR(2) NOT NULL,
-  country_iso VARCHAR(2) NOT NULL,
-  postal_code VARCHAR(8) NOT NULL,
-  user_id INT NOT NULL,
-  active BOOLEAN DEFAULT TRUE,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  INDEX active_index_address (active),
-)
-
-CREATE SPATIAL INDEX idx_location ON address(lat, lng);
-
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lat DECIMAL(10,8) NOT NULL,
+    lng DECIMAL(11,8) NOT NULL,
+    street VARCHAR(255) NOT NULL,
+    number VARCHAR(10) NOT NULL,
+    complement VARCHAR(255),
+    neighborhood VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    country_iso VARCHAR(2) NOT NULL,
+    postal_code VARCHAR(8) NOT NULL,
+    user_id INT NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX active_index_address (active),
+    INDEX idx_location (lat, lng)
+);
 
 CREATE TABLE admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,9 +50,10 @@ CREATE TABLE professional (
     main_address_id INT,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     cnpj VARCHAR(18) UNIQUE,
+    description TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (main_address_id) REFERENCES address(id),
-)
+    FOREIGN KEY (main_address_id) REFERENCES address(id)
+);
 
 CREATE TABLE category (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,13 +78,31 @@ CREATE TABLE service (
     title VARCHAR(100) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    duration INT NOT NULL,
+    duration INT NOT NULL COMMENT 'Duration in minutes',
+    bannerUri VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
     subcategory_id INT NOT NULL,
+    professional_id INT NOT NULL,
     FOREIGN KEY (subcategory_id) REFERENCES subcategory(id),
-    INDEX active_index_service (active)
+    FOREIGN KEY (professional_id) REFERENCES professional(id),
+    INDEX active_index_service (active),
+    INDEX professional_service_index (professional_id)
 );
 
+CREATE TABLE amenities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    );
+
+CREATE TABLE professional_amenities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    professional_id INT NOT NULL,
+    amenity_id INT NOT NULL,
+    FOREIGN KEY (professional_id) REFERENCES professional(id),
+    FOREIGN KEY (amenity_id) REFERENCES amenities(id)
+);
 
 CREATE TABLE professional_availability (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,7 +114,7 @@ CREATE TABLE professional_availability (
     start_day DATE, -- Data inicial da disponibilidade (opcional)
     end_day DATE, -- Data final (opcional)
     start_time TIME NOT NULL, -- Horário de início (ex: 09:00:00)
-    end_time TIME NOT NULL -- Horário de término (ex: 18:00:00)
+    end_time TIME NOT NULL, -- Horário de término (ex: 18:00:00)
     is_available BOOLEAN DEFAULT TRUE,
     recurrence_pattern ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none',
     FOREIGN KEY (professional_id) REFERENCES professional(id),
@@ -159,13 +177,22 @@ INSERT INTO professional_availability (
     '2024-01-15', -- Data inicial
     '2024-01-15' -- Data final
   );
-*/ 
+*/
 
 CREATE TABLE professional_availability_lock (
     professional_id INT NOT NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
     PRIMARY KEY (professional_id, start_time, end_time),
+    FOREIGN KEY (professional_id) REFERENCES professional(id)
+);
+
+CREATE TABLE professional_gallery (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    professional_id INT NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (professional_id) REFERENCES professional(id)
 );
 
@@ -178,24 +205,22 @@ CREATE TABLE appointment (
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
     status ENUM('pending', 'confirmed', 'completed', 'canceled') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (professional_id) REFERENCES professional(id),
     FOREIGN KEY (client_id) REFERENCES client(id),
     FOREIGN KEY (service_id) REFERENCES service(id),
     FOREIGN KEY (address_id) REFERENCES address(id),
     INDEX idx_appointment_times (professional_id, start_time, end_time),
     INDEX idx_status_check (status, start_time)
-) 
+);
 
 CREATE TABLE admin_service_order (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
     appointment_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description VARCHAR(1000) NOT NULL,
     status ENUM('pending', 'in_progress', 'completed', 'canceled') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admin(id),
     FOREIGN KEY (appointment_id) REFERENCES appointment(id),
-    INDEX idx_status_check (status, created_at),
-    INDEX idx_appointment_check (appointment_id, status)
-)
+    INDEX idx_status_check (status, INDEX idx_appointment_check (appointment_id, status)
+);

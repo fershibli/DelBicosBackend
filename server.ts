@@ -7,10 +7,13 @@ import serviceRoutes from "./src/routes/service.routes";
 import categoryRoutes from "./src/routes/category.routes";
 import subcategoryRoutes from "./src/routes/subcategory.routes";
 import professionalRoutes from "./src/routes/professional.routes";
-import clientsRoutes from "./src/routes/client.routes";
+import professionalAmenityRoutes from "./src/routes/professionalAmenity.routes";
 import professionalAvailabilityRoutes from "./src/routes/professionalAvailability.routes";
+import professionalGalleryRoutes from "./src/routes/professionalGallery.routes";
+import clientsRoutes from "./src/routes/client.routes";
 import appointmentRoutes from "./src/routes/appointment.routes";
 import userRoutes from "./src/routes/user.routes";
+import amenitiesRoutes from "./src/routes/amenities.route";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
@@ -60,6 +63,10 @@ app.use("/api/clients", clientsRoutes);
 app.use("/api/professional_availabilities", professionalAvailabilityRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
+app.use("/api/professional_gallery", professionalGalleryRoutes);
+app.use("/api/amenities", amenitiesRoutes);
+app.use("/api/professional_amenities", professionalAmenityRoutes);
+
 app.use("/api/email", emailRouter);
 app.use("/auth", authRouter);
 

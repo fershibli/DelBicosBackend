@@ -194,16 +194,33 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   const user = await UserModel.findByPk(req.params.id);
-  user ? res.json(user) : res.status(404).json({ error: "Usuário não encontrado" });
+  user
+    ? res.json(user)
+    : res.status(404).json({ error: "Usuário não encontrado" });
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const user = await UserModel.findByPk(req.params.id);
-  if (user) {
-    await user.update(req.body);
+  try {
+    const user = await UserModel.findByPk(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { name, email, phone, avatarUri, bannerUri } = req.body;
+
+    await user.update({
+      ...(name && { name }),
+      ...(email && { email }),
+      ...(phone && { phone }),
+      ...(avatarUri && { avatarUri }),
+      ...(bannerUri && { bannerUri }),
+    });
+
     res.json(user);
-  } else {
-    res.status(404).json({ error: "Usuário não encontrado" });
+  } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
+    res.status(500).json({ error: "Erro interno ao atualizar usuário" });
   }
 };
 

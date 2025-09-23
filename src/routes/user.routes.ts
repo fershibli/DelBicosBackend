@@ -1,9 +1,20 @@
 import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
 import { verifyCode } from "../controllers/confirmCode.controller";
-import { createUser, deleteUser, getAllUsers, getUserById, logInUser, signUpUser, updateUser } from "../controllers/user.controller";
-import { deleteAvatar, getAvatar, uploadAvatar } from "../controllers/avatar.controller";
-
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  getUserById,
+  logInUser,
+  signUpUser,
+  updateUser,
+} from "../controllers/user.controller";
+import {
+  deleteAvatar,
+  getAvatar,
+  uploadAvatar,
+} from "../controllers/avatar.controller";
 
 const router = Router();
 
@@ -109,6 +120,9 @@ const router = Router();
  *         avatarUri:
  *           type: string
  *           description: Caminho do avatar do usuário
+ *        bannerUri:
+ *          type: string
+ *          description: Caminho do banner do usuário
  *         createdAt:
  *           type: string
  *           format: date-time

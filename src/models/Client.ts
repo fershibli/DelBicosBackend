@@ -1,5 +1,8 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { UserModel } from "./User";
+import { AddressModel } from "./Address";
+import { AppointmentModel } from "./Appointment";
 
 /*
 CREATE TABLE client (
@@ -69,3 +72,18 @@ ClientModel.init(
     timestamps: true,
   }
 );
+
+ClientModel.belongsTo(UserModel, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+ClientModel.belongsTo(AddressModel, {
+  foreignKey: "main_address_id",
+  as: "MainAddress",
+});
+
+ClientModel.hasMany(AppointmentModel, {
+  foreignKey: "client_id",
+  as: "Appointments",
+});

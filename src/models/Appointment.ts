@@ -1,5 +1,10 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { ProfessionalModel } from "./Professional";
+import { ClientModel } from "./Client";
+import { ServiceModel } from "./Service";
+import { AddressModel } from "./Address";
+import { AdminServiceOrderModel } from "./AdminServiceOrder";
 
 /*
 CREATE TABLE appointment (
@@ -122,3 +127,28 @@ AppointmentModel.init(
     timestamps: true, // This will automatically add createdAt and updatedAt fields
   }
 );
+
+AppointmentModel.belongsTo(ProfessionalModel, {
+  foreignKey: "professional_id",
+  as: "Professional",
+});
+
+AppointmentModel.belongsTo(ClientModel, {
+  foreignKey: "client_id",
+  as: "Client",
+});
+
+AppointmentModel.belongsTo(ServiceModel, {
+  foreignKey: "service_id",
+  as: "Service",
+});
+
+AppointmentModel.belongsTo(AddressModel, {
+  foreignKey: "address_id",
+  as: "Address",
+});
+
+AppointmentModel.hasMany(AdminServiceOrderModel, {
+  foreignKey: "appointment_id",
+  as: "ServiceOrders",
+});

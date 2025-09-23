@@ -1,6 +1,7 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
 import { CategoryModel } from "./Category";
+import { ServiceModel } from "./Service";
 
 /*
 CREATE TABLE subcategory (
@@ -59,7 +60,7 @@ SubCategoryModel.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: CategoryModel,
+        model: "category",
         key: "id",
       },
     },
@@ -74,3 +75,13 @@ SubCategoryModel.init(
     timestamps: true,
   }
 );
+
+SubCategoryModel.belongsTo(CategoryModel, {
+  foreignKey: "category_id",
+  as: "Category",
+});
+
+SubCategoryModel.hasMany(ServiceModel, {
+  foreignKey: "subcategory_id",
+  as: "Services",
+});

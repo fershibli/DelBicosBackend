@@ -1,5 +1,9 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { ClientModel } from "./Client";
+import { ProfessionalModel } from "./Professional";
+import { AdminModel } from "./Admin";
+import { AddressModel } from "./Address";
 
 /*
 CREATE TABLE users (
@@ -10,6 +14,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
     avatarUri VARCHAR(255),
+    bannerUri VARCHAR(255),
     INDEX active_index_users (active)
 );
 */
@@ -21,10 +26,14 @@ export interface IUser {
   phone: string;
   password: string;
   active?: boolean;
-  avatarUri?: string | null;
+  avatarUri?: string;
+  bannerUri?: string;
 }
 
-type UserCreationalAttributes = Optional<IUser, "id" | "active">;
+type UserCreationalAttributes = Optional<
+  IUser,
+  "id" | "active" | "avatarUri" | "bannerUri"
+>;
 
 export class UserModel extends Model<IUser, UserCreationalAttributes> {
   public id!: number;
@@ -33,7 +42,8 @@ export class UserModel extends Model<IUser, UserCreationalAttributes> {
   public phone!: string;
   public password!: string;
   public active?: boolean;
-  public avatarUri?: string | null;
+  public avatarUri?: string;
+  public bannerUri?: string;
 
   // Timestamps
   public readonly createdAt!: Date;
@@ -74,6 +84,10 @@ UserModel.init(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    bannerUri: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
     sequelize,
@@ -87,3 +101,23 @@ UserModel.init(
     ],
   }
 );
+
+UserModel.hasOne(ClientModel, {
+  foreignKey: "user_id",
+  as: "Client",
+});
+
+UserModel.hasOne(ProfessionalModel, {
+  foreignKey: "user_id",
+  as: "Professional",
+});
+
+UserModel.hasOne(AdminModel, {
+  foreignKey: "user_id",
+  as: "Admin",
+});
+
+UserModel.hasMany(AddressModel, {
+  foreignKey: "user_id",
+  as: "Addresses",
+});

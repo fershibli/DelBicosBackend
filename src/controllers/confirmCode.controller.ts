@@ -1,7 +1,7 @@
-import { CustomRequest, CustomResponse } from '../api/index'; 
-import User from '../models/User';
+import { Request, Response } from 'express';
+import { UserModel } from '../models/User';
 
-export const verifyCode = async (req: CustomRequest<{ phoneNumber: string; code: string }>, res: CustomResponse) => {
+export const verifyCode = async (req: Request, res: Response) => {
   const { phoneNumber, code } = req.body;
 
   if (!phoneNumber || !code || code.length !== 4) {
@@ -9,12 +9,12 @@ export const verifyCode = async (req: CustomRequest<{ phoneNumber: string; code:
   }
 
   try {
-    const user = await User.findOne({ phoneNumber });
+    const user = await UserModel.findOne({ where: { phone: phoneNumber } });
 
     if (user) {
       return res.status(200).json({
         exists: true,
-        user: { name: user.firstName, location: user.location },
+        user: { name: user.name, location: 'São Paulo' }, // Adjust location as needed
       });
     }
 

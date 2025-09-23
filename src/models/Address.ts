@@ -1,5 +1,9 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { UserModel } from "./User";
+import { ClientModel } from "./Client";
+import { ProfessionalModel } from "./Professional";
+import { AppointmentModel } from "./Appointment";
 
 /*
 CREATE TABLE address (
@@ -135,3 +139,23 @@ AddressModel.init(
     ],
   }
 );
+
+AddressModel.belongsTo(UserModel, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+AddressModel.hasOne(ClientModel, {
+  foreignKey: "main_address_id",
+  as: "ClientsUsingAsMain",
+});
+
+AddressModel.hasOne(ProfessionalModel, {
+  foreignKey: "main_address_id",
+  as: "ProfessionalsUsingAsMain",
+});
+
+AddressModel.hasMany(AppointmentModel, {
+  foreignKey: "address_id",
+  as: "Appointments",
+});
