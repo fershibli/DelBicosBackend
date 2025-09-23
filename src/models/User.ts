@@ -1,5 +1,9 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { ClientModel } from "./Client";
+import { ProfessionalModel } from "./Professional";
+import { AdminModel } from "./Admin";
+import { AddressModel } from "./Address";
 
 /*
 CREATE TABLE users (
@@ -26,7 +30,10 @@ export interface IUser {
   bannerImg?: string;
 }
 
-type UserCreationalAttributes = Optional<IUser, "id" | "active" | "avatarImg" | "bannerImg">;
+type UserCreationalAttributes = Optional<
+  IUser,
+  "id" | "active" | "avatarImg" | "bannerImg"
+>;
 
 export class UserModel extends Model<IUser, UserCreationalAttributes> {
   public id!: number;
@@ -94,3 +101,23 @@ UserModel.init(
     ],
   }
 );
+
+UserModel.hasOne(ClientModel, {
+  foreignKey: "user_id",
+  as: "Client",
+});
+
+UserModel.hasOne(ProfessionalModel, {
+  foreignKey: "user_id",
+  as: "Professional",
+});
+
+UserModel.hasOne(AdminModel, {
+  foreignKey: "user_id",
+  as: "Admin",
+});
+
+UserModel.hasMany(AddressModel, {
+  foreignKey: "user_id",
+  as: "Addresses",
+});
