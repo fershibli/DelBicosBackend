@@ -34,10 +34,6 @@ module.exports = {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
-      avatarUri: {
-        allowNull: true,
-        type: DataTypes.STRING(255),
-      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
