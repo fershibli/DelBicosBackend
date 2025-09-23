@@ -21,7 +21,10 @@ export interface IAmenity {
   active?: boolean;
 }
 
-type AmenityCreationAttributes = Optional<IAmenity, "id" | "description" | "active">;
+type AmenityCreationAttributes = Optional<
+  IAmenity,
+  "id" | "description" | "active"
+>;
 
 export class AmenitiesModel extends Model<IAmenity, AmenityCreationAttributes> {
   public id!: number;
@@ -60,10 +63,9 @@ AmenitiesModel.init(
   }
 );
 
-
-  AmenitiesModel.belongsToMany(ProfessionalModel, {
-    through: ProfessionalAmenityModel,
-    foreignKey: "amenity_id", 
-    otherKey: "professional_id",
-    as: "Professionals"
-  });
+AmenitiesModel.belongsToMany(ProfessionalModel, {
+  through: ProfessionalAmenityModel,
+  foreignKey: "amenity_id",
+  otherKey: "professional_id",
+  as: "Professionals",
+});
