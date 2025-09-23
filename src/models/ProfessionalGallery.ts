@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
+import { ProfessionalModel } from "./Professional";
 
 /*
 CREATE TABLE gallery (
@@ -22,9 +23,15 @@ export interface IProfessionalGallery {
   active?: boolean;
 }
 
-type ProfessionalGalleryCreationAttributes = Optional<IProfessionalGallery, "id" | "description" | "active">;
+type ProfessionalGalleryCreationAttributes = Optional<
+  IProfessionalGallery,
+  "id" | "description" | "active"
+>;
 
-export class ProfessionalGalleryModel extends Model<IProfessionalGallery, ProfessionalGalleryCreationAttributes> {
+export class ProfessionalGalleryModel extends Model<
+  IProfessionalGallery,
+  ProfessionalGalleryCreationAttributes
+> {
   public id!: number;
   public professional_id!: number;
   public url!: string;
@@ -67,3 +74,7 @@ ProfessionalGalleryModel.init(
   }
 );
 
+ProfessionalGalleryModel.belongsTo(ProfessionalModel, {
+  foreignKey: "professional_id",
+  as: "Professional",
+});
