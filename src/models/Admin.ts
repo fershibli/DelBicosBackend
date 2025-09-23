@@ -51,13 +51,13 @@ AdminModel.init(
   }
 );
 
- // Admin relationships
-  AdminModel.belongsTo(UserModel, { 
-    foreignKey: "user_id", 
-    as: "User" 
-  });
-  
-  AdminModel.hasMany(AdminServiceOrderModel, { 
-    foreignKey: "admin_id", 
-    as: "ServiceOrders" 
-  });
+// Admin relationships
+AdminModel.belongsTo(UserModel, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+AdminModel.hasMany(AdminServiceOrderModel, {
+  foreignKey: "admin_id",
+  as: "ServiceOrders",
+});
