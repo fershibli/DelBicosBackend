@@ -140,22 +140,22 @@ AddressModel.init(
   }
 );
 
-AddressModel.belongsTo(UserModel, { 
-    foreignKey: "user_id", 
-    as: "User" 
-  });
-  
-  AddressModel.hasOne(ClientModel, { 
-    foreignKey: "main_address_id", 
-    as: "ClientsUsingAsMain" 
-  });
-  
-  AddressModel.hasOne(ProfessionalModel, { 
-    foreignKey: "main_address_id", 
-    as: "ProfessionalsUsingAsMain" 
-  });
-  
-  AddressModel.hasMany(AppointmentModel, { 
-    foreignKey: "address_id", 
-    as: "Appointments" 
-  });
+AddressModel.belongsTo(UserModel, {
+  foreignKey: "user_id",
+  as: "User",
+});
+
+AddressModel.hasOne(ClientModel, {
+  foreignKey: "main_address_id",
+  as: "ClientsUsingAsMain",
+});
+
+AddressModel.hasOne(ProfessionalModel, {
+  foreignKey: "main_address_id",
+  as: "ProfessionalsUsingAsMain",
+});
+
+AddressModel.hasMany(AppointmentModel, {
+  foreignKey: "address_id",
+  as: "Appointments",
+});
