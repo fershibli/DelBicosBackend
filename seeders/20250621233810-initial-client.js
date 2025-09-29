@@ -28,7 +28,7 @@ module.exports = {
       main_address_id: addressIds[index],
       cpf: cpfs[index],
     }));
-    await queryInterface.bulkInsert("client", clients);
+    await queryInterface.bulkInsert("clients", clients);
   },
 
   async down(queryInterface, Sequelize) {
