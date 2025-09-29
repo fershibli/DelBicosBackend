@@ -120,9 +120,9 @@ const router = Router();
  *         avatarUri:
  *           type: string
  *           description: Caminho do avatar do usuário
- *        bannerUri:
- *          type: string
- *          description: Caminho do banner do usuário
+ *         bannerUri:
+ *           type: string
+ *           description: Caminho do banner do usuário
  *         createdAt:
  *           type: string
  *           format: date-time
