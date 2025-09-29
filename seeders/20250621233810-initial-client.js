@@ -28,10 +28,10 @@ module.exports = {
       main_address_id: addressIds[index],
       cpf: cpfs[index],
     }));
-    await queryInterface.bulkInsert("clients", clients);
+    await queryInterface.bulkInsert("client", clients);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete("clients", null, {});
+    await queryInterface.bulkDelete("client", null, {});
   },
 };
