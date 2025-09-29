@@ -18,7 +18,7 @@ export const createAppointment = async (req: Request, res: Response) => {
 export const getAllAppointments = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
-    const { status, date, start_date, end_date } = req.query;
+    // const { status, date, start_date, end_date } = req.query;
 
     // Verificar se o usuário existe
     const user = await UserModel.findByPk(userId);
@@ -32,74 +32,38 @@ export const getAllAppointments = async (req: Request, res: Response) => {
       where: { user_id: userId },
     });
 
-    // Construir filtros de consulta
     const whereClause: any = {};
-
-    if (status) {
-      whereClause.status = status;
-    }
-
-    if (date) {
-      whereClause.start_time = {
-        [Op.gte]: new Date(`${date} 00:00:00`),
-        [Op.lt]: new Date(`${date} 23:59:59`),
-      };
-    } else if (start_date || end_date) {
-      whereClause.start_time = {};
-      if (start_date) {
-        whereClause.start_time[Op.gte] = new Date(`${start_date} 00:00:00`);
-      }
-      if (end_date) {
-        whereClause.start_time[Op.lte] = new Date(`${end_date} 23:59:59`);
-      }
-    }
-
-    const appointments = {
-      asClient: [] as any[],
-      asProfessional: [] as any[],
-    };
 
     // Buscar agendamentos onde o usuário é cliente
     if (client) {
-      appointments.asClient = await AppointmentModel.findAll({
-        where: {
-          client_id: client.id,
-          ...whereClause,
-        },
-        include: [
-          {
-            model: ServiceModel,
-            as: "service",
-          },
-          {
-            model: ProfessionalModel,
-            as: "professional",
-          },
-        ],
-        order: [["start_time", "ASC"]],
-      });
+      whereClause.client_id = client.id;
+    } else if (professional) {
+      whereClause.professional_id = professional.id;
+    } else {
+      return res
+        .status(404)
+        .json({ error: "Nenhum cliente ou profissional associado ao usuário" });
     }
 
-    // Buscar agendamentos onde o usuário é profissional
-    if (professional) {
-      appointments.asProfessional = await AppointmentModel.findAll({
-        where: {
-          professional_id: professional.id,
-          ...whereClause,
+    const appointments = await AppointmentModel.findAll({
+      where: {
+        ...whereClause,
+      },
+      include: [
+        { model: ServiceModel, as: "Service" },
+        {
+          model: ClientModel,
+          as: "Client",
+          include: [{ model: UserModel, as: "User" }],
         },
-        include: [
-          {
-            model: ServiceModel,
-            as: "service",
-          },
-          {
-            model: ClientModel,
-            as: "client",
-          },
-        ],
-        order: [["start_time", "ASC"]],
-      });
-    }
+        {
+          model: ProfessionalModel,
+          as: "Professional",
+          include: [{ model: UserModel, as: "User" }],
+        },
+      ],
+      order: [["start_time", "ASC"]],
+    });
 
     res.json(appointments);
   } catch (error: any) {
