@@ -6,6 +6,7 @@ import {
   updateAppointment,
   deleteAppointment,
   confirmAppointment,
+  reviewAppointment,
 } from "../controllers/appointment.controller";
 
 const router = Router();
@@ -60,6 +61,17 @@ const router = Router();
  *           enum: [pending, confirmed, canceled, completed]
  *           default: pending
  *           description: Status do agendamento
+ *         rating:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 5
+ *           nullable: true
+ *           description: Avaliação do serviço (1-5 estrelas)
+ *         review:
+ *           type: string
+ *           nullable: true
+ *           maxLength: 1000
+ *           description: Comentário sobre o serviço
  *         notes:
  *           type: string
  *           nullable: true
@@ -80,7 +92,9 @@ const router = Router();
  *         date: "2023-12-15"
  *         start_time: "14:00:00"
  *         end_time: "15:00:00"
- *         status: "confirmed"
+ *         status: "completed"
+ *         rating: 5
+ *         review: "Excelente serviço, profissional muito competente!"
  *         notes: "Cliente preferencial"
  *         createdAt: "2023-12-01T10:00:00.000Z"
  *         updatedAt: "2023-12-01T10:00:00.000Z"
@@ -124,6 +138,25 @@ const router = Router();
  *         start_time: "14:00:00"
  *         end_time: "15:00:00"
  *         notes: "Cliente preferencial"
+ *
+ *     ReviewInput:
+ *       type: object
+ *       required:
+ *         - rating
+ *       properties:
+ *         rating:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 5
+ *           description: Avaliação do serviço (1-5 estrelas)
+ *         review:
+ *           type: string
+ *           nullable: true
+ *           maxLength: 1000
+ *           description: Comentário sobre o serviço
+ *       example:
+ *         rating: 5
+ *         review: "Excelente serviço, profissional muito competente!"
  */
 
 /**
@@ -349,5 +382,67 @@ router.delete("/:id", deleteAppointment);
  *         description: Erro interno do servidor
  */
 router.post("/:id/confirm", confirmAppointment);
+
+/**
+ * @swagger
+ * /appointments/{id}/review:
+ *   post:
+ *     summary: Avalia um agendamento concluído
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ReviewInput'
+ *     responses:
+ *       200:
+ *         description: Agendamento avaliado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Agendamento não está concluído, avaliação inválida ou dados incorretos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Não é possível avaliar um agendamento com status 'pending'"
+ *       404:
+ *         description: Agendamento não encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Agendamento não encontrado"
+ *       500:
+ *         description: Erro interno do servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               example:
+ *                 error: "Erro ao avaliar agendamento"
+ */
+router.post("/:id/review", reviewAppointment);
 
 export default router;
