@@ -5,8 +5,8 @@ CREATE TABLE users (
     phone VARCHAR(13) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    avatarUri VARCHAR(255),
-    bannerUri VARCHAR(255),
+    avatar_uri VARCHAR(255),
+    banner_uri VARCHAR(255),
     INDEX active_index_users (active)
 );
 
@@ -79,7 +79,7 @@ CREATE TABLE service (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     duration INT NOT NULL COMMENT 'Duration in minutes',
-    bannerUri VARCHAR(255),
+    banner_uri VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
     subcategory_id INT NOT NULL,
     professional_id INT NOT NULL,
