@@ -5,7 +5,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // get user ids
     const users = await queryInterface.sequelize.query(
-      `SELECT id FROM users WHERE name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo')`,
+      `SELECT id FROM users WHERE name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')`,
       { type: Sequelize.QueryTypes.SELECT }
     );
     const userIds = users.map((user) => user.id);
@@ -61,6 +61,45 @@ module.exports = {
         state: "RS",
         country_iso: "BR",
         postal_code: "45678901",
+      },
+      {
+        user_id: userIds[4],
+        lat: -15.794229,
+        lng: -47.882166,
+        street: "Rua E",
+        number: "131415",
+        complement: "Apto 3",
+        neighborhood: "Bairro E",
+        city: "Cidade E",
+        state: "DF",
+        country_iso: "BR",
+        postal_code: "56789012",
+      },
+      {
+        user_id: userIds[5],
+        lat: -3.71722,
+        lng: -38.543369,
+        street: "Rua F",
+        number: "161718",
+        complement: "",
+        neighborhood: "Bairro F",
+        city: "Cidade F",
+        state: "CE",
+        country_iso: "BR",
+        postal_code: "67890123",
+      },
+      {
+        user_id: userIds[6],
+        lat: -12.971399,
+        lng: -38.501305,
+        street: "Rua G",
+        number: "192021",
+        complement: "Casa 4",
+        neighborhood: "Bairro G",
+        city: "Cidade G",
+        state: "BA",
+        country_iso: "BR",
+        postal_code: "78901234",
       },
     ]);
   },

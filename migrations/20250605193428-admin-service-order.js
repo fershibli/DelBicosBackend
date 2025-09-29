@@ -32,13 +32,15 @@ module.exports = {
         type: DataTypes.ENUM("pending", "in_progress", "completed", "canceled"),
         defaultValue: "pending",
       },
-      created_at: {
+      createdAt: {
+        allowNull: false,
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
-      updated_at: {
+      updatedAt: {
+        allowNull: false,
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },

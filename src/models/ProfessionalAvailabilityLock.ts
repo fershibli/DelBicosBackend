@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { ProfessionalModel } from "./Professional";
 
 /*
 CREATE TABLE professional_availability_lock (
@@ -64,8 +63,3 @@ ProfessionalAvailabilityLockModel.init(
     timestamps: true,
   }
 );
-
-ProfessionalAvailabilityLockModel.belongsTo(ProfessionalModel, {
-  foreignKey: "professional_id",
-  as: "Professional",
-});

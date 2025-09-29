@@ -1,7 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { CategoryModel } from "./Category";
-import { ServiceModel } from "./Service";
 
 /*
 CREATE TABLE subcategory (
@@ -19,8 +17,8 @@ export interface ISubCategory {
   id?: number;
   title: string;
   description?: string;
-  category_id: number;
   active?: boolean;
+  category_id: number;
 }
 
 type SubCategoryCreationalAttributes = Optional<ISubCategory, "id" | "active">;
@@ -32,8 +30,8 @@ export class SubCategoryModel extends Model<
   public id!: number;
   public title!: string;
   public description?: string;
-  public category_id!: number;
   public active?: boolean;
+  public category_id!: number;
 
   // Timestamps
   public readonly createdAt!: Date;
@@ -75,13 +73,3 @@ SubCategoryModel.init(
     timestamps: true,
   }
 );
-
-SubCategoryModel.belongsTo(CategoryModel, {
-  foreignKey: "category_id",
-  as: "Category",
-});
-
-SubCategoryModel.hasMany(ServiceModel, {
-  foreignKey: "subcategory_id",
-  as: "Services",
-});

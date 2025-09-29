@@ -19,31 +19,31 @@ import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
-import bodyParser from 'body-parser';
 import path from "path";
+import { initializeAssociations } from "./src/models/associations";
 
 const result = dotenv.config();
 if (result.error) {
   throw result.error;
 }
 
+initializeAssociations();
+
 console.log("Variáveis de ambiente carregadas com sucesso");
 console.log("Ambiente:", process.env.ENVIRONMENT);
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cors());
 app.use(express.json());
-const AVATAR_BUCKET_PATH = path.join(__dirname, 'avatarBucket'); // <-- VERIFIQUE ESTE CAMINHO
+const AVATAR_BUCKET_PATH = path.join(__dirname, "avatarBucket"); // <-- VERIFIQUE ESTE CAMINHO
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use('/avatarBucket', express.static(AVATAR_BUCKET_PATH));
+app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
 
 // // Conectar ao MongoDB
 // mongoose.connect(process.env.MONGO_URI as string, {

@@ -1,7 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { ProfessionalModel } from "./Professional";
-import { AmenitiesModel } from "./Amenities";
 
 export interface IProfessionalAmenity {
   id?: number;
@@ -42,14 +40,3 @@ ProfessionalAmenityModel.init(
     timestamps: false,
   }
 );
-
-// ProfessionalAmenities relationships (junction table)
-ProfessionalAmenityModel.belongsTo(ProfessionalModel, {
-  foreignKey: "professional_id",
-  as: "Professional",
-});
-
-ProfessionalAmenityModel.belongsTo(AmenitiesModel, {
-  foreignKey: "amenity_id",
-  as: "Amenity",
-});

@@ -5,7 +5,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // get user ids
     const users = await queryInterface.sequelize.query(
-      `SELECT id FROM users WHERE name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo')`,
+      `SELECT id FROM users WHERE name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')`,
       { type: Sequelize.QueryTypes.SELECT }
     );
     const userIds = users.map((user) => user.id);
@@ -22,6 +22,8 @@ module.exports = {
       "39077794018",
       "57509247772",
       "08069989971",
+      "38064287006",
+      "33080837010",
     ];
     const clients = userIds.map((userId, index) => ({
       user_id: userId,
@@ -32,6 +34,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete("clients", null, {});
+    await queryInterface.bulkDelete("client", null, {});
   },
 };

@@ -56,6 +56,16 @@ module.exports = {
         type: DataTypes.ENUM("pending", "confirmed", "completed", "canceled"),
         defaultValue: "pending",
       },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
     });
     await queryInterface.addIndex(
       "appointment",

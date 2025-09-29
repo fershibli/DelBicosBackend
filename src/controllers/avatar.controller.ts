@@ -83,7 +83,7 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     const relativePath = `avatarBucket/${userId}/${fileName}`;
     console.log(`🔄 Atualizando banco com path: ${relativePath}`);
 
-    await user.update({ avatarUri: relativePath });
+    await user.update({ avatar_uri: relativePath });
     console.log("✅ Banco atualizado");
 
     const fullAvatarUrl = `http://localhost:3000/${relativePath}`;
@@ -93,7 +93,7 @@ export const uploadAvatar = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: "Avatar enviado com sucesso",
-      avatarUri: relativePath,
+      avatar_uri: relativePath,
       avatarUrl: fullAvatarUrl,
     });
   } catch (error: any) {
@@ -115,14 +115,14 @@ export const getAvatar = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     const user = await UserModel.findByPk(userId, {
-      attributes: ["id", "avatarUri"],
+      attributes: ["id", "avatar_uri"],
     });
 
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    if (!user.avatarUri) {
+    if (!user.avatar_uri) {
       return res
         .status(404)
         .json({ error: "Avatar não encontrado para este usuário" });
@@ -130,7 +130,7 @@ export const getAvatar = async (req: Request, res: Response) => {
 
     res.status(200).json({
       userId: user.id,
-      avatarUri: user.avatarUri,
+      avatar_uri: user.avatar_uri,
     });
   } catch (error: any) {
     console.error("Erro ao buscar avatar:", error);
@@ -147,13 +147,13 @@ export const deleteAvatar = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    if (!user.avatarUri) {
+    if (!user.avatar_uri) {
       return res
         .status(404)
         .json({ error: "Avatar não encontrado para este usuário" });
     }
 
-    const filePath = path.join(__dirname, "..", "..", user.avatarUri);
+    const filePath = path.join(__dirname, "..", "..", user.avatar_uri);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
@@ -166,7 +166,7 @@ export const deleteAvatar = async (req: Request, res: Response) => {
       }
     }
 
-    await user.update({ avatarUri: null } as any);
+    await user.update({ avatar_uri: null } as any);
 
     res.status(200).json({ message: "Avatar deletado com sucesso" });
   } catch (error: any) {

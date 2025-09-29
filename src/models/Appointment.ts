@@ -1,10 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { ProfessionalModel } from "./Professional";
-import { ClientModel } from "./Client";
-import { ServiceModel } from "./Service";
-import { AddressModel } from "./Address";
-import { AdminServiceOrderModel } from "./AdminServiceOrder";
 
 /*
 CREATE TABLE appointment (
@@ -21,6 +16,8 @@ CREATE TABLE appointment (
     FOREIGN KEY (client_id) REFERENCES client(id),
     FOREIGN KEY (service_id) REFERENCES service(id),
     FOREIGN KEY (address_id) REFERENCES address(id),
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    review STRING(1000),
     INDEX idx_appointment_times (professional_id, start_time, end_time),
     INDEX idx_status_check (status, start_time)
 ) 
@@ -34,6 +31,8 @@ export interface IAppointment {
   address_id: number;
   start_time: Date;
   end_time: Date;
+  rating?: number;
+  review?: string;
   status?: "pending" | "confirmed" | "completed" | "canceled";
 }
 
@@ -50,6 +49,8 @@ export class AppointmentModel extends Model<
   public address_id!: number;
   public start_time!: Date;
   public end_time!: Date;
+  public rating?: number;
+  public review?: string;
   public status!: "pending" | "confirmed" | "completed" | "canceled";
   public created_at!: Date;
 
@@ -98,6 +99,15 @@ AppointmentModel.init(
         key: "id",
       },
     },
+    rating: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: { min: 1, max: 5 },
+    },
+    review: {
+      type: DataTypes.STRING(1000),
+      allowNull: true,
+    },
     start_time: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -127,28 +137,3 @@ AppointmentModel.init(
     timestamps: true, // This will automatically add createdAt and updatedAt fields
   }
 );
-
-AppointmentModel.belongsTo(ProfessionalModel, {
-  foreignKey: "professional_id",
-  as: "Professional",
-});
-
-AppointmentModel.belongsTo(ClientModel, {
-  foreignKey: "client_id",
-  as: "Client",
-});
-
-AppointmentModel.belongsTo(ServiceModel, {
-  foreignKey: "service_id",
-  as: "Service",
-});
-
-AppointmentModel.belongsTo(AddressModel, {
-  foreignKey: "address_id",
-  as: "Address",
-});
-
-AppointmentModel.hasMany(AdminServiceOrderModel, {
-  foreignKey: "appointment_id",
-  as: "ServiceOrders",
-});

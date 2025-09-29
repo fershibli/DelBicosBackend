@@ -28,6 +28,10 @@ module.exports = {
           key: "id",
         },
       },
+      description: {
+        type: DataTypes.STRING(1500),
+        allowNull: true,
+      },
       cpf: {
         type: DataTypes.STRING(14),
         allowNull: false,
@@ -37,6 +41,16 @@ module.exports = {
         type: DataTypes.STRING(18),
         allowNull: true,
         unique: true,
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },

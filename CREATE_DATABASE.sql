@@ -5,8 +5,8 @@ CREATE TABLE users (
     phone VARCHAR(13) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     active BOOLEAN DEFAULT TRUE,
-    avatarUri VARCHAR(255),
-    bannerUri VARCHAR(255),
+    avatar_uri VARCHAR(255),
+    banner_uri VARCHAR(255),
     INDEX active_index_users (active)
 );
 
@@ -50,7 +50,7 @@ CREATE TABLE professional (
     main_address_id INT,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     cnpj VARCHAR(18) UNIQUE,
-    description TEXT,
+    description STRING(1500),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (main_address_id) REFERENCES address(id)
 );
@@ -79,7 +79,7 @@ CREATE TABLE service (
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     duration INT NOT NULL COMMENT 'Duration in minutes',
-    bannerUri VARCHAR(255),
+    banner_uri VARCHAR(255),
     active BOOLEAN DEFAULT TRUE,
     subcategory_id INT NOT NULL,
     professional_id INT NOT NULL,
@@ -204,6 +204,8 @@ CREATE TABLE appointment (
     address_id INT NOT NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    review STRING(1000),
     status ENUM('pending', 'confirmed', 'completed', 'canceled') DEFAULT 'pending',
     FOREIGN KEY (professional_id) REFERENCES professional(id),
     FOREIGN KEY (client_id) REFERENCES client(id),
