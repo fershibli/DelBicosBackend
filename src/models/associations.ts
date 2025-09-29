@@ -84,11 +84,6 @@ export function initializeAssociations() {
     as: "MainAddress",
   });
 
-  ProfessionalModel.hasMany(AddressModel, {
-    foreignKey: "professional_id",
-    as: "Addresses",
-  });
-
   ProfessionalModel.hasMany(ServiceModel, {
     foreignKey: "professional_id",
     as: "Services",
