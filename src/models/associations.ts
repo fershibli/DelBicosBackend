@@ -76,49 +76,49 @@ export function initializeAssociations() {
   // Professional associations
   ProfessionalModel.belongsTo(UserModel, {
     foreignKey: "user_id",
-    as: "user",
+    as: "User",
   });
 
   ProfessionalModel.belongsTo(AddressModel, {
     foreignKey: "main_address_id",
-    as: "main_address",
+    as: "MainAddress",
   });
 
   ProfessionalModel.hasMany(AddressModel, {
     foreignKey: "professional_id",
-    as: "addresses",
+    as: "Addresses",
   });
 
   ProfessionalModel.hasMany(ServiceModel, {
     foreignKey: "professional_id",
-    as: "services",
+    as: "Services",
   });
 
   ProfessionalModel.belongsToMany(AmenitiesModel, {
     through: "professional_amenities",
     foreignKey: "professional_id",
     otherKey: "amenity_id",
-    as: "amenities",
+    as: "Amenities",
   });
 
   ProfessionalModel.hasMany(ProfessionalGalleryModel, {
     foreignKey: "professional_id",
-    as: "gallery",
+    as: "Gallery",
   });
 
   ProfessionalModel.hasMany(ProfessionalAvailabilityModel, {
     foreignKey: "professional_id",
-    as: "availabilities",
+    as: "Availabilities",
   });
 
   ProfessionalModel.hasMany(ProfessionalAvailabilityLockModel, {
     foreignKey: "professional_id",
-    as: "availability_locks",
+    as: "AvailabilityLocks",
   });
 
   ProfessionalModel.hasMany(AppointmentModel, {
     foreignKey: "professional_id",
-    as: "appointments",
+    as: "Appointments",
   });
 
   // Admin associations
