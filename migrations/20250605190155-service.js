@@ -40,6 +40,10 @@ module.exports = {
           key: "id",
         },
       },
+      banner_uri: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,
