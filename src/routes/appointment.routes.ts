@@ -161,21 +161,17 @@ router.post("/", createAppointment);
 
 /**
  * @swagger
- * /appointments:
+ * /appointments/user/{id}:
  *   get:
- *     summary: Retorna todos os agendamentos
+ *     summary: Retorna todos os agendamentos de um usuário específico
  *     tags: [Appointments]
  *     parameters:
- *       - in: query
- *         name: professional_id
+ *       - in: path
+ *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         description: Filtrar por ID do profissional
- *       - in: query
- *         name: client_id
- *         schema:
- *           type: integer
- *         description: Filtrar por ID do cliente
+ *         description: ID do usuário
  *       - in: query
  *         name: status
  *         schema:
@@ -202,17 +198,28 @@ router.post("/", createAppointment);
  *         description: Data final para intervalo (YYYY-MM-DD)
  *     responses:
  *       200:
- *         description: Lista de agendamentos
+ *         description: Lista de agendamentos do usuário (como cliente e profissional)
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Appointment'
+ *               type: object
+ *               properties:
+ *                 asClient:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Appointment'
+ *                   description: Agendamentos onde o usuário é cliente
+ *                 asProfessional:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Appointment'
+ *                   description: Agendamentos onde o usuário é profissional
+ *       404:
+ *         description: Usuário não encontrado
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/", getAllAppointments);
+router.get("/user/:id", getAllAppointments);
 
 /**
  * @swagger
