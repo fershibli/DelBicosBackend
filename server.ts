@@ -19,7 +19,6 @@ import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
-import bodyParser from "body-parser";
 import path from "path";
 import { initializeAssociations } from "./src/models/associations";
 
@@ -35,8 +34,6 @@ console.log("Ambiente:", process.env.ENVIRONMENT);
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
