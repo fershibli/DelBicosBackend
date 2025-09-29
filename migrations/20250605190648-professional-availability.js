@@ -64,6 +64,16 @@ module.exports = {
         type: DataTypes.ENUM("none", "daily", "weekly", "monthly"),
         defaultValue: "none",
       },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
     });
     await queryInterface.addIndex(
       "profesisonal-availability",
