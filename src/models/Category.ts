@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { SubCategoryModel } from "./Subcategory";
 
 /*
 CREATE TABLE category (
@@ -62,8 +61,3 @@ CategoryModel.init(
     timestamps: true,
   }
 );
-
-CategoryModel.hasMany(SubCategoryModel, {
-  foreignKey: "category_id",
-  as: "Subcategories",
-});

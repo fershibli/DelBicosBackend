@@ -1,6 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { ProfessionalModel } from "./Professional";
 
 /*
 CREATE TABLE professional_availability (
@@ -146,8 +145,3 @@ ProfessionalAvailabilityModel.init(
     timestamps: true,
   }
 );
-
-ProfessionalAvailabilityModel.belongsTo(ProfessionalModel, {
-  foreignKey: "professional_id",
-  as: "Professional",
-});

@@ -1,7 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { AdminModel } from "./Admin";
-import { AppointmentModel } from "./Appointment";
 
 /*
 CREATE TABLE admin_service_order (
@@ -101,13 +99,3 @@ AdminServiceOrderModel.init(
     timestamps: false,
   }
 );
-
-AdminServiceOrderModel.belongsTo(AdminModel, {
-  foreignKey: "admin_id",
-  as: "Admin",
-});
-
-AdminServiceOrderModel.belongsTo(AppointmentModel, {
-  foreignKey: "appointment_id",
-  as: "Appointment",
-});

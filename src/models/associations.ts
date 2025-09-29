@@ -1,0 +1,241 @@
+import { UserModel } from "./User";
+import { ClientModel } from "./Client";
+import { ProfessionalModel } from "./Professional";
+import { AdminModel } from "./Admin";
+import { AddressModel } from "./Address";
+import { CategoryModel } from "./Category";
+import { SubCategoryModel } from "./Subcategory";
+import { ServiceModel } from "./Service";
+import { AmenitiesModel } from "./Amenities";
+import { ProfessionalAmenityModel } from "./ProfessionalAmenities";
+import { ProfessionalGalleryModel } from "./ProfessionalGallery";
+import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
+import { ProfessionalAvailabilityLockModel } from "./ProfessionalAvailabilityLock";
+import { AppointmentModel } from "./Appointment";
+import { AdminServiceOrderModel } from "./AdminServiceOrder";
+
+export function initializeAssociations() {
+  // User associations
+  UserModel.hasOne(ClientModel, {
+    foreignKey: "user_id",
+    as: "Client",
+  });
+
+  UserModel.hasOne(ProfessionalModel, {
+    foreignKey: "user_id",
+    as: "Professional",
+  });
+
+  UserModel.hasOne(AdminModel, {
+    foreignKey: "user_id",
+    as: "Admin",
+  });
+
+  UserModel.hasMany(AddressModel, {
+    foreignKey: "user_id",
+    as: "Addresses",
+  });
+
+  // Address associations
+  AddressModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "User",
+  });
+
+  AddressModel.hasOne(ClientModel, {
+    foreignKey: "main_address_id",
+    as: "ClientsUsingAsMain",
+  });
+
+  AddressModel.hasOne(ProfessionalModel, {
+    foreignKey: "main_address_id",
+    as: "ProfessionalsUsingAsMain",
+  });
+
+  AddressModel.hasMany(AppointmentModel, {
+    foreignKey: "address_id",
+    as: "Appointments",
+  });
+
+  // Client associations
+  ClientModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "User",
+  });
+
+  ClientModel.belongsTo(AddressModel, {
+    foreignKey: "main_address_id",
+    as: "MainAddress",
+  });
+
+  ClientModel.hasMany(AppointmentModel, {
+    foreignKey: "client_id",
+    as: "Appointments",
+  });
+
+  // Professional associations
+  ProfessionalModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "user",
+  });
+
+  ProfessionalModel.belongsTo(AddressModel, {
+    foreignKey: "main_address_id",
+    as: "main_address",
+  });
+
+  ProfessionalModel.hasMany(AddressModel, {
+    foreignKey: "professional_id",
+    as: "addresses",
+  });
+
+  ProfessionalModel.hasMany(ServiceModel, {
+    foreignKey: "professional_id",
+    as: "services",
+  });
+
+  ProfessionalModel.belongsToMany(AmenitiesModel, {
+    through: "professional_amenities",
+    foreignKey: "professional_id",
+    otherKey: "amenity_id",
+    as: "amenities",
+  });
+
+  ProfessionalModel.hasMany(ProfessionalGalleryModel, {
+    foreignKey: "professional_id",
+    as: "gallery",
+  });
+
+  ProfessionalModel.hasMany(ProfessionalAvailabilityModel, {
+    foreignKey: "professional_id",
+    as: "availabilities",
+  });
+
+  ProfessionalModel.hasMany(ProfessionalAvailabilityLockModel, {
+    foreignKey: "professional_id",
+    as: "availability_locks",
+  });
+
+  ProfessionalModel.hasMany(AppointmentModel, {
+    foreignKey: "professional_id",
+    as: "appointments",
+  });
+
+  // Admin associations
+  AdminModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "User",
+  });
+
+  AdminModel.hasMany(AdminServiceOrderModel, {
+    foreignKey: "admin_id",
+    as: "ServiceOrders",
+  });
+
+  // Category associations
+  CategoryModel.hasMany(SubCategoryModel, {
+    foreignKey: "category_id",
+    as: "Subcategories",
+  });
+
+  // SubCategory associations
+  SubCategoryModel.belongsTo(CategoryModel, {
+    foreignKey: "category_id",
+    as: "Category",
+  });
+
+  SubCategoryModel.hasMany(ServiceModel, {
+    foreignKey: "subcategory_id",
+    as: "Services",
+  });
+
+  // Service associations
+  ServiceModel.belongsTo(SubCategoryModel, {
+    foreignKey: "subcategory_id",
+    as: "Subcategory",
+  });
+
+  ServiceModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  ServiceModel.hasMany(AppointmentModel, {
+    foreignKey: "service_id",
+    as: "Appointments",
+  });
+
+  // Amenities associations
+  AmenitiesModel.belongsToMany(ProfessionalModel, {
+    through: ProfessionalAmenityModel,
+    foreignKey: "amenity_id",
+    otherKey: "professional_id",
+    as: "Professionals",
+  });
+
+  // ProfessionalAmenity associations
+  ProfessionalAmenityModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  ProfessionalAmenityModel.belongsTo(AmenitiesModel, {
+    foreignKey: "amenity_id",
+    as: "Amenity",
+  });
+
+  // ProfessionalGallery associations
+  ProfessionalGalleryModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  // ProfessionalAvailability associations
+  ProfessionalAvailabilityModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  // ProfessionalAvailabilityLock associations
+  ProfessionalAvailabilityLockModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  // Appointment associations
+  AppointmentModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  AppointmentModel.belongsTo(ClientModel, {
+    foreignKey: "client_id",
+    as: "Client",
+  });
+
+  AppointmentModel.belongsTo(ServiceModel, {
+    foreignKey: "service_id",
+    as: "Service",
+  });
+
+  AppointmentModel.belongsTo(AddressModel, {
+    foreignKey: "address_id",
+    as: "Address",
+  });
+
+  AppointmentModel.hasMany(AdminServiceOrderModel, {
+    foreignKey: "appointment_id",
+    as: "ServiceOrders",
+  });
+
+  // AdminServiceOrder associations
+  AdminServiceOrderModel.belongsTo(AdminModel, {
+    foreignKey: "admin_id",
+    as: "Admin",
+  });
+
+  AdminServiceOrderModel.belongsTo(AppointmentModel, {
+    foreignKey: "appointment_id",
+    as: "Appointment",
+  });
+}

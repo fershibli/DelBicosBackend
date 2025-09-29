@@ -1,7 +1,5 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
-import { UserModel } from "./User";
-import { AdminServiceOrderModel } from "./AdminServiceOrder";
 
 /*
 CREATE TABLE admin (
@@ -50,14 +48,3 @@ AdminModel.init(
     timestamps: true,
   }
 );
-
-// Admin relationships
-AdminModel.belongsTo(UserModel, {
-  foreignKey: "user_id",
-  as: "User",
-});
-
-AdminModel.hasMany(AdminServiceOrderModel, {
-  foreignKey: "admin_id",
-  as: "ServiceOrders",
-});
