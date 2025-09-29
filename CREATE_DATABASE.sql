@@ -204,6 +204,8 @@ CREATE TABLE appointment (
     address_id INT NOT NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    review STRING(1000),
     status ENUM('pending', 'confirmed', 'completed', 'canceled') DEFAULT 'pending',
     FOREIGN KEY (professional_id) REFERENCES professional(id),
     FOREIGN KEY (client_id) REFERENCES client(id),
