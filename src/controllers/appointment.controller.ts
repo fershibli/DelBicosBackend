@@ -146,11 +146,9 @@ export const confirmAppointment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Agendamento não encontrado" });
     }
     if (appointment.status !== "pending") {
-      return res
-        .status(400)
-        .json({
-          error: `Não é possível aceitar um agendamento com status '${appointment.status}'`,
-        });
+      return res.status(400).json({
+        error: `Não é possível aceitar um agendamento com status '${appointment.status}'`,
+      });
     }
     appointment.status = "confirmed";
     await appointment.save();
@@ -158,5 +156,34 @@ export const confirmAppointment = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: "Erro ao confirmar agendamento" });
+  }
+};
+
+export const reviewAppointment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { rating, review } = req.body;
+  try {
+    const appointment = await AppointmentModel.findByPk(id);
+    if (!appointment) {
+      return res.status(404).json({ error: "Agendamento não encontrado" });
+    }
+    if (appointment.status !== "completed") {
+      return res.status(400).json({
+        error: `Não é possível avaliar um agendamento com status '${appointment.status}'`,
+      });
+    }
+    if (appointment.rating < 0 || appointment.rating > 5) {
+      return res.status(400).json({
+        error: `A avaliação deve estar entre 0 e 5`,
+      });
+    }
+
+    appointment.rating = rating;
+    appointment.review = review;
+    await appointment.save();
+    res.json(appointment);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao avaliar agendamento" });
   }
 };
