@@ -50,7 +50,7 @@ CREATE TABLE professional (
     main_address_id INT,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     cnpj VARCHAR(18) UNIQUE,
-    description TEXT,
+    description STRING(1500),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (main_address_id) REFERENCES address(id)
 );

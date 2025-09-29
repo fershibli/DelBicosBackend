@@ -28,6 +28,10 @@ module.exports = {
           key: "id",
         },
       },
+      description: {
+        type: DataTypes.SRING(1500),
+        allowNull: true,
+      },
       cpf: {
         type: DataTypes.STRING(14),
         allowNull: false,
