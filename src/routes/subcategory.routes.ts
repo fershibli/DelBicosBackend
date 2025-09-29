@@ -131,29 +131,32 @@ router.post("/", createSubCategory);
 
 /**
  * @swagger
- * /subcategories:
+ * /subcategories/category/{id}:
  *   get:
- *     summary: Retorna todas as subcategorias ativas
+ *     summary: Retorna todas as subcategorias ativas de uma categoria específica
  *     tags: [Subcategories]
  *     parameters:
- *       - in: query
- *         name: category_id
+ *       - in: path
+ *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         description: Filtrar subcategorias por ID de categoria
+ *         description: ID da categoria
  *     responses:
  *       200:
- *         description: Lista de subcategorias ativas
+ *         description: Lista de subcategorias ativas da categoria
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Subcategory'
+ *       404:
+ *         description: Categoria não encontrada
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/", getAllSubCategories);
+router.get("/category/:id", getAllSubCategories);
 
 /**
  * @swagger
