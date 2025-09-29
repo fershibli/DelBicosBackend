@@ -93,9 +93,6 @@ AdminServiceOrderModel.init(
   {
     sequelize,
     tableName: "admin_service_order",
-    underscored: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
     timestamps: false,
   }
 );
