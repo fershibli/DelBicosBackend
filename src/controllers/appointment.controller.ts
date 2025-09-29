@@ -172,7 +172,7 @@ export const reviewAppointment = async (req: Request, res: Response) => {
         error: `Não é possível avaliar um agendamento com status '${appointment.status}'`,
       });
     }
-    if (appointment.rating < 0 || appointment.rating > 5) {
+    if (rating < 0 || rating > 5) {
       return res.status(400).json({
         error: `A avaliação deve estar entre 0 e 5`,
       });
