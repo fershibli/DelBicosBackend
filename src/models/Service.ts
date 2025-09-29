@@ -109,8 +109,6 @@ ServiceModel.init(
     sequelize,
     tableName: "service",
     timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
     indexes: [
       {
         name: "active_index_service",
