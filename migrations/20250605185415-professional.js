@@ -29,7 +29,7 @@ module.exports = {
         },
       },
       description: {
-        type: DataTypes.SRING(1500),
+        type: DataTypes.STRING(1500),
         allowNull: true,
       },
       cpf: {
