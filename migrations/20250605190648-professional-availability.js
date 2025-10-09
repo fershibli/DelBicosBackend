@@ -5,7 +5,7 @@ const { DataTypes } = require("sequelize");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("profesisonal-availability", {
+    await queryInterface.createTable("professional_availability", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -76,7 +76,7 @@ module.exports = {
       },
     });
     await queryInterface.addIndex(
-      "profesisonal-availability",
+      "professional_availability",
       ["professional_id", "recurrence_pattern", "start_day", "end_day"],
       {
         name: "idx_recurrence_combo",
@@ -85,6 +85,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("profesisonal-availability");
+    await queryInterface.dropTable("professional_availability");
   },
 };
