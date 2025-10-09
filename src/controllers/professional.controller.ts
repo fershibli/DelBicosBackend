@@ -18,19 +18,19 @@ export const getProfessionals = async (req: Request, res: Response) => {
 
     const include = [
       { 
-        association: "user", 
+        association: "User", 
         attributes: ["name", "email"], 
         required: false 
       },
       { 
-        association: "main_address", 
+        association: "MainAddress", 
         attributes: ["lat", "lng", "city"], 
         required: false 
       },
-      { association: "services" },
-      { association: "amenities", through: { attributes: [] } },
-      { association: "gallery" },
-      { association: "availabilities" },
+      { association: "Services" },
+      { association: "Amenities", through: { attributes: [] } },
+      { association: "Gallery" },
+      { association: "Availabilities" },
     ];
 
     const order: any[] = [];
@@ -64,13 +64,13 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
+        { association: "User" },
+        { association: "MainAddress" },
+        { association: "Services" },
+        { association: "Amenities", through: { attributes: [] } },
+        { association: "Gallery" },
         {
-          association: "availabilities",
+          association: "Availabilities",
           where: { is_available: true },
           required: false,
         },
@@ -109,12 +109,12 @@ export const updateProfessional = async (req: Request, res: Response) => {
 
     const updatedProfessional = await ProfessionalModel.findByPk(id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
-        { association: "availabilities" },
+        { association: "User" },
+        { association: "MainAddress" },
+        { association: "Services" },
+        { association: "Amenities", through: { attributes: [] } },
+        { association: "Gallery" },
+        { association: "Availabilities" },
       ],
     });
 
