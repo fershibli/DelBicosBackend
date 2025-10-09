@@ -22,6 +22,25 @@ export const getAddressById = async (req: Request, res: Response) => {
     : res.status(404).json({ error: "Endereço não encontrado" });
 };
 
+export const getAddressesByUserId = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    
+    const addresses = await AddressModel.findAll({
+      where: { 
+        user_id: userId,
+        active: true 
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json(addresses);
+  } catch (error: any) {
+    console.error('Erro ao buscar endereços:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
 export const updateAddress = async (req: Request, res: Response) => {
   const address = await AddressModel.findByPk(req.params.id);
   if (address) {
