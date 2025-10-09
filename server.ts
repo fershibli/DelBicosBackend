@@ -19,6 +19,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
+import notificationRoutes from './src/routes/notification.routes';
 import path from "path";
 import { initializeAssociations } from "./src/models/associations";
 
@@ -66,6 +67,8 @@ app.use("/api/professionals", professionalRoutes);
 app.use("/api/professional_gallery", professionalGalleryRoutes);
 app.use("/api/amenities", amenitiesRoutes);
 app.use("/api/professional_amenities", professionalAmenityRoutes);
+
+app.use('/api/notifications', notificationRoutes);
 
 app.use("/api/email", emailRouter);
 app.use("/auth", authRouter);
