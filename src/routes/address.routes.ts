@@ -5,6 +5,7 @@ import {
   getAddressById,
   updateAddress,
   deleteAddress,
+  getAddressesByUserId,
 } from "../controllers/address.controller";
 
 const router = express.Router();
@@ -293,5 +294,7 @@ router.put("/:id", updateAddress);
  *         description: Erro interno do servidor
  */
 router.delete("/:id", deleteAddress);
+
+router.get('/user/:userId', getAddressesByUserId);
 
 export default router;
