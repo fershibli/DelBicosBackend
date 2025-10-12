@@ -7,6 +7,7 @@ import {
   deleteAppointment,
   confirmAppointment,
   reviewAppointment,
+  getAppointmentInvoice,
 } from "../controllers/appointment.controller";
 
 const router = Router();
@@ -158,6 +159,69 @@ const router = Router();
  *         rating: 5
  *         review: "Excelente serviço, profissional muito competente!"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     InvoiceData:
+ *       type: object
+ *       properties:
+ *         invoiceNumber:
+ *           type: string
+ *         date:
+ *           type: string
+ *         customerName:
+ *           type: string
+ *         customerCpf:
+ *           type: string
+ *         customerAddress:
+ *           type: string
+ *         professionalName:
+ *           type: string
+ *         professionalCpf:
+ *           type: string
+ *         serviceName:
+ *           type: string
+ *         serviceDescription:
+ *           type: string
+ *         servicePrice:
+ *           type: number
+ *         serviceDate:
+ *           type: string
+ *         serviceTime:
+ *           type: string
+ *         total:
+ *           type: number
+ *         paymentMethod:
+ *           type: string
+ *           nullable: true
+ *         transactionId:
+ *           type: string
+ *           nullable: true
+ *         dueDate:
+ *           type: string
+ *           nullable: true
+ *         observations:
+ *           type: string
+ *           nullable: true
+ *       example:
+ *         invoiceNumber: "NF01234"
+ *         date: "01/01/2024"
+ *         customerName: "João da Silva Santos"
+ *         customerCpf: "123.456.789-00"
+ *         customerAddress: "Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567"
+ *         professionalName: "Maria Oliveira Costa"
+ *         professionalCpf: "987.654.321-00"
+ *         serviceName: "Limpeza Residencial Completa"
+ *         serviceDescription: "Limpeza completa de casa com 3 quartos"
+ *         servicePrice: 150.0
+ *         serviceDate: "01/01/2024"
+ *         serviceTime: "14:00 - 17:00"
+ *         total: 150.0
+ *         paymentMethod: "Cartão de Crédito"
+ *         transactionId: "TXN123456789"
+
 
 /**
  * @swagger
@@ -444,5 +508,32 @@ router.post("/:id/confirm", confirmAppointment);
  *                 error: "Erro ao avaliar agendamento"
  */
 router.post("/:id/review", reviewAppointment);
+
+/**
+ * @swagger
+ * /appointments/{id}/invoice:
+ *   get:
+ *     summary: Retorna a invoice de um agendamento pelo ID
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do agendamento
+ *     responses:
+ *       200:
+ *         description: Dados da invoice do agendamento
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InvoiceData'
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/:id/invoice", getAppointmentInvoice);
 
 export default router;
