@@ -154,8 +154,8 @@ export const reviewAppointment = async (req: Request, res: Response) => {
 
 export const getAppointmentInvoice = async (req: Request, res: Response) => {
   try {
-    const appointmentId = req.params.id;
-    const appointment = await AppointmentModel.findByPk(appointmentId);
+    //const appointmentId = req.params.id;
+    //const appointment = await AppointmentModel.findByPk(appointmentId);
 
     // Mocked invoice data conforme interface fornecida
     const invoice = {
@@ -175,7 +175,7 @@ export const getAppointmentInvoice = async (req: Request, res: Response) => {
       servicePrice: 150.0,
       serviceDate: new Date().toLocaleDateString("pt-BR"),
       serviceTime: "14:00 - 17:00",
-      total: 150.0,
+      total: 610.0,
       paymentMethod: "Cartão de Crédito",
       transactionId: `TXN${Date.now()}`,
     };
