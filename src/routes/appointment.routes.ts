@@ -221,7 +221,7 @@ const router = Router();
  *         total: 150.0
  *         paymentMethod: "Cartão de Crédito"
  *         transactionId: "TXN123456789"
-
+ */
 
 /**
  * @swagger
