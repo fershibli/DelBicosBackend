@@ -1,22 +1,86 @@
-// BACKEND: notification.controller.ts
-
 import { Request, Response } from "express";
 import { NotificationModel } from "../models/Notification";
+import { Expo, ExpoPushMessage } from "expo-server-sdk";
+import { UserTokenModel } from "../models/UserToken";
 
-// Removendo a interface AuthRequest, já que não usaremos req.user
+
+let expo = new Expo();
+
+export const saveExpoPushToken = async (req: Request, res: Response) => {
+    const { userId, token } = req.body;
+
+    if (!userId || !token) {
+        return res.status(400).json({ error: "userId and token are required." });
+    }
+
+    if (!Expo.isExpoPushToken(token)) {
+        console.error(`Token ${token} não é um Expo Push Token válido.`);
+        return res.status(400).json({ error: "Invalid Expo Push Token format." });
+    }
+
+    try {
+        await UserTokenModel.upsert({
+            user_id: userId,
+            token: token,
+        });
+
+        res.status(201).json({ message: "Expo Push Token saved successfully." });
+    } catch (error: any) {
+        console.error("Erro ao salvar token:", error);
+        res.status(500).json({ error: "Failed to save push token." });
+    }
+};
+
+
+export const sendPushNotification = async (userId: string, title: string, message: string, notificationId: number) => {
+    try {
+        const userToken = await UserTokenModel.findOne({ where: { user_id: userId } });
+
+        if (!userToken || !Expo.isExpoPushToken(userToken.token)) {
+            console.log(`Nenhum token válido encontrado para o usuário ${userId}.`);
+            return;
+        }
+
+        const pushMessage: ExpoPushMessage = {
+            to: userToken.token,
+            sound: 'default',
+            title: title,
+            body: message,
+            data: { 
+                id: notificationId,
+                title: title, 
+                message: message,
+                createdAt: new Date().toISOString()
+            }, 
+        };
+
+        let ticket = await expo.sendPushNotificationsAsync([pushMessage]);
+        console.log("Ticket de envio de notificação:", ticket);
+        
+    } catch (error) {
+        console.error("Erro ao enviar notificação push:", error);
+    }
+};
+
 
 export const createNotification = async (req: Request, res: Response) => {
   try {
     const notification = await NotificationModel.create(req.body);
     res.status(201).json(notification);
+    sendPushNotification(
+            String(notification.user_id),
+            notification.title,
+            notification.message,
+            notification.id
+        );
+
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// GET: /api/notifications/:userId (Busca as notificações de um ID passado na URL)
 export const getNotificationsByUser = async (req: Request, res: Response) => {
-  const userId = req.params.userId; // AGORA LENDO O ID DA ROTA
+  const userId = req.params.userId;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required in URL parameter." });
@@ -29,7 +93,7 @@ export const getNotificationsByUser = async (req: Request, res: Response) => {
       where: whereCondition,
       order: [
         ['is_read', 'ASC'],
-        ['createdAt', 'DESC'], // Ajustado para o padrão Sequelize 'createdAt'
+        ['createdAt', 'DESC'],
       ],
     });
     res.json(notifications);
@@ -38,10 +102,9 @@ export const getNotificationsByUser = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH: /api/notifications/:notificationId/read/:userId (Marca 1 como lida)
 export const markNotificationAsRead = async (req: Request, res: Response) => {
-  const notificationId = req.params.notificationId; // A rota será ajustada para este nome
-  const userId = req.params.userId; // <--- PEGANDO O ID DO USUÁRIO PELA ROTA (INSEGURO)
+  const notificationId = req.params.notificationId;
+  const userId = req.params.userId;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required for marking read." });
@@ -61,7 +124,6 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
 
     if (updatedRows === 0) {
       const notification = await NotificationModel.findByPk(notificationId);
-      // Removemos a verificação de 'user_id' aqui também para simplificar
       if (!notification) {
         return res.status(404).json({ error: "Notification not found." });
       }
@@ -75,9 +137,8 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH: /api/notifications/mark-all-read/:userId (Marca todas como lidas)
 export const markAllNotificationsAsRead = async (req: Request, res: Response) => {
-  const userId = req.params.userId; // <--- PEGANDO O ID DO USUÁRIO PELA ROTA (INSEGURO)
+  const userId = req.params.userId;
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required for marking all read." });
