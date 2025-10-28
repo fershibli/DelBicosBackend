@@ -38,3 +38,7 @@ services:
     depends_on:
       - postgres
     restart: unless-stopped
+networks:
+  default:
+    external: true
+    name: delbicos-shared-network
