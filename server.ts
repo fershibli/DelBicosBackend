@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
@@ -21,6 +21,7 @@ import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
 import path from "path";
 import { initializeAssociations } from "./src/models/associations";
+import paymentRouter from "./src/routes/payment.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -77,7 +78,7 @@ app.use("/api/professionals", professionalRoutes);
 app.use("/api/professional_gallery", professionalGalleryRoutes);
 app.use("/api/amenities", amenitiesRoutes);
 app.use("/api/professional_amenities", professionalAmenityRoutes);
-
+app.use("/api/payments", paymentRouter);
 app.use("/api/email", emailRouter);
 app.use("/auth", authRouter);
 
