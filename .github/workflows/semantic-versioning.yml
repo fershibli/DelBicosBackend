@@ -133,6 +133,14 @@ jobs:
           echo "Atualizando versão para ${{ env.new_version }}"
           npm version ${{ env.new_version }} --no-git-tag-version --allow-same-version
 
+          # Verificar se o 'npm version' realmente alterou o package.json
+          if git diff --quiet --exit-code package.json; then
+            echo "O package.json já está na versão correta. Nenhuma mudança."
+            echo "should_version=false" >> $GITHUB_ENV
+          else
+            echo "package.json atualizado com sucesso."
+          fi
+
       - name: Commit e push
         if: env.should_version == 'true'
         env:
