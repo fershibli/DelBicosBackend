@@ -13,7 +13,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: md5
       POSTGRES_INITDB_ARGS: "--auth-host=md5"
     ports:
-      - "15432:5432"
+      - "5432:5432"
     restart: unless-stopped
   delbicos-server:
     build:
@@ -26,8 +26,8 @@ services:
       - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
       - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
       - SEQUELIZE_DB_PASS=${SEQUELIZE_DB_PASS:-postgres123}
-      - SEQUELIZE_HOST=${SEQUELIZE_HOST:-localhost}
-      - SEQUELIZE_PORT=${SEQUELIZE_PORT:-15432}
+      - SEQUELIZE_HOST=${SEQUELIZE_HOST:-postgres}
+      - SEQUELIZE_PORT=${SEQUELIZE_PORT:-5432}
       - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
       - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
       - EXPIRES_IN=${EXPIRES_IN:-24h}
