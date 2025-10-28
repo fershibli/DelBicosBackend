@@ -26,7 +26,8 @@ services:
       - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
       - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
       - SEQUELIZE_DB_PASS=${SEQUELIZE_DB_PASS:-postgres123}
-      - SEQUELIZE_HOST=${postgres} # Usando o nome do serviço do Docker Compose, mas manter localhost no .env para desenvolvimento local
+      # Using the Docker Compose service name, but keep localhost in .env for local development
+      - SEQUELIZE_HOST=postgres
       - SEQUELIZE_PORT=${SEQUELIZE_PORT:-5432}
       - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
       - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
