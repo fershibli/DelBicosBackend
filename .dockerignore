@@ -26,7 +26,6 @@ yarn-debug._
 
 # Env files (will be passed via docker-compose)
 
-.env
 .env.local
 .env\*.local
 
