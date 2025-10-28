@@ -28,7 +28,8 @@
     "docker:clean": "docker-compose down -v --remove-orphans",
     "docker:clean:images": "docker-compose down && docker system prune -f",
     "docker:clean:all": "docker-compose down -v --remove-orphans && docker system prune -af --volumes",
-    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d"
+    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+    "docker:copy:env": "docker cp .env delbicos-server:/app/.env"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
