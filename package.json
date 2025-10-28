@@ -20,7 +20,7 @@
     "seed:reset": "npm run seed:undo:all && npm run seed",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
-    "docker:dev": "docker-compose exec delbicos-server npm dev",
+    "docker:dev": "docker-compose exec delbicos-server npm run dev",
     "docker:exec": "docker-compose exec delbicos-server sh",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
