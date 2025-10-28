@@ -1,0 +1,42 @@
+# Dependencies
+
+node_modules/
+yarn-error.\*
+
+# Debug
+
+.pnpm-debug.log
+npm-debug._
+yarn-debug._
+
+# macOS
+
+.DS_Store
+\*.pem
+
+# Git
+
+.git
+.gitignore
+
+# IDE
+
+.vscode/
+.idea/
+
+# Env files (will be passed via docker-compose)
+
+.env.local
+.env\*.local
+
+# Typescript
+
+\*.tsbuildinfo
+
+# Misc
+
+README.md
+docs/
+assets/_.png
+assets/_.jpg
+app-example/

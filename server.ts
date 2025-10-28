@@ -39,7 +39,18 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:8081",
+      "http://localhost:19000",
+      "exp://localhost:8081",
+      "exp://host.docker.internal:8081",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 const AVATAR_BUCKET_PATH = path.join(__dirname, "avatarBucket"); // <-- VERIFIQUE ESTE CAMINHO
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
