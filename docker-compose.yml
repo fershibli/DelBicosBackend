@@ -1,3 +1,7 @@
+version: "3.8"
+
+name: backend-delbicos
+
 services:
   postgres:
     image: postgres
@@ -10,4 +14,21 @@ services:
       POSTGRES_INITDB_ARGS: "--auth-host=md5"
     ports:
       - "15432:5432"
+    restart: unless-stopped
+  delbicos-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: server-delbicos
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: delbicos
+      DB_USER: delbicos
+      DB_PASSWORD: postgres123
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
     restart: unless-stopped
