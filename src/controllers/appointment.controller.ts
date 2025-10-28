@@ -151,3 +151,39 @@ export const reviewAppointment = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao avaliar agendamento" });
   }
 };
+
+export const getAppointmentInvoice = async (req: Request, res: Response) => {
+  try {
+    //const appointmentId = req.params.id;
+    //const appointment = await AppointmentModel.findByPk(appointmentId);
+
+    // Mocked invoice data conforme interface fornecida
+    const invoice = {
+      invoiceNumber: `NF${Math.floor(Math.random() * 100000)
+        .toString()
+        .padStart(5, "0")}`,
+      date: new Date().toLocaleDateString("pt-BR"),
+      customerName: "João da Silva Santos",
+      customerCpf: "123.456.789-00",
+      customerAddress:
+        "Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567",
+      professionalName: "Maria Oliveira Costa",
+      professionalCpf: "987.654.321-00",
+      serviceName: "Limpeza Residencial Completa",
+      serviceDescription:
+        "Limpeza completa de casa com 3 quartos, incluindo cozinha, banheiros e áreas comuns",
+      servicePrice: 150.0,
+      serviceDate: new Date().toLocaleDateString("pt-BR"),
+      serviceTime: "14:00 - 17:00",
+      total: 610.0,
+      paymentMethod: "Cartão de Crédito",
+      transactionId: `TXN${Date.now()}`,
+    };
+
+    // No momento retornamos o mock sempre com status 200
+    res.json(invoice);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao gerar invoice" });
+  }
+};
