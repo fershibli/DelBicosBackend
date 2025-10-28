@@ -25,6 +25,7 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
     "docker:restart": "docker-compose restart",
+    "docker:restart:postgres": "docker-compose restart postgres-delbicos",
     "docker:clean": "docker-compose down -v --remove-orphans",
     "docker:clean:images": "docker-compose down && docker system prune -f",
     "docker:clean:all": "docker-compose down -v --remove-orphans && docker system prune -af --volumes",
