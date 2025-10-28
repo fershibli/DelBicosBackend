@@ -21,12 +21,18 @@ services:
       dockerfile: Dockerfile
     container_name: server-delbicos
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: delbicos
-      DB_USER: delbicos
-      DB_PASSWORD: postgres123
-      PORT: 3000
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - MONGODB_URI=${MONGODB_URI:-suaStringConexao}
+      - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
+      - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
+      - SEQUELIZE_DB_PASS=${SEQUELIZE_DB_PASS:-postgres123}
+      - SEQUELIZE_HOST=${SEQUELIZE_HOST:-localhost}
+      - SEQUELIZE_PORT=${SEQUELIZE_PORT:-15432}
+      - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
+      - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
+      - EXPIRES_IN=${EXPIRES_IN:-24h}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-'API_KEY'}
+      - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-'deliverydebicos@gmail.com'}
     ports:
       - "3000:3000"
     depends_on:
