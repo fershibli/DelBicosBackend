@@ -4,7 +4,8 @@ import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
 import { ProfessionalModel } from "../models/Professional";
 import { ServiceModel } from "../models/Service";
-import { Op } from "sequelize";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
+import { PaymentService } from "../services/payment.service";
 
 export const createAppointment = async (req: Request, res: Response) => {
   try {
@@ -154,36 +155,32 @@ export const reviewAppointment = async (req: Request, res: Response) => {
 
 export const getAppointmentInvoice = async (req: Request, res: Response) => {
   try {
-    //const appointmentId = req.params.id;
-    //const appointment = await AppointmentModel.findByPk(appointmentId);
+    const appointmentId = Number(req.params.id);
 
-    // Mocked invoice data conforme interface fornecida
-    const invoice = {
-      invoiceNumber: `NF${Math.floor(Math.random() * 100000)
-        .toString()
-        .padStart(5, "0")}`,
-      date: new Date().toLocaleDateString("pt-BR"),
-      customerName: "João da Silva Santos",
-      customerCpf: "123.456.789-00",
-      customerAddress:
-        "Rua das Flores, 123 - Centro - São Paulo/SP - CEP: 01234-567",
-      professionalName: "Maria Oliveira Costa",
-      professionalCpf: "987.654.321-00",
-      serviceName: "Limpeza Residencial Completa",
-      serviceDescription:
-        "Limpeza completa de casa com 3 quartos, incluindo cozinha, banheiros e áreas comuns",
-      servicePrice: 150.0,
-      serviceDate: new Date().toLocaleDateString("pt-BR"),
-      serviceTime: "14:00 - 17:00",
-      total: 610.0,
-      paymentMethod: "Cartão de Crédito",
-      transactionId: `TXN${Date.now()}`,
-    };
+    // 2. LEIA O ID DO USUÁRIO DO QUERY (JÁ QUE NÃO TEMOS authMiddleware)
+    // A chamada do frontend será: GET /api/appointments/123/receipt?userId=5
+    const userId = Number(req.query.userId);
 
-    // No momento retornamos o mock sempre com status 200
-    res.json(invoice);
+    // 3. Validação
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ error: "ID do usuário (userId) é obrigatório." });
+    }
+    if (isNaN(appointmentId)) {
+      return res.status(400).json({ error: "ID do agendamento inválido." });
+    }
+
+    // 4. Chame o serviço para buscar a URL do recibo
+    const receiptUrl = await PaymentService.getAppointmentReceipt(
+      appointmentId,
+      userId // Passa o userId do query
+    );
+
+    // 5. Retorne a URL
+    res.status(200).json({ receiptUrl });
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao gerar invoice" });
+    console.error(`[ApptController] Erro ao buscar recibo:`, error.message);
+    res.status(500).json({ error: error.message || "Erro ao gerar recibo" });
   }
 };

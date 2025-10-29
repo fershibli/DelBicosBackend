@@ -1,12 +1,20 @@
 import { Request, Response } from "express";
 import { PaymentService } from "../services/payment.service"; // Importa o serviço testado
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 
 export const createPaymentIntentController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   // 1. Extrair 'amount' e 'currency' do corpo da requisição
-  const { amount, currency } = req.body;
+  const {
+    amount,
+    currency,
+    professionalId,
+    selectedTime,
+    serviceId,
+    addressId,
+  } = req.body;
 
   // 2. Validação dos dados de entrada
   if (amount == null || typeof amount !== "number" || amount <= 0) {
@@ -25,7 +33,20 @@ export const createPaymentIntentController = async (
     });
     return;
   }
-  // Adicione aqui outras validações se necessário (ex: verificar se a moeda é suportada)
+  if (!professionalId || !selectedTime || !serviceId || !addressId) {
+    res.status(400).json({
+      error:
+        "Dados do agendamento (professionalId, selectedTime, serviceId, addressId) são obrigatórios.",
+    });
+    return;
+  }
+
+  // (Opcional: Obter o ID do cliente a partir do middleware de autenticação)
+  // const clientId = (req as any).user?.id;
+  // if (!clientId) {
+  //   res.status(401).json({ error: 'Usuário não autenticado.' });
+  //   return;
+  // }
 
   // 3. Converter 'amount' para a menor unidade monetária (centavos)
   // Certifique-se de que a lógica de arredondamento está correta para evitar problemas com floats.
@@ -33,8 +54,11 @@ export const createPaymentIntentController = async (
 
   // Opcional: Extrair metadados (ex: ID do pedido, ID do usuário) do corpo ou do usuário autenticado
   const metadata = {
-    orderId: req.body.orderId || null, // Exemplo
-    userId: (req as any).user?.id || null, // Exemplo se usar middleware de autenticação
+    // clientId: clientId.toString(), // Salva quem está comprando
+    professionalId: professionalId.toString(),
+    serviceId: serviceId.toString(),
+    selectedTime: selectedTime, // Já deve ser uma string (data ISO ou similar)
+    addressId: addressId.toString(),
   };
 
   try {
@@ -60,4 +84,45 @@ export const createPaymentIntentController = async (
   }
 };
 
-// Adicione outros controllers relacionados a pagamento aqui, se necessário.
+export const confirmPaymentController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const authReq = req as AuthenticatedRequest;
+
+  const { paymentIntentId, userId } = req.body;
+
+  if (!paymentIntentId) {
+    res
+      .status(400)
+      .json({ error: "O ID do pagamento (paymentIntentId) é obrigatório." });
+    return;
+  }
+  if (!userId) {
+    res.status(401).json({
+      error: "ID do usuário (userId) é obrigatório no corpo da requisição.",
+    });
+    return;
+  }
+
+  const authenticatedUserId = Number(userId);
+
+  try {
+    const newAppointment = await PaymentService.confirmAndCreateAppointment(
+      paymentIntentId,
+      authenticatedUserId
+    );
+    res.status(201).json({
+      message: "Agendamento criado com sucesso!",
+      appointment: newAppointment,
+    });
+  } catch (error: any) {
+    console.error(
+      `[PaymentController] Erro ao confirmar pagamento ${paymentIntentId}:`,
+      error.message
+    );
+    res
+      .status(500)
+      .json({ error: error.message || "Falha ao confirmar o agendamento." });
+  }
+};
