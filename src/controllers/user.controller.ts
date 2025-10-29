@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { UserModel, IUser } from "../models/User";
 import { AddressModel, IAddress } from "../models/Address";
 import { ClientModel, IClient } from "../models/Client";
@@ -221,6 +222,54 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
     res.status(500).json({ error: "Erro interno ao atualizar usuário" });
+  }
+};
+
+export const changePassword = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { current_password, new_password } = req.body as {
+      current_password: string;
+      new_password: string;
+    };
+
+    if (!current_password || !new_password) {
+      res
+        .status(400)
+        .json({ message: "current_password and new_password are required" });
+      return;
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      res.status(404).json({ message: "Usuário não encontrado" });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(current_password, user.password);
+    if (!isMatch) {
+      res.status(400).json({ message: "Senha atual incorreta" });
+      return;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(new_password, salt);
+    user.password = hashed;
+    await user.save();
+
+    // frontend only checks for 2xx; return 204 No Content
+    res.status(204).send();
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
 
