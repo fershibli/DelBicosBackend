@@ -5,6 +5,7 @@ import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
 import categoryRoutes from "./src/routes/category.routes";
 import subcategoryRoutes from "./src/routes/subcategory.routes";
+import appointmentRoutes from "./src/routes/appointment.routes";
 import userRoutes from "./src/routes/user.routes";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
@@ -61,6 +62,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/appointments", appointmentRoutes);
 app.use("/api/payments", paymentRouter);
 app.use("/auth", authRouter);
 
