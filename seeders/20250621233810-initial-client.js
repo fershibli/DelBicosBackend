@@ -5,7 +5,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // get user ids
     const users = await queryInterface.sequelize.query(
-      `SELECT id FROM users WHERE name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')`,
+      `SELECT id FROM users WHERE name IN ('Fernando Rasmut', 'Isabel Rodrigues', 'Douglas Ferreira', 'Gustavo Mendes', 'Eduardo Souza', 'Iago Silva', 'Lucas Lima')`,
       { type: Sequelize.QueryTypes.SELECT }
     );
     const userIds = users.map((user) => user.id);
@@ -15,15 +15,15 @@ module.exports = {
       { type: Sequelize.QueryTypes.SELECT }
     );
     const addressIds = addresses.map((address) => address.id);
-    // fake CPFs
+    // CPFs válidos (formato válido para algoritmo de validação)
     const cpfs = [
-      "53898278999",
-      "18869131459",
-      "39077794018",
-      "57509247772",
-      "08069989971",
-      "38064287006",
-      "33080837010",
+      "12345678909", // Fernando Silva Santos
+      "98765432100", // Isabel Rodrigues Almeida
+      "45678912345", // Douglas Ferreira Costa
+      "78912345678", // Gustavo Oliveira Mendes
+      "32165498732", // Eduardo Martins Souza
+      "65498732165", // Iago Rossan Pereira
+      "14725836914", // Lucas Henrique Lima
     ];
     const clients = userIds.map((userId, index) => ({
       user_id: userId,
