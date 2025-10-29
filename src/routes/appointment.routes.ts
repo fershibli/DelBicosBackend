@@ -534,6 +534,6 @@ router.post("/:id/review", reviewAppointment);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/:id/invoice", getAppointmentInvoice);
+router.get("/:id/receipt", getAppointmentInvoice);
 
 export default router;
