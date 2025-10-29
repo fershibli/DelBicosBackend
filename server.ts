@@ -9,7 +9,6 @@ import userRoutes from "./src/routes/user.routes";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
-import emailRouter from "./src/routes/email.routes";
 import authRouter from "./src/routes/auth.routes";
 import path from "path";
 import { initializeAssociations } from "./src/models/associations";
@@ -63,7 +62,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/payments", paymentRouter);
-app.use("/api/email", emailRouter);
 app.use("/auth", authRouter);
 
 const isServerless = process.env.ENVIRONMENT !== "development";
