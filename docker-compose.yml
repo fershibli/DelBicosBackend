@@ -22,6 +22,7 @@ services:
     container_name: server-delbicos
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
+      - IS_SERVERLESS=${IS_SERVERLESS:-false}
       - MONGODB_URI=${MONGODB_URI:-suaStringConexao}
       - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
       - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
@@ -32,9 +33,9 @@ services:
       - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
       - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
       - EXPIRES_IN=${EXPIRES_IN:-24h}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-'API_KEY'}
-      - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-'deliverydebicos@gmail.com'}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-'API_KEY'}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-sk_API_KEY}
+      - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-deliverydebicos@gmail.com}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_API_KEY}
     ports:
       - "3000:3000"
     depends_on:
