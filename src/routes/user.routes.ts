@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 import { verifyCode } from "../controllers/confirmCode.controller";
 import {
   createUser,
@@ -512,7 +513,7 @@ router.post("/login", logInUser);
  *       500:
  *         description: Erro no servidor
  */
-router.post("/:id/avatar", uploadAvatar);
+router.post("/:id/avatar", authMiddleware, uploadAvatar);
 
 /**
  * @swagger
@@ -534,7 +535,7 @@ router.post("/:id/avatar", uploadAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.get("/:id/avatar", getAvatar);
+router.get("/:id/avatar", authMiddleware, getAvatar);
 
 /**
  * @swagger
@@ -561,7 +562,7 @@ router.get("/:id/avatar", getAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.delete("/:id/avatar", deleteAvatar);
+router.delete("/:id/avatar", authMiddleware, deleteAvatar);
 
 /**
  * @swagger
@@ -629,7 +630,7 @@ router.get("/", getAllUsers);
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get("/:id", getUserById);
+router.get("/:id", authMiddleware, getUserById);
 
 /**
  * @swagger
