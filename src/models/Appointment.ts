@@ -34,6 +34,7 @@ export interface IAppointment {
   rating?: number;
   review?: string;
   status?: "pending" | "confirmed" | "completed" | "canceled";
+  payment_intent_id?: string | null;
 }
 
 type AppointmentCreationalAttributes = Optional<IAppointment, "id" | "status">;
@@ -53,8 +54,7 @@ export class AppointmentModel extends Model<
   public review?: string;
   public status!: "pending" | "confirmed" | "completed" | "canceled";
   public created_at!: Date;
-
-  // Timestamps
+  public payment_intent_id?: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -120,6 +120,11 @@ AppointmentModel.init(
       type: DataTypes.ENUM("pending", "confirmed", "completed", "canceled"),
       defaultValue: "pending",
     },
+    payment_intent_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
   },
   {
     sequelize,
@@ -134,6 +139,6 @@ AppointmentModel.init(
         fields: ["status", "start_time"],
       },
     ],
-    timestamps: true, // This will automatically add createdAt and updatedAt fields
+    timestamps: true,
   }
 );

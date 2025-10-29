@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { createPaymentIntentController } from "../controllers/payment.controller";
-// Opcional: Importe seu middleware de autenticação se esta rota precisar ser protegida
-// import authMiddleware from '../middlewares/auth.middleware';
+import {
+  createPaymentIntentController,
+  confirmPaymentController,
+} from "../controllers/payment.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 // Cria uma nova instância do Router do Express
 const paymentRouter = Router();
@@ -14,20 +16,20 @@ const paymentRouter = Router();
  */
 paymentRouter.post(
   "/create-payment-intent",
-  // Se você descomentar a linha abaixo, apenas usuários autenticados poderão criar pagamentos.
-  // authMiddleware,
+  authMiddleware,
   createPaymentIntentController // Liga a rota ao controller que criamos
 );
 
-/*
- * Outras rotas relacionadas a pagamento podem ser adicionadas aqui no futuro:
- *
- * Exemplo: Rota para receber Webhooks do Stripe (altamente recomendado para produção)
- * paymentRouter.post('/webhook', express.raw({type: 'application/json'}), handleStripeWebhookController);
- *
- * Exemplo: Rota para buscar o status de um pagamento
- * paymentRouter.get('/payment-status/:paymentIntentId', authMiddleware, getPaymentStatusController);
+/**
+ * @route   POST /api/payments/confirm
+ * @desc    Confirma um pagamento bem-sucedido e cria o agendamento no DB
+ * @access  Private (Obrigatório!)
  */
+paymentRouter.post(
+  "/confirm",
+  authMiddleware,
+  confirmPaymentController // 4. Ligue ao novo controller
+);
 
 // Exporta o router para ser usado no server.ts
 export default paymentRouter;

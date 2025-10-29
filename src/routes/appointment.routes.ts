@@ -1,14 +1,11 @@
 import { Router } from "express";
 import {
-  createAppointment,
   getAllAppointments,
-  getAppointmentById,
-  updateAppointment,
-  deleteAppointment,
   confirmAppointment,
   reviewAppointment,
   getAppointmentInvoice,
 } from "../controllers/appointment.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -225,39 +222,6 @@ const router = Router();
 
 /**
  * @swagger
- * /appointments:
- *   post:
- *     summary: Cria um novo agendamento
- *     tags: [Appointments]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AppointmentInput'
- *     responses:
- *       201:
- *         description: Agendamento criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Appointment'
- *       400:
- *         description: Dados inválidos ou conflito de horário
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Erro interno do servidor
- */
-router.post("/", createAppointment);
-
-/**
- * @swagger
  * /appointments/user/{id}:
  *   get:
  *     summary: Retorna todos os agendamentos de um usuário específico
@@ -317,99 +281,6 @@ router.post("/", createAppointment);
  *         description: Erro interno do servidor
  */
 router.get("/user/:id", getAllAppointments);
-
-/**
- * @swagger
- * /appointments/{id}:
- *   get:
- *     summary: Retorna um agendamento pelo ID
- *     tags: [Appointments]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do agendamento
- *     responses:
- *       200:
- *         description: Dados do agendamento
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Appointment'
- *       404:
- *         description: Agendamento não encontrado
- *       500:
- *         description: Erro interno do servidor
- */
-router.get("/:id", getAppointmentById);
-
-/**
- * @swagger
- * /appointments/{id}:
- *   put:
- *     summary: Atualiza um agendamento existente
- *     tags: [Appointments]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do agendamento
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AppointmentInput'
- *     responses:
- *       200:
- *         description: Agendamento atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Appointment'
- *       400:
- *         description: Dados inválidos ou conflito de horário
- *       404:
- *         description: Agendamento não encontrado
- *       500:
- *         description: Erro interno do servidor
- */
-router.put("/:id", updateAppointment);
-
-/**
- * @swagger
- * /appointments/{id}:
- *   delete:
- *     summary: Remove um agendamento
- *     tags: [Appointments]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID do agendamento
- *     responses:
- *       200:
- *         description: Agendamento removido com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Agendamento deletado com sucesso
- *       404:
- *         description: Agendamento não encontrado
- *       500:
- *         description: Erro interno do servidor
- */
-router.delete("/:id", deleteAppointment);
 
 /**
  * @swagger
@@ -534,6 +405,6 @@ router.post("/:id/review", reviewAppointment);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/:id/invoice", getAppointmentInvoice);
+router.get("/:id/receipt", authMiddleware, getAppointmentInvoice);
 
 export default router;
