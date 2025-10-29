@@ -1,19 +1,19 @@
 import express from "express";
 import {
-  createAddress,
-  getAllAddresses,
-  getAddressById,
-  updateAddress,
-  deleteAddress,
-  getAddressesByUserId,
+  getAllAddressByUserId,
+  getAddressesForAuthenticatedUser,
+  createAddressForAuthenticatedUser,
+  updateAddressForAuthenticatedUser,
+  deleteAddressForAuthenticatedUser,
 } from "../controllers/address.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   name: Addresses
+ *   name: Address
  *   description: Gerenciamento de endereços
  */
 
@@ -156,12 +156,53 @@ const router = express.Router();
  *         user_id: 1
  */
 
+// Public: get addres by given user id
+// TODO: swagger docs
+router.get("/user/:userId", getAllAddressByUserId);
+
+// Authenticated endpoints for the logged-in user
 /**
  * @swagger
- * /addresses:
+ * /address/session:
+ *   get:
+ *     summary: Retorna endereços do usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
+ *     responses:
+ *       200:
+ *         description: Lista de endereços do usuário autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Address'
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/session", authMiddleware, getAddressesForAuthenticatedUser);
+
+/**
+ * @swagger
+ * /address/session:
  *   post:
- *     summary: Cria um novo endereço
- *     tags: [Addresses]
+ *     summary: Cria um endereço para o usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
  *     requestBody:
  *       required: true
  *       content:
@@ -170,72 +211,32 @@ const router = express.Router();
  *             $ref: '#/components/schemas/AddressInput'
  *     responses:
  *       201:
- *         description: Endereço criado com sucesso
+ *         description: Endereço criado com sucesso para o usuário autenticado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Address'
  *       400:
  *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
  *       500:
  *         description: Erro interno do servidor
  */
-router.post("/", createAddress);
-
+router.post("/session", authMiddleware, createAddressForAuthenticatedUser);
 /**
  * @swagger
- * /addresses:
- *   get:
- *     summary: Retorna todos os endereços
- *     tags: [Addresses]
- *     responses:
- *       200:
- *         description: Lista de endereços
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Address'
- *       500:
- *         description: Erro interno do servidor
- */
-router.get("/", getAllAddresses);
-
-/**
- * @swagger
- * /addresses/{id}:
- *   get:
- *     summary: Retorna um endereço por ID
- *     tags: [Addresses]
+ * /address/session/{id}:
+ *   put:
+ *     summary: Atualiza um endereço do usuário autenticado
+ *     tags: [Address]
  *     parameters:
- *       - in: path
- *         name: id
+ *       - in: header
+ *         name: Authorization
  *         required: true
  *         schema:
- *           type: integer
- *         description: ID do endereço
- *     responses:
- *       200:
- *         description: Endereço encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Address'
- *       404:
- *         description: Endereço não encontrado
- *       500:
- *         description: Erro interno do servidor
- */
-router.get("/:id", getAddressById);
-
-/**
- * @swagger
- * /addresses/{id}:
- *   put:
- *     summary: Atualiza um endereço existente
- *     tags: [Addresses]
- *     parameters:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
  *       - in: path
  *         name: id
  *         required: true
@@ -257,20 +258,30 @@ router.get("/:id", getAddressById);
  *               $ref: '#/components/schemas/Address'
  *       400:
  *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Ação não permitida
  *       404:
  *         description: Endereço não encontrado
  *       500:
  *         description: Erro interno do servidor
  */
-router.put("/:id", updateAddress);
+router.put("/session/:id", authMiddleware, updateAddressForAuthenticatedUser);
 
 /**
  * @swagger
- * /addresses/{id}:
+ * /address/session/{id}:
  *   delete:
- *     summary: Remove um endereço
- *     tags: [Addresses]
+ *     summary: Deleta um endereço do usuário autenticado
+ *     tags: [Address]
  *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
  *       - in: path
  *         name: id
  *         required: true
@@ -279,7 +290,7 @@ router.put("/:id", updateAddress);
  *         description: ID do endereço
  *     responses:
  *       200:
- *         description: Endereço removido com sucesso
+ *         description: Endereço deletado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -287,14 +298,19 @@ router.put("/:id", updateAddress);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Endereço deletado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Ação não permitida
  *       404:
  *         description: Endereço não encontrado
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete("/:id", deleteAddress);
-
-router.get('/user/:userId', getAddressesByUserId);
+router.delete(
+  "/session/:id",
+  authMiddleware,
+  deleteAddressForAuthenticatedUser
+);
 
 export default router;

@@ -1,14 +1,9 @@
 import { Router } from "express";
-import { confirmNumber } from "../controllers/confirmNumber.controller";
-import { verifyCode } from "../controllers/confirmCode.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 import {
-  createUser,
-  deleteUser,
-  getAllUsers,
   getUserById,
   logInUser,
-  signUpUser,
-  updateUser,
+  changePassword,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -380,84 +375,6 @@ const router = Router();
 
 /**
  * @swagger
- * /user/confirm-number:
- *   post:
- *     summary: Verifica se um número de telefone está registrado
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PhoneNumberRequest'
- *     responses:
- *       200:
- *         description: Resposta sobre a existência do número
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PhoneNumberResponse'
- *       400:
- *         description: Número de telefone inválido
- *       500:
- *         description: Erro no servidor
- */
-router.post("/confirm-number", confirmNumber);
-
-/**
- * @swagger
- * /user/verify-code:
- *   post:
- *     summary: Verifica um código SMS e retorna informações do usuário se existir
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/VerifyCodeRequest'
- *     responses:
- *       200:
- *         description: Resposta sobre a existência do usuário
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/VerifyCodeResponse'
- *       400:
- *         description: Código ou número inválido
- *       500:
- *         description: Erro no servidor
- */
-router.post("/verify-code", verifyCode);
-
-/**
- * @swagger
- * /user/register:
- *   post:
- *     summary: Registra um novo usuário com endereço e cliente
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SignUpRequest'
- *     responses:
- *       200:
- *         description: Usuário registrado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
-router.post("/register", signUpUser);
-
-/**
- * @swagger
  * /user/login:
  *   post:
  *     summary: Realiza login do usuário
@@ -483,6 +400,11 @@ router.post("/register", signUpUser);
  *         description: Erro no servidor
  */
 router.post("/login", logInUser);
+
+/**
+ * Change password for authenticated user
+ */
+router.post("/change-password", authMiddleware, changePassword);
 
 /**
  * @swagger
@@ -512,7 +434,7 @@ router.post("/login", logInUser);
  *       500:
  *         description: Erro no servidor
  */
-router.post("/:id/avatar", uploadAvatar);
+router.post("/:id/avatar", authMiddleware, uploadAvatar);
 
 /**
  * @swagger
@@ -534,7 +456,7 @@ router.post("/:id/avatar", uploadAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.get("/:id/avatar", getAvatar);
+router.get("/:id/avatar", authMiddleware, getAvatar);
 
 /**
  * @swagger
@@ -561,53 +483,7 @@ router.get("/:id/avatar", getAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.delete("/:id/avatar", deleteAvatar);
-
-/**
- * @swagger
- * /user:
- *   post:
- *     summary: Cria um novo usuário (sem cliente/endereço)
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UserCreate'
- *     responses:
- *       201:
- *         description: Usuário criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
-router.post("/", createUser);
-
-/**
- * @swagger
- * /user:
- *   get:
- *     summary: Lista todos os usuários
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: Lista de usuários
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Erro no servidor
- */
-router.get("/", getAllUsers);
+router.delete("/:id/avatar", authMiddleware, deleteAvatar);
 
 /**
  * @swagger
@@ -629,61 +505,6 @@ router.get("/", getAllUsers);
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get("/:id", getUserById);
-
-/**
- * @swagger
- * /user/{id}:
- *   put:
- *     summary: Atualiza um usuário
- *     tags: [Users]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UserUpdate'
- *     responses:
- *       200:
- *         description: Usuário atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
-router.put("/:id", updateUser);
-
-/**
- * @swagger
- * /user/{id}:
- *   delete:
- *     summary: Remove um usuário
- *     tags: [Users]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     responses:
- *       200:
- *         description: Usuário deletado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *               example:
- *                 message: "Usuário deletado com sucesso"
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
-router.delete("/:id", deleteUser);
+router.get("/:id", authMiddleware, getUserById);
 
 export default router;

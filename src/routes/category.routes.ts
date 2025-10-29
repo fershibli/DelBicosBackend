@@ -1,11 +1,5 @@
 import { Router } from "express";
-import {
-  createCategory,
-  deleteCategory,
-  getAllCategories,
-  getByIdCategory,
-  updateCategory,
-} from "../controllers/category.controller";
+import { getAllCategories } from "../controllers/category.controller";
 const router = Router();
 
 /**
@@ -81,32 +75,6 @@ const router = Router();
 /**
  * @swagger
  * /categories:
- *   post:
- *     summary: Cria uma nova categoria
- *     tags: [Categories]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CategoryInput'
- *     responses:
- *       201:
- *         description: Categoria criada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Category'
- *       400:
- *         description: Dados inválidos ou título muito curto/longo
- *       500:
- *         description: Erro interno do servidor
- */
-router.post("/", createCategory);
-
-/**
- * @swagger
- * /categories:
  *   get:
  *     summary: Retorna todas as categorias ativas
  *     tags: [Categories]
@@ -123,90 +91,5 @@ router.post("/", createCategory);
  *         description: Erro interno do servidor
  */
 router.get("/", getAllCategories);
-
-/**
- * @swagger
- * /categories/{id}:
- *   get:
- *     summary: Retorna uma categoria pelo ID
- *     tags: [Categories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da categoria
- *     responses:
- *       200:
- *         description: Dados da categoria
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Category'
- *       404:
- *         description: Categoria não encontrada ou inativa
- *       500:
- *         description: Erro interno do servidor
- */
-router.get("/:id", getByIdCategory);
-
-/**
- * @swagger
- * /categories/{id}:
- *   put:
- *     summary: Atualiza uma categoria existente
- *     tags: [Categories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da categoria
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CategoryInput'
- *     responses:
- *       200:
- *         description: Categoria atualizada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Category'
- *       400:
- *         description: Dados inválidos ou título muito curto/longo
- *       404:
- *         description: Categoria não encontrada
- *       500:
- *         description: Erro interno do servidor
- */
-router.put("/:id", updateCategory);
-
-/**
- * @swagger
- * /categories/{id}:
- *   delete:
- *     summary: Desativa uma categoria (exclusão lógica)
- *     tags: [Categories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da categoria
- *     responses:
- *       204:
- *         description: Categoria desativada com sucesso
- *       404:
- *         description: Categoria não encontrada
- *       500:
- *         description: Erro interno do servidor
- */
-router.delete("/:id", deleteCategory);
 
 export default router;

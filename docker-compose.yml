@@ -1,3 +1,7 @@
+version: "3.8"
+
+name: backend-delbicos
+
 services:
   postgres:
     image: postgres
@@ -9,5 +13,35 @@ services:
       POSTGRES_HOST_AUTH_METHOD: md5
       POSTGRES_INITDB_ARGS: "--auth-host=md5"
     ports:
-      - "15432:5432"
+      - "5432:5432"
     restart: unless-stopped
+  delbicos-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: server-delbicos
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - IS_SERVERLESS=${IS_SERVERLESS:-false}
+      - MONGODB_URI=${MONGODB_URI:-suaStringConexao}
+      - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
+      - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
+      - SEQUELIZE_DB_PASS=${SEQUELIZE_DB_PASS:-postgres123}
+      # Using the Docker Compose service name, but keep localhost in .env for local development
+      - SEQUELIZE_HOST=postgres
+      - SEQUELIZE_PORT=${SEQUELIZE_PORT:-5432}
+      - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
+      - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
+      - EXPIRES_IN=${EXPIRES_IN:-24h}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-sk_API_KEY}
+      - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-deliverydebicos@gmail.com}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_API_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+networks:
+  default:
+    external: true
+    name: delbicos-shared-network

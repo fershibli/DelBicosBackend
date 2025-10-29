@@ -1,6 +1,6 @@
 {
   "name": "my-vercel-express-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "server.ts",
   "scripts": {
@@ -18,14 +18,23 @@
     "seed:undo": "npx sequelize-cli db:seed:undo",
     "seed": "npx sequelize-cli db:seed:all",
     "seed:reset": "npm run seed:undo:all && npm run seed",
+    "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
+    "docker:dev": "docker-compose exec delbicos-server npm run dev",
+    "docker:exec": "docker-compose exec delbicos-server sh",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
     "docker:restart": "docker-compose restart",
+    "docker:restart:postgres": "docker-compose restart postgres",
     "docker:clean": "docker-compose down -v --remove-orphans",
     "docker:clean:images": "docker-compose down && docker system prune -f",
     "docker:clean:all": "docker-compose down -v --remove-orphans && docker system prune -af --volumes",
-    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d"
+    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+    "docker:copy:env": "docker cp .env delbicos-server:/app/.env",
+    "docker:network": "docker network create delbicos-shared-network",
+    "docker:migrate": "docker-compose exec delbicos-server npm run migrate",
+    "docker:seed": "docker-compose exec delbicos-server npm run seed",
+    "test": "jest"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
@@ -39,20 +48,24 @@
     "mysql2": "^2.3.3",
     "pg": "^8.16.3",
     "sequelize": "^6.6.5",
+    "stripe": "^19.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.23",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^16.11.7",
     "@types/pg": "^8.15.5",
     "@types/sequelize": "^4.28.20",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "sequelize-cli": "^6.6.3",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.4.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.4.4"

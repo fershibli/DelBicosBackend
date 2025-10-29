@@ -1,0 +1,182 @@
+name: 01 - Análise Semântica Pós-Merge
+
+# Gatilho: Acionado QUANDO um Pull Request é FECHADO.
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main # Apenas PRs direcionados à 'main'
+
+# Permissões necessárias para ler os commits do PR.
+permissions:
+  pull-requests: write # Mudado de 'read' para 'write'
+  contents: write
+
+jobs:
+  analise-semantica:
+    # Condições: O job só roda se:
+    # 1. O PR foi de fato mergeado (e não apenas fechado).
+    # 2. A branch de origem (head) era 'stag'.
+    if: |
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'stag'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checar repositório
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22.15.1"
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Instalar semver (semantic versioning tool)
+        run: npm install -g semver
+
+      - name: Criar nova tag caso não exista
+        id: create_initial_tag
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -z "$(git tag)" ]; then
+            git config --global user.name 'github-actions'
+            git config --global user.email 'github-actions@github.com'
+            git tag -a v0.0.0 -m "Initial release"
+            git push origin v0.0.0
+          fi
+
+      - name: Calcular nova versão
+        id: version
+        run: |
+          git fetch --tags
+          LAST_TAG=$(git describe --tags `git rev-list --tags --max-count=1` 2>/dev/null || echo "v0.0.0")
+          echo "Versão Atual: $LAST_TAG"
+
+          # Obter commits desde a última tag
+          if [ "$LAST_TAG" = "v0.0.0" ]; then
+            COMMIT_MESSAGES=$(git log --pretty=format:"%s" | tr '\n' '|')
+          else
+            COMMIT_MESSAGES=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s" | tr '\n' '|')
+          fi
+
+          echo "Commits desde a última tag: $COMMIT_MESSAGES"
+
+          # Verificar se há commits para processar
+          if [ -z "$COMMIT_MESSAGES" ]; then
+            echo "Nenhum commit encontrado desde a última tag"
+            echo "should_version=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          # Inicializando variáveis
+          MAJOR=0
+          MINOR=0
+          PATCH=0
+
+          # Analisando mensagens de commit
+          IFS='|' read -ra COMMITS <<< "$COMMIT_MESSAGES"
+          for COMMIT in "${COMMITS[@]}"; do
+            if echo "$COMMIT" | grep -q -i -E "(^(refactor|refatorar|refatoração)|BREAKING CHANGE)"; then
+              MAJOR=1
+              echo "Encontrado refactor ou BREAKING CHANGE"
+            elif echo "$COMMIT" | grep -q -i -E "^(feat|feature)"; then
+              MINOR=1
+              echo "Encontrado feat"
+            elif echo "$COMMIT" | grep -q -i "^fix"; then
+              PATCH=1
+              echo "Encontrado fix"
+            fi
+          done
+
+          # Verificar se alguma mudança foi detectada
+          if [[ $MAJOR -eq 0 && $MINOR -eq 0 && $PATCH -eq 0 ]]; then
+            echo "Nenhuma mudança versionável detectada"
+            echo "should_version=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          # Calculando a nova versão usando semver
+          CURRENT_VERSION=${LAST_TAG#v}
+          if [[ $MAJOR -eq 1 ]]; then
+            NEW_VERSION=$(semver -i major $CURRENT_VERSION)
+            echo "Incrementando versão MAJOR"
+          elif [[ $MINOR -eq 1 ]]; then
+            NEW_VERSION=$(semver -i minor $CURRENT_VERSION)
+            echo "Incrementando versão MINOR"
+          elif [[ $PATCH -eq 1 ]]; then
+            NEW_VERSION=$(semver -i patch $CURRENT_VERSION)
+            echo "Incrementando versão PATCH"
+          fi
+
+          echo "Nova versão: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+          echo "should_version=true" >> $GITHUB_ENV
+
+      - name: Atualizar versão no package.json (se necessário)
+        if: env.should_version == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "Verificando/Atualizando versão para ${{ env.new_version }}..."
+          # Tenta atualizar. Se já estiver na versão certa, não faz nada.
+          npm version ${{ env.new_version }} --no-git-tag-version --allow-same-version
+
+          # Verificar se houve mudança. Se sim, commitar direto na main.
+          # (O checkout já está na 'main', pois o evento foi um merge na 'main')
+          if ! git diff --quiet --exit-code package.json; then
+            echo "package.json foi atualizado. Commitando na main..."
+            git config --global user.name 'github-actions'
+            git config --global user.email 'github-actions@github.com'
+            git add package.json
+            git commit -m "chore(release): version ${{ env.new_version }}" --no-verify
+            git push origin main
+          else
+            echo "package.json já está na versão correta. Pulando commit."
+          fi
+
+      - name: Verificar se a tag já existe
+        if: env.should_version == 'true'
+        run: |
+          # Se a tag (ex: v1.0.0) já existir no repositório remoto, paramos tudo.
+          if git ls-remote --exit-code --tags origin "v${{ env.new_version }}"; then
+            echo "Tag v${{ env.new_version }} já existe remotamente."
+            echo "should_version=false" >> $GITHUB_ENV
+          else
+            echo "Tag v${{ env.new_version }} não encontrada. Pode continuar."
+          fi
+
+      - name: Faz release no GitHub (Cria a Tag e o Release)
+        # Este passo agora cria a tag E o release.
+        if: env.should_version == 'true'
+        uses: softprops/action-gh-release@v2 # Use a v2
+        with:
+          tag_name: v${{ env.new_version }}
+          name: Release v${{ env.new_version }}
+          body: |
+            🚀 Atualização automática de versão para **v${{ env.new_version }}**
+            Auto-gerado pelo workflow de versionamento semântico.
+          generate_release_notes: true # Gera notas automaticamente
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Atualiza a stag a partir da main
+        if: env.should_version == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git checkout stag
+          git pull origin main
+          git push origin stag
+
+      - name: Finalizado
+        run: echo "Processo de versionamento concluído."
