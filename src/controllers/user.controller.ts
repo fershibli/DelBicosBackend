@@ -2,9 +2,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
-import { UserModel, IUser } from "../models/User";
-import { AddressModel, IAddress } from "../models/Address";
-import { ClientModel, IClient } from "../models/Client";
+import { UserModel } from "../models/User";
+import { AddressModel } from "../models/Address";
+import { ClientModel } from "../models/Client";
 import { ITokenPayload } from "../interfaces/authentication.interface";
 
 export const logInUser = async (req: Request, res: Response): Promise<void> => {
