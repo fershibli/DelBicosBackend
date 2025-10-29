@@ -66,7 +66,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/payments", paymentRouter);
 app.use("/auth", authRouter);
 
-const isServerless = process.env.ENVIRONMENT !== "development";
+const isServerless = process.env.IS_SERVERLESS == "true";
 
 if (!isServerless) {
   app.listen(3000, () => {

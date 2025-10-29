@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const dotenv = require("dotenv");
 const result = dotenv.config();
 if (result.error) {
@@ -15,7 +17,9 @@ console.log({
   dialect: process.env.SEQUELIZE_DIALECT || "mysql",
 });
 
-module.exports = {
+const env = process.env.ENVIRONMENT || process.env.NODE_ENV;
+
+const config = {
   development: {
     username: process.env.SEQUELIZE_DB_USER,
     password: process.env.SEQUELIZE_DB_PASS,
@@ -24,20 +28,16 @@ module.exports = {
     port: process.env.SEQUELIZE_PORT,
     dialect: process.env.SEQUELIZE_DIALECT || "mysql",
   },
-  test: {
-    username: process.env.SEQUELIZE_DB_USER,
-    password: process.env.SEQUELIZE_DB_PASS,
-    database: process.env.SEQUELIZE_DB_NAME,
-    host: process.env.SEQUELIZE_HOST,
-    port: process.env.SEQUELIZE_PORT,
-    dialect: process.env.SEQUELIZE_DIALECT || "mysql",
-  },
   production: {
-    username: process.env.SEQUELIZE_DB_USER,
-    password: process.env.SEQUELIZE_DB_PASS,
-    database: process.env.SEQUELIZE_DB_NAME,
-    host: process.env.SEQUELIZE_HOST,
-    port: process.env.SEQUELIZE_PORT,
-    dialect: process.env.SEQUELIZE_DIALECT || "mysql",
+    use_env_variable: "DATABASE_URL",
+    dialect: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
   },
 };
+
+module.exports = config[env];

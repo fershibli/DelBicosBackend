@@ -8,7 +8,7 @@ module.exports = {
       `SELECT c.id as client_id, c.user_id, c.main_address_id 
        FROM client c 
        JOIN users u ON c.user_id = u.id 
-       WHERE u.name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')
+       WHERE u.name IN ('Fernando Rasmut', 'Isabel Rodrigues', 'Douglas Ferreira', 'Gustavo Mendes', 'Eduardo Souza', 'Iago Silva', 'Lucas Lima')
        ORDER BY u.name`,
       { type: Sequelize.QueryTypes.SELECT }
     );
@@ -22,7 +22,7 @@ module.exports = {
       `SELECT p.id as professional_id, p.user_id 
        FROM professional p 
        JOIN users u ON p.user_id = u.id 
-       WHERE u.name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')
+       WHERE u.name IN ('Fernando Rasmut', 'Isabel Rodrigues', 'Douglas Ferreira', 'Gustavo Mendes', 'Eduardo Souza', 'Iago Silva', 'Lucas Lima')
        ORDER BY u.name`,
       { type: Sequelize.QueryTypes.SELECT }
     );
@@ -100,7 +100,7 @@ module.exports = {
     const clients = await queryInterface.sequelize.query(
       `SELECT c.id FROM client c 
        JOIN users u ON c.user_id = u.id 
-       WHERE u.name IN ('Fernando', 'Isabel', 'Douglas', 'Gustavo', 'Eduardo', 'Iago', 'Lucas')`,
+       WHERE u.name IN ('Fernando Rasmut', 'Isabel Rodrigues', 'Douglas Ferreira', 'Gustavo Mendes', 'Eduardo Souza', 'Iago Silva', 'Lucas Lima')`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 

@@ -6,6 +6,8 @@ import {
   getUserById,
   logInUser,
   signUpUser,
+  changePassword,
+  updateUser,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -480,6 +482,11 @@ router.post("/register", signUpUser);
  *         description: Erro no servidor
  */
 router.post("/login", logInUser);
+
+/**
+ * Change password for authenticated user
+ */
+router.post("/change-password", authMiddleware, changePassword);
 
 /**
  * @swagger
