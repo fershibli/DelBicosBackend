@@ -1,13 +1,9 @@
 import { Router } from "express";
-import { confirmNumber } from "../controllers/confirmNumber.controller";
 import authMiddleware from "../middlewares/auth.middleware";
-import { verifyCode } from "../controllers/confirmCode.controller";
 import {
   getUserById,
   logInUser,
-  signUpUser,
   changePassword,
-  updateUser,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -376,84 +372,6 @@ const router = Router();
  *         type: integer
  *       description: ID do usuário
  */
-
-/**
- * @swagger
- * /user/confirm-number:
- *   post:
- *     summary: Verifica se um número de telefone está registrado
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PhoneNumberRequest'
- *     responses:
- *       200:
- *         description: Resposta sobre a existência do número
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PhoneNumberResponse'
- *       400:
- *         description: Número de telefone inválido
- *       500:
- *         description: Erro no servidor
- */
-router.post("/confirm-number", confirmNumber);
-
-/**
- * @swagger
- * /user/verify-code:
- *   post:
- *     summary: Verifica um código SMS e retorna informações do usuário se existir
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/VerifyCodeRequest'
- *     responses:
- *       200:
- *         description: Resposta sobre a existência do usuário
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/VerifyCodeResponse'
- *       400:
- *         description: Código ou número inválido
- *       500:
- *         description: Erro no servidor
- */
-router.post("/verify-code", verifyCode);
-
-/**
- * @swagger
- * /user/register:
- *   post:
- *     summary: Registra um novo usuário com endereço e cliente
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SignUpRequest'
- *     responses:
- *       200:
- *         description: Usuário registrado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
-router.post("/register", signUpUser);
 
 /**
  * @swagger
