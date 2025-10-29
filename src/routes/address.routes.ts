@@ -5,14 +5,20 @@ import {
   getAddressById,
   updateAddress,
   deleteAddress,
+  getAllAddressByUserId,
+  getAddressesForAuthenticatedUser,
+  createAddressForAuthenticatedUser,
+  updateAddressForAuthenticatedUser,
+  deleteAddressForAuthenticatedUser,
 } from "../controllers/address.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   name: Addresses
+ *   name: Address
  *   description: Gerenciamento de endereços
  */
 
@@ -157,10 +163,10 @@ const router = express.Router();
 
 /**
  * @swagger
- * /addresses:
+ * /address:
  *   post:
  *     summary: Cria um novo endereço
- *     tags: [Addresses]
+ *     tags: [Address]
  *     requestBody:
  *       required: true
  *       content:
@@ -183,10 +189,10 @@ router.post("/", createAddress);
 
 /**
  * @swagger
- * /addresses:
+ * /address:
  *   get:
  *     summary: Retorna todos os endereços
- *     tags: [Addresses]
+ *     tags: [Address]
  *     responses:
  *       200:
  *         description: Lista de endereços
@@ -203,10 +209,10 @@ router.get("/", getAllAddresses);
 
 /**
  * @swagger
- * /addresses/{id}:
+ * /address/{id}:
  *   get:
  *     summary: Retorna um endereço por ID
- *     tags: [Addresses]
+ *     tags: [Address]
  *     parameters:
  *       - in: path
  *         name: id
@@ -226,14 +232,14 @@ router.get("/", getAllAddresses);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/:id", getAddressById);
+router.get("/third-party/:id(\\d+)", getAddressById);
 
 /**
  * @swagger
- * /addresses/{id}:
+ * /address/{id}:
  *   put:
  *     summary: Atualiza um endereço existente
- *     tags: [Addresses]
+ *     tags: [Address]
  *     parameters:
  *       - in: path
  *         name: id
@@ -261,14 +267,14 @@ router.get("/:id", getAddressById);
  *       500:
  *         description: Erro interno do servidor
  */
-router.put("/:id", updateAddress);
+router.put("/third-party/:id(\\d+)", updateAddress);
 
 /**
  * @swagger
- * /addresses/{id}:
+ * /address/{id}:
  *   delete:
  *     summary: Remove um endereço
- *     tags: [Addresses]
+ *     tags: [Address]
  *     parameters:
  *       - in: path
  *         name: id
@@ -292,6 +298,162 @@ router.put("/:id", updateAddress);
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete("/:id", deleteAddress);
+router.delete("/:id(\\d+)", deleteAddress);
+
+// Public: get addres by given user id
+router.get("/user/:id", getAllAddressByUserId);
+
+// Authenticated endpoints for the logged-in user
+/**
+ * @swagger
+ * /address/session:
+ *   get:
+ *     summary: Retorna endereços do usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
+ *     responses:
+ *       200:
+ *         description: Lista de endereços do usuário autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Address'
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/session", authMiddleware, getAddressesForAuthenticatedUser);
+
+/**
+ * @swagger
+ * /address/session:
+ *   post:
+ *     summary: Cria um endereço para o usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddressInput'
+ *     responses:
+ *       201:
+ *         description: Endereço criado com sucesso para o usuário autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Address'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post("/session", authMiddleware, createAddressForAuthenticatedUser);
+/**
+ * @swagger
+ * /address/session/{id}:
+ *   put:
+ *     summary: Atualiza um endereço do usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do endereço
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddressInput'
+ *     responses:
+ *       200:
+ *         description: Endereço atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Address'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Ação não permitida
+ *       404:
+ *         description: Endereço não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put("/session/:id", authMiddleware, updateAddressForAuthenticatedUser);
+
+/**
+ * @swagger
+ * /address/session/{id}:
+ *   delete:
+ *     summary: Deleta um endereço do usuário autenticado
+ *     tags: [Address]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Bearer token (Bearer <token>)
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do endereço
+ *     responses:
+ *       200:
+ *         description: Endereço deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Ação não permitida
+ *       404:
+ *         description: Endereço não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete(
+  "/session/:id",
+  authMiddleware,
+  deleteAddressForAuthenticatedUser
+);
 
 export default router;
