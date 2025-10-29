@@ -1,7 +1,13 @@
 import { Request, Response } from "express";
 import { Op, literal } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
-
+// Importe os modelos associados para os includes
+import { UserModel } from "../models/User";
+import { AddressModel } from "../models/Address";
+import { ServiceModel } from "../models/Service";
+import { AmenitiesModel } from "../models/Amenities";
+import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
+import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
@@ -10,36 +16,38 @@ export const getProfessionals = async (req: Request, res: Response) => {
     const where: any = {};
     if (termo) {
       where[Op.or] = [
-        { '$user.name$': { [Op.like]: `%${termo}%` } },
-        { '$user.email$': { [Op.like]: `%${termo}%` } },
+        { "$User.name$": { [Op.like]: `%${termo}%` } },
+        { "$User.email$": { [Op.like]: `%${termo}%` } },
         { cpf: { [Op.like]: `%${termo}%` } },
       ];
     }
 
     const include = [
-      { 
-        association: "user", 
-        attributes: ["name", "email"], 
-        required: false 
+      {
+        model: UserModel,
+        as: "User",
+        attributes: ["name", "email"],
+        required: false,
       },
-      { 
-        association: "main_address", 
-        attributes: ["lat", "lng", "city"], 
-        required: false 
+      {
+        model: AddressModel,
+        as: "MainAddress",
+        attributes: ["lat", "lng", "city"],
+        required: false,
       },
-      { association: "services" },
-      { association: "amenities", through: { attributes: [] } },
-      { association: "gallery" },
-      { association: "availabilities" },
+      { model: ServiceModel, as: "Services" },
+      // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+      // { model: ProfessionalGalleryModel, as: "Gallery" },
+      // { model: ProfessionalAvailabilityModel, as: "Availabilities" },
     ];
 
     const order: any[] = [];
-    if (lat && lng) {
+    if (lat && lng && lat !== "null" && lng !== "null") {
       const distance = literal(`
         6371 * acos(
-          cos(radians(${lat})) * cos(radians(main_address.lat)) *
-          cos(radians(main_address.lng) - radians(${lng})) +
-          sin(radians(${lat})) * sin(radians(main_address.lat))
+          cos(radians(${lat})) * cos(radians("main_address"."lat")) *
+          cos(radians("main_address"."lng") - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians("main_address"."lat"))
         )
       `);
       order.push([distance, "ASC"]);
@@ -56,7 +64,9 @@ export const getProfessionals = async (req: Request, res: Response) => {
     return res.json(professionals);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao buscar profissionais", details: error });
+    return res
+      .status(500)
+      .json({ error: "Erro ao buscar profissionais", details: error });
   }
 };
 
@@ -64,16 +74,17 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
-        {
-          association: "availabilities",
-          where: { is_available: true },
-          required: false,
-        },
+        { model: UserModel, as: "User" },
+        { model: AddressModel, as: "MainAddress" },
+        { model: ServiceModel, as: "Services" },
+        // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+        // { model: ProfessionalGalleryModel, as: "Gallery" },
+        // {
+        //   model: ProfessionalAvailabilityModel,
+        //   as: "Availabilities",
+        //   where: { is_available: true },
+        //   required: false,
+        // },
       ],
     });
 
@@ -101,7 +112,9 @@ export const createProfessional = async (req: Request, res: Response) => {
 export const updateProfessional = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const [updated] = await ProfessionalModel.update(req.body, { where: { id } });
+    const [updated] = await ProfessionalModel.update(req.body, {
+      where: { id },
+    });
 
     if (!updated) {
       return res.status(404).json({ error: "Profissional não encontrado" });
@@ -109,12 +122,12 @@ export const updateProfessional = async (req: Request, res: Response) => {
 
     const updatedProfessional = await ProfessionalModel.findByPk(id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
-        { association: "availabilities" },
+        { model: UserModel, as: "User" },
+        { model: AddressModel, as: "MainAddress" },
+        { model: ServiceModel, as: "Services" },
+        // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+        // { model: ProfessionalGalleryModel, as: "Gallery" },
+        // { model: ProfessionalAvailabilityModel, as: "Availabilities" },
       ],
     });
 
