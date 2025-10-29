@@ -163,7 +163,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /addres:
+ * /address:
  *   post:
  *     summary: Cria um novo endereço
  *     tags: [Address]
@@ -189,7 +189,7 @@ router.post("/", createAddress);
 
 /**
  * @swagger
- * /addres:
+ * /address:
  *   get:
  *     summary: Retorna todos os endereços
  *     tags: [Address]
@@ -209,7 +209,7 @@ router.get("/", getAllAddresses);
 
 /**
  * @swagger
- * /addres/{id}:
+ * /address/{id}:
  *   get:
  *     summary: Retorna um endereço por ID
  *     tags: [Address]
@@ -236,7 +236,7 @@ router.get("/third-party/:id(\\d+)", getAddressById);
 
 /**
  * @swagger
- * /addres/{id}:
+ * /address/{id}:
  *   put:
  *     summary: Atualiza um endereço existente
  *     tags: [Address]
@@ -271,7 +271,7 @@ router.put("/third-party/:id(\\d+)", updateAddress);
 
 /**
  * @swagger
- * /addres/{id}:
+ * /address/{id}:
  *   delete:
  *     summary: Remove um endereço
  *     tags: [Address]
@@ -306,7 +306,7 @@ router.get("/user/:id", getAllAddressByUserId);
 // Authenticated endpoints for the logged-in user
 /**
  * @swagger
- * /addres/session:
+ * /address/session:
  *   get:
  *     summary: Retorna endereços do usuário autenticado
  *     tags: [Address]
@@ -335,7 +335,7 @@ router.get("/session", authMiddleware, getAddressesForAuthenticatedUser);
 
 /**
  * @swagger
- * /addres/session:
+ * /address/session:
  *   post:
  *     summary: Cria um endereço para o usuário autenticado
  *     tags: [Address]
@@ -369,7 +369,7 @@ router.get("/session", authMiddleware, getAddressesForAuthenticatedUser);
 router.post("/session", authMiddleware, createAddressForAuthenticatedUser);
 /**
  * @swagger
- * /addres/session/{id}:
+ * /address/session/{id}:
  *   put:
  *     summary: Atualiza um endereço do usuário autenticado
  *     tags: [Address]
@@ -414,7 +414,7 @@ router.put("/session/:id", authMiddleware, updateAddressForAuthenticatedUser);
 
 /**
  * @swagger
- * /addres/session/{id}:
+ * /address/session/{id}:
  *   delete:
  *     summary: Deleta um endereço do usuário autenticado
  *     tags: [Address]
