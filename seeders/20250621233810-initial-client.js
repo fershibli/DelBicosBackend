@@ -17,13 +17,13 @@ module.exports = {
     const addressIds = addresses.map((address) => address.id);
     // CPFs válidos (formato válido para algoritmo de validação)
     const cpfs = [
-      "12345678909", // Fernando Silva Santos
-      "98765432100", // Isabel Rodrigues Almeida
-      "45678912345", // Douglas Ferreira Costa
-      "78912345678", // Gustavo Oliveira Mendes
-      "32165498732", // Eduardo Martins Souza
-      "65498732165", // Iago Rossan Pereira
-      "14725836914", // Lucas Henrique Lima
+      "12345678909",
+      "98765432100",
+      "45678912345",
+      "78912345678",
+      "32165498732",
+      "65498732165",
+      "14725836914",
     ];
     const clients = userIds.map((userId, index) => ({
       user_id: userId,
