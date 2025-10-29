@@ -3,13 +3,9 @@ import { confirmNumber } from "../controllers/confirmNumber.controller";
 import authMiddleware from "../middlewares/auth.middleware";
 import { verifyCode } from "../controllers/confirmCode.controller";
 import {
-  createUser,
-  deleteUser,
-  getAllUsers,
   getUserById,
   logInUser,
   signUpUser,
-  updateUser,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -566,52 +562,6 @@ router.delete("/:id/avatar", authMiddleware, deleteAvatar);
 
 /**
  * @swagger
- * /user:
- *   post:
- *     summary: Cria um novo usuário (sem cliente/endereço)
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UserCreate'
- *     responses:
- *       201:
- *         description: Usuário criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
-router.post("/", createUser);
-
-/**
- * @swagger
- * /user:
- *   get:
- *     summary: Lista todos os usuários
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: Lista de usuários
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Erro no servidor
- */
-router.get("/", getAllUsers);
-
-/**
- * @swagger
  * /user/{id}:
  *   get:
  *     summary: Obtém um usuário pelo ID
@@ -631,60 +581,5 @@ router.get("/", getAllUsers);
  *         $ref: '#/components/responses/ServerError'
  */
 router.get("/:id", authMiddleware, getUserById);
-
-/**
- * @swagger
- * /user/{id}:
- *   put:
- *     summary: Atualiza um usuário
- *     tags: [Users]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UserUpdate'
- *     responses:
- *       200:
- *         description: Usuário atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
-router.put("/:id", updateUser);
-
-/**
- * @swagger
- * /user/{id}:
- *   delete:
- *     summary: Remove um usuário
- *     tags: [Users]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     responses:
- *       200:
- *         description: Usuário deletado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *               example:
- *                 message: "Usuário deletado com sucesso"
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
-router.delete("/:id", deleteUser);
 
 export default router;
