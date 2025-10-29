@@ -9,3 +9,6 @@ yarn.lock
 
 ## Project Files ##
 .env
+
+## Image Directories ##
+avatarBucket
