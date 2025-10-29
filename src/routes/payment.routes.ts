@@ -3,7 +3,7 @@ import {
   createPaymentIntentController,
   confirmPaymentController,
 } from "../controllers/payment.controller";
-// import authMiddleware from "../middlewares/auth.middleware";
+import authMiddleware from "../middlewares/auth.middleware";
 
 // Cria uma nova instância do Router do Express
 const paymentRouter = Router();
@@ -16,7 +16,7 @@ const paymentRouter = Router();
  */
 paymentRouter.post(
   "/create-payment-intent",
-  // authMiddleware,
+  authMiddleware,
   createPaymentIntentController // Liga a rota ao controller que criamos
 );
 
@@ -27,7 +27,7 @@ paymentRouter.post(
  */
 paymentRouter.post(
   "/confirm",
-  // authMiddleware,
+  authMiddleware,
   confirmPaymentController // 4. Ligue ao novo controller
 );
 
