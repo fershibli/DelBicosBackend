@@ -1,11 +1,5 @@
 import { Router } from "express";
-import {
-  createSubCategory,
-  deleteSubCategory,
-  getAllSubCategories,
-  getByIdSubCategory,
-  updateSubCategory,
-} from "../controllers/subCategory.controller";
+import { getAllSubCategories } from "../controllers/subCategory.controller";
 
 const router = Router();
 
@@ -90,47 +84,6 @@ const router = Router();
 
 /**
  * @swagger
- * /subcategories:
- *   post:
- *     summary: Cria uma nova subcategoria
- *     tags: [Subcategories]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SubcategoryInput'
- *     responses:
- *       201:
- *         description: Subcategoria criada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Subcategory'
- *       400:
- *         description: Dados inválidos ou título/category_id não informado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                 message:
- *                   type: string
- *                 sql:
- *                   type: string
- *                 sqlMessage:
- *                   type: string
- *       404:
- *         description: Categoria pai não encontrada
- *       500:
- *         description: Erro interno do servidor
- */
-router.post("/", createSubCategory);
-
-/**
- * @swagger
  * /subcategories/category/{id}:
  *   get:
  *     summary: Retorna todas as subcategorias ativas de uma categoria específica
@@ -157,90 +110,5 @@ router.post("/", createSubCategory);
  *         description: Erro interno do servidor
  */
 router.get("/category/:id", getAllSubCategories);
-
-/**
- * @swagger
- * /subcategories/{id}:
- *   get:
- *     summary: Retorna uma subcategoria pelo ID
- *     tags: [Subcategories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da subcategoria
- *     responses:
- *       200:
- *         description: Dados da subcategoria
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Subcategory'
- *       404:
- *         description: Subcategoria não encontrada ou inativa
- *       500:
- *         description: Erro interno do servidor
- */
-router.get("/:id", getByIdSubCategory);
-
-/**
- * @swagger
- * /subcategories/{id}:
- *   put:
- *     summary: Atualiza uma subcategoria existente
- *     tags: [Subcategories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da subcategoria
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SubcategoryInput'
- *     responses:
- *       200:
- *         description: Subcategoria atualizada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Subcategory'
- *       400:
- *         description: Dados inválidos ou título/category_id não informado
- *       404:
- *         description: Subcategoria ou categoria pai não encontrada
- *       500:
- *         description: Erro interno do servidor
- */
-router.put("/:id", updateSubCategory);
-
-/**
- * @swagger
- * /subcategories/{id}:
- *   delete:
- *     summary: Desativa uma subcategoria (exclusão lógica)
- *     tags: [Subcategories]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID da subcategoria
- *     responses:
- *       204:
- *         description: Subcategoria desativada com sucesso
- *       404:
- *         description: Subcategoria não encontrada
- *       500:
- *         description: Erro interno do servidor
- */
-router.delete("/:id", deleteSubCategory);
 
 export default router;
