@@ -194,10 +194,17 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   const user = await UserModel.findByPk(req.params.id);
-  user
-    ? res.json(user)
-    : res.status(404).json({ error: "Usuário não encontrado" });
-};
+  if (!user) {
+    return res.status(404).json({ error: "Usuário não encontrado" });
+  }
+  res.json({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    avatar_uri: user.avatar_uri,
+    banner_uri: user.banner_uri,
+  });
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
