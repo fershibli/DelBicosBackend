@@ -2,9 +2,7 @@ import { Router } from "express";
 import { confirmNumber } from "../controllers/confirmNumber.controller";
 import { verifyCode } from "../controllers/confirmCode.controller";
 import {
-  createUser,
   deleteUser,
-  getAllUsers,
   getUserById,
   logInUser,
   signUpUser,
@@ -15,6 +13,7 @@ import {
   getAvatar,
   uploadAvatar,
 } from "../controllers/avatar.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -512,7 +511,7 @@ router.post("/login", logInUser);
  *       500:
  *         description: Erro no servidor
  */
-router.post("/:id/avatar", uploadAvatar);
+router.post("/avatar", authMiddleware, uploadAvatar);
 
 /**
  * @swagger
@@ -534,7 +533,7 @@ router.post("/:id/avatar", uploadAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.get("/:id/avatar", getAvatar);
+router.get("/avatar", authMiddleware, getAvatar);
 
 /**
  * @swagger
@@ -561,53 +560,7 @@ router.get("/:id/avatar", getAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.delete("/:id/avatar", deleteAvatar);
-
-/**
- * @swagger
- * /user:
- *   post:
- *     summary: Cria um novo usuário (sem cliente/endereço)
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UserCreate'
- *     responses:
- *       201:
- *         description: Usuário criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro no servidor
- */
-router.post("/", createUser);
-
-/**
- * @swagger
- * /user:
- *   get:
- *     summary: Lista todos os usuários
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: Lista de usuários
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Erro no servidor
- */
-router.get("/", getAllUsers);
+router.delete("/avatar", authMiddleware, deleteAvatar);
 
 /**
  * @swagger
