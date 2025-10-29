@@ -178,20 +178,6 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const user = await UserModel.create(req.body);
-    res.status(201).json(user);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
-export const getAllUsers = async (_req: Request, res: Response) => {
-  const users = await UserModel.findAll();
-  res.json(users);
-};
-
 export const getUserById = async (req: Request, res: Response) => {
   const user = await UserModel.findByPk(req.params.id);
   if (!user) {
@@ -205,35 +191,4 @@ export const getUserById = async (req: Request, res: Response) => {
     avatar_uri: user.avatar_uri,
     banner_uri: user.banner_uri,
   });
-
-export const updateUser = async (req: Request, res: Response) => {
-  try {
-    const user = await UserModel.findByPk(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const { name, email, phone, avatar_uri, banner_uri } = req.body;
-
-    await user.update({
-      ...(name && { name }),
-      ...(email && { email }),
-      ...(phone && { phone }),
-      ...(avatar_uri && { avatar_uri }),
-      ...(banner_uri && { banner_uri }),
-    });
-
-    res.json(user);
-  } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
-    res.status(500).json({ error: "Erro interno ao atualizar usuário" });
-  }
-};
-
-export const deleteUser = async (req: Request, res: Response) => {
-  const deleted = await UserModel.destroy({ where: { id: req.params.id } });
-  deleted
-    ? res.json({ message: "Usuário deletado com sucesso" })
-    : res.status(404).json({ error: "Usuário não encontrado" });
 };
