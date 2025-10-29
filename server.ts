@@ -3,7 +3,6 @@ import express, { Express } from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
-import serviceRoutes from "./src/routes/service.routes";
 import categoryRoutes from "./src/routes/category.routes";
 import subcategoryRoutes from "./src/routes/subcategory.routes";
 import professionalRoutes from "./src/routes/professional.routes";
@@ -67,7 +66,6 @@ app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
 
 // Rotas
 app.use("/api/user", userRoutes);
-app.use("/api/services", serviceRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/address", addressRoutes);
