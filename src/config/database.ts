@@ -40,7 +40,7 @@ const generateSequelizeConnection = () => {
           rejectUnauthorized: false,
         },
       },
-      logging: (msg) => console.log(msg),
+      logging: false,
     });
   }
 };
