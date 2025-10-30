@@ -72,22 +72,22 @@ export const getProfessionals = async (req: Request, res: Response) => {
           as: "Services",
           required: false,
         },
-        {
-          model: ProfessionalGalleryModel,
-          as: "Gallery",
-          required: false,
-        },
-        {
-          model: ProfessionalAvailabilityModel,
-          as: "Availabilities",
-          required: false,
-        },
-        {
-          model: AmenitiesModel,
-          as: "Amenities",
-          through: { attributes: [] },
-          required: false,
-        },
+        // {
+        //   model: ProfessionalGalleryModel,
+        //   as: "Gallery",
+        //   required: false,
+        // },
+        // {
+        //   model: ProfessionalAvailabilityModel,
+        //   as: "Availabilities",
+        //   required: false,
+        // },
+        // {
+        //   model: AmenitiesModel,
+        //   as: "Amenities",
+        //   through: { attributes: [] },
+        //   required: false,
+        // },
         // Inclui appointments apenas com rating válido para calcular média/contagem
         {
           model: AppointmentModel,
@@ -165,13 +165,13 @@ export const getProfessionalById = async (req: Request, res: Response) => {
         },
         { model: AddressModel, as: "MainAddress" },
         { model: ServiceModel, as: "Services" },
-        { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
-        { model: ProfessionalGalleryModel, as: "Gallery" },
-        {
-          model: ProfessionalAvailabilityModel,
-          as: "Availabilities",
-          where: { is_available: true },
-        },
+        // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+        // { model: ProfessionalGalleryModel, as: "Gallery" },
+        // {
+        //   model: ProfessionalAvailabilityModel,
+        //   as: "Availabilities",
+        //   where: { is_available: true },
+        // },
         {
           model: AppointmentModel,
           as: "Appointments",
