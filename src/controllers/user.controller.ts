@@ -1,11 +1,10 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ClientModel } from "../models/Client";
-import { ITokenPayload } from "../interfaces/authentication.interface";
+import { generateTokenAndUserPayload } from "../utils/authUtils";
 
 export const logInUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
@@ -31,53 +30,16 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
 
     const address = await AddressModel.findByPk(client.main_address_id);
 
-    const secretKey = process.env.SECRET_KEY || "secret";
-    const expiresIn = process.env.EXPIRES_IN || "1h";
-    const options: jwt.SignOptions = {
-      expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
-    };
+    const { token, user: userPayload } = generateTokenAndUserPayload(
+      user,
+      client,
+      address
+    );
 
-    const tokenPayload: ITokenPayload = {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-      },
-      client: {
-        id: client.id,
-        cpf: client.cpf,
-      },
-      address: address
-        ? {
-            lat: address.lat,
-            lng: address.lng,
-            city: address.city,
-            state: address.state,
-            country_iso: address.country_iso,
-          }
-        : undefined,
-    };
-
-    jwt.sign(tokenPayload, secretKey, options, (err, token) => {
-      if (err) {
-        console.error(err);
-        throw err;
-      }
-
-      res.status(200).json({
-        message: "Login realizado com sucesso",
-        token: token,
-        user: {
-          id: user.id,
-          client_id: client.id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          cpf: client.cpf,
-          address: address || null,
-        },
-      });
+    res.status(200).json({
+      message: "Login realizado com sucesso",
+      token: token,
+      user: userPayload,
     });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
@@ -143,7 +105,6 @@ export const changePassword = async (
     user.password = hashed;
     await user.save();
 
-    // frontend only checks for 2xx; return 204 No Content
     res.status(204).send();
   } catch (error) {
     console.error("Erro ao alterar senha:", error);
