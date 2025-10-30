@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Op, literal } from "sequelize";
+import { Op, literal, fn, col } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
 // Importe os modelos associados para os includes
 import { UserModel } from "../models/User";
@@ -21,8 +21,8 @@ export const getProfessionals = async (req: Request, res: Response) => {
     const where: any = {};
     if (termo) {
       where[Op.or] = [
-        { "$user.name$": { [Op.like]: `%${termo}%` } },
-        { "$user.email$": { [Op.like]: `%${termo}%` } },
+        { "$User.name$": { [Op.like]: `%${termo}%` } },
+        { "$User.email$": { [Op.like]: `%${termo}%` } },
         { cpf: { [Op.like]: `%${termo}%` } },
       ];
     }
@@ -72,6 +72,18 @@ export const getProfessionals = async (req: Request, res: Response) => {
           as: "Services",
           required: false,
         },
+        // Inclui appointments apenas com rating válido para calcular média/contagem
+        {
+          model: AppointmentModel,
+          as: "Appointments",
+          attributes: ["rating"],
+          required: false,
+          separate: true, // evita duplicar linhas do profissional
+          where: {
+            status: "completed",
+            rating: { [Op.ne]: null } as any, // evita conflito de tipagem TS
+          },
+        },
       ],
       where,
       order,
@@ -79,6 +91,30 @@ export const getProfessionals = async (req: Request, res: Response) => {
       offset: Number(page) * Number(limit),
       distinct: true,
     });
+
+    // Calcula ratings_avg e ratings_count a partir dos appointments incluídos
+    for (const prof of rows as any[]) {
+      const apps = (prof.Appointments ?? []) as Array<{
+        rating: number | null;
+      }>;
+      const ratings = apps
+        .map((a) => a?.rating ?? null)
+        .filter((v): v is number => v !== null && Number.isFinite(v));
+
+      const ratings_count = ratings.length;
+      const rating =
+        ratings_count > 0
+          ? ratings.reduce((s, n) => s + n, 0) / ratings_count
+          : null;
+
+      prof.setDataValue("rating", rating); // média
+      prof.setDataValue("ratings_count", ratings_count);
+
+      // remove o array de appointments do payload
+      if (prof.dataValues?.Appointments) {
+        delete prof.dataValues.Appointments;
+      }
+    }
 
     console.log(`Encontrados ${rows.length} profissionais`);
 
