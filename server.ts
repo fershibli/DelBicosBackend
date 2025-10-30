@@ -12,6 +12,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import swaggerOptions from "./src/config/swagger";
 import authRouter from "./src/routes/auth.routes";
+import notificationRoutes from "./src/routes/notification.routes";
 import path from "path";
 import { initializeAssociations } from "./src/models/associations";
 import paymentRouter from "./src/routes/payment.routes";
@@ -66,6 +67,7 @@ app.use("/api/professionals", professionalRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRouter);
 app.use("/auth", authRouter);
 

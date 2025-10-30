@@ -4,21 +4,76 @@ import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
 import { ProfessionalModel } from "../models/Professional";
 import { ServiceModel } from "../models/Service";
-import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { PaymentService } from "../services/payment.service";
+import { NotificationModel } from "../models/Notification";
+
+// TODO: Remove this createAppointment and use confirmAndCreateAppointment from PaymentService instead (move remaining logic there)
+export const createAppointment = async (req: Request, res: Response) => {
+  try {
+    const appointment = await AppointmentModel.create(req.body);
+
+    const professional = await ProfessionalModel.findByPk(
+      appointment.professional_id
+    );
+    const client = await ClientModel.findByPk(appointment.client_id);
+    const service = await ServiceModel.findByPk(appointment.service_id);
+
+    if (!professional || !client || !service) {
+      console.error("Missing linked data for notification trigger.");
+    } else {
+      const clientUser = await UserModel.findByPk(client.user_id);
+      const professionalUser = await UserModel.findByPk(professional.user_id);
+
+      const appointmentTime = appointment.start_time.toLocaleTimeString(
+        "pt-BR",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      );
+      const appointmentDate =
+        appointment.start_time.toLocaleDateString("pt-BR");
+
+      if (professionalUser) {
+        await NotificationModel.create({
+          user_id: professionalUser.id,
+          title: "Novo Agendamento Recebido",
+          message: `Você recebeu um novo agendamento de ${
+            clientUser?.name || "Cliente Desconhecido"
+          } para o serviço '${
+            service.title
+          }' no dia ${appointmentDate} às ${appointmentTime}. Status: Pendente de Confirmação.`,
+          notification_type: "appointment",
+          related_entity_id: appointment.id,
+          is_read: false,
+        });
+      }
+
+      if (clientUser) {
+        await NotificationModel.create({
+          user_id: clientUser.id,
+          title: "Agendamento Criado com Sucesso",
+          message: `Seu agendamento para o serviço '${service.title}' no dia ${appointmentDate} às ${appointmentTime} foi criado. Aguardando confirmação do profissional.`,
+          notification_type: "appointment",
+          related_entity_id: appointment.id,
+          is_read: false,
+        });
+      }
+    }
+    res.status(201).json(appointment);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
 
 export const getAllAppointments = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
-    // const { status, date, start_date, end_date } = req.query;
-
-    // Verificar se o usuário existe
     const user = await UserModel.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
-
-    // Buscar cliente e profissional associados ao usuário
     const client = await ClientModel.findOne({ where: { user_id: userId } });
     const professional = await ProfessionalModel.findOne({
       where: { user_id: userId },
@@ -26,7 +81,6 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 
     const whereClause: any = {};
 
-    // Buscar agendamentos onde o usuário é cliente
     if (client) {
       whereClause.client_id = client.id;
     } else if (professional) {

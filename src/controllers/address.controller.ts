@@ -3,19 +3,20 @@ import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { AddressModel } from "../models/Address";
 
 export const getAllAddressByUserId = async (req: Request, res: Response) => {
-  const userId = Number(req.params.id);
-  if (!userId || Number.isNaN(userId)) {
-    res.status(400).json({ error: "ID de usuário inválido" });
-    return;
-  }
-
   try {
+    const { userId } = req.params;
+
     const addresses = await AddressModel.findAll({
-      where: { user_id: userId },
+      where: {
+        user_id: userId,
+        active: true,
+      },
+      order: [["createdAt", "DESC"]],
     });
+
     res.json(addresses);
   } catch (error: any) {
-    console.error("Erro ao buscar endereços por usuário:", error);
+    console.error("Erro ao buscar endereços:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };

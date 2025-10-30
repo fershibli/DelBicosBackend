@@ -33,26 +33,26 @@ export class SubCategoryModel extends Model<
   public active?: boolean;
   public category_id!: number;
 
-  // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
-
 SubCategoryModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      allowNull: false,
     },
     title: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: true,
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     category_id: {
       type: DataTypes.INTEGER,
@@ -62,13 +62,10 @@ SubCategoryModel.init(
         key: "id",
       },
     },
-    active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
   },
   {
     sequelize,
+    modelName: "SubCategory",
     tableName: "subcategory",
     timestamps: true,
   }

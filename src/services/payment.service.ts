@@ -3,6 +3,8 @@ import * as dotenv from "dotenv";
 import { AppointmentModel, IAppointment } from "../models/Appointment";
 import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
+import { NotificationModel } from "../models/Notification";
+import { ServiceModel } from "../models/Service";
 
 dotenv.config();
 
@@ -123,6 +125,22 @@ export const PaymentService = {
         status: "confirmed",
         payment_intent_id: paymentIntentId,
       });
+
+      const service = await ServiceModel.findByPk(Number(serviceId));
+
+      if (!service) {
+        throw new Error("Serviço não encontrado.");
+      }
+
+      await NotificationModel.create({
+        user_id: clientId,
+        title: "Agendamento Criado com Sucesso",
+        message: `Seu agendamento para o serviço '${service.title}' no dia ${selectedTime} foi criado. Aguardando confirmação do profissional.`,
+        notification_type: "appointment",
+        related_entity_id: newAppointment.id,
+        is_read: false,
+      });
+
       return newAppointment;
     } catch (dbError: any) {
       console.error(

@@ -157,7 +157,8 @@ const router = express.Router();
  */
 
 // Public: get addres by given user id
-router.get("/user/:id", getAllAddressByUserId);
+// TODO: swagger docs
+router.get("/user/:userId", getAllAddressByUserId);
 
 // Authenticated endpoints for the logged-in user
 /**
