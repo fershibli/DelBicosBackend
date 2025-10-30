@@ -45,9 +45,9 @@ export const getProfessionals = async (req: Request, res: Response) => {
     if (lat && lng && lat !== "null" && lng !== "null") {
       const distance = literal(`
         6371 * acos(
-          cos(radians(${lat})) * cos(radians("main_address"."lat")) *
-          cos(radians("main_address"."lng") - radians(${lng})) +
-          sin(radians(${lat})) * sin(radians("main_address"."lat"))
+          cos(radians(${lat})) * cos(radians(main_address.lat)) *
+          cos(radians(main_address.lng) - radians(${lng})) +
+          sin(radians(${lat})) * sin(radians(main_address.lat))
         )
       `);
       order.push([distance, "ASC"]);
