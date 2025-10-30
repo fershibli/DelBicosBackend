@@ -4,60 +4,40 @@ import { ProfessionalModel } from "../models/Professional";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
-    const { termo, lat, lng, raio_km = 10 } = req.query;
+    const { termo, page = 0, limit = 12 } = req.query;
 
-    const where: any = {};
-    if (termo) {
-      where[Op.or] = [
-        { "$user.name$": { [Op.like]: `%${termo}%` } },
-        { "$user.email$": { [Op.like]: `%${termo}%` } },
-        { cpf: { [Op.like]: `%${termo}%` } },
-      ];
-    }
-
-    const include = [
-      {
-        association: "user",
-        attributes: ["name", "email"],
-        required: false,
-      },
-      {
-        association: "main_address",
-        attributes: ["lat", "lng", "city"],
-        required: false,
-      },
-      { association: "services" },
-      { association: "amenities", through: { attributes: [] } },
-      { association: "gallery" },
-      { association: "availabilities" },
-    ];
-
-    const order: any[] = [];
-    if (lat && lng) {
-      const distance = literal(`
-        6371 * acos(
-          cos(radians(${lat})) * cos(radians(main_address.lat)) *
-          cos(radians(main_address.lng) - radians(${lng})) +
-          sin(radians(${lat})) * sin(radians(main_address.lat))
-        )
-      `);
-      order.push([distance, "ASC"]);
-    } else {
-      order.push(["createdAt", "DESC"]);
-    }
+    console.log("Buscando profissionais...");
 
     const professionals = await ProfessionalModel.findAll({
-      where,
-      include,
-      order,
+      include: [
+        {
+          association: "User",
+          attributes: ["id", "name", "email", "avatar_uri", "banner_uri"],
+          required: false,
+        },
+        {
+          association: "Services",
+          required: false,
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset: Number(page) * Number(limit),
     });
 
-    return res.json(professionals);
+    console.log(`Encontrados ${professionals.length} profissionais`);
+
+    return res.json({
+      professionals,
+      totalCount: professionals.length,
+      currentPage: Number(page),
+    });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Erro ao buscar profissionais", details: error });
+    console.error("Erro ao buscar profissionais:", error);
+    return res.status(500).json({
+      error: "Erro ao buscar profissionais",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
@@ -65,15 +45,21 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
+        { association: "User" },
+        { association: "MainAddress" },
+        { association: "Services" },
         {
-          association: "availabilities",
-          where: { is_available: true },
+          association: "Appointments",
+          where: { status: "completed", rating: { [Op.not]: null } },
           required: false,
+          include: [
+            {
+              association: "Client",
+              include: [
+                { association: "User", attributes: ["name", "avatar_uri"] },
+              ],
+            },
+          ],
         },
       ],
     });
