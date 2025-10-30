@@ -3,10 +3,11 @@ import * as dotenv from "dotenv";
 import { AppointmentModel, IAppointment } from "../models/Appointment";
 import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
+import { NotificationModel } from "../models/Notification";
+import { ServiceModel } from "../models/Service";
 
 dotenv.config();
 
-// --- 1. CONFIGURAÇÃO E INICIALIZAÇÃO DO STRIPE (Movido para o Topo) ---
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 if (!stripeSecretKey || !stripeSecretKey.startsWith("sk_")) {
@@ -15,30 +16,24 @@ if (!stripeSecretKey || !stripeSecretKey.startsWith("sk_")) {
   throw new Error(errorMsg);
 }
 
-// Inicializa o cliente Stripe UMA VEZ para ser usado por todo o serviço
 const stripe = new Stripe(stripeSecretKey, {
   // @ts-ignore: O tipo da API version pode estar estranho
-  apiVersion: "2025-09-30.clover", // Mantendo a versão que você corrigiu
+  apiVersion: "2025-09-30.clover",
   typescript: true,
 });
-// --- FIM DA INICIALIZAÇÃO ---
 
-// Interface para os parâmetros de criação
 interface PaymentIntentParams {
-  amount: number; // Em centavos
+  amount: number;
   currency: string;
   metadata?: { [key: string]: string | number | null };
 }
 
 export const PaymentService = {
-  // --- FUNÇÃO 1: CRIAR O PAGAMENTO (Seu código existente, levemente ajustado) ---
   createPaymentIntent: async ({
     amount,
     currency,
     metadata,
   }: PaymentIntentParams): Promise<string> => {
-    // Removemos a inicialização do Stripe daqui, pois ela agora é global
-
     try {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -59,9 +54,6 @@ export const PaymentService = {
         );
       }
 
-      console.log(
-        `[PaymentService] Payment Intent criado com sucesso. ID: ${paymentIntent.id}`
-      );
       return paymentIntent.client_secret;
     } catch (error: any) {
       console.error(
@@ -76,19 +68,12 @@ export const PaymentService = {
     }
   },
 
-  // --- FUNÇÃO 2: CONFIRMAR PAGAMENTO E CRIAR AGENDAMENTO (Nova) ---
   confirmAndCreateAppointment: async (
     paymentIntentId: string,
-    authenticatedUserId: number // ID do usuário logado (vem do middleware)
+    authenticatedUserId: number
   ): Promise<IAppointment> => {
-    console.log(
-      `[PaymentService] Confirmando PaymentIntent ID: ${paymentIntentId} para User ID: ${authenticatedUserId}`
-    );
-
-    // 1. Busque o PaymentIntent no Stripe (Verificação de Segurança)
     let paymentIntent: Stripe.PaymentIntent;
     try {
-      // Usamos a instância 'stripe' global
       paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     } catch (error: any) {
       console.error(
@@ -98,7 +83,6 @@ export const PaymentService = {
       throw new Error(`Erro ao verificar pagamento: ${error.message}`);
     }
 
-    // 2. Verifique o Status do Pagamento
     if (paymentIntent.status !== "succeeded") {
       console.warn(
         `[PaymentService] Tentativa de confirmação de pagamento não sucedido (Status: ${paymentIntent.status})`
@@ -106,7 +90,6 @@ export const PaymentService = {
       throw new Error("O pagamento não foi concluído com sucesso.");
     }
 
-    // 3. Extraia os Metadados
     const metadata = paymentIntent.metadata;
     const professionalId = metadata.professionalId;
     const serviceId = metadata.serviceId;
@@ -114,17 +97,11 @@ export const PaymentService = {
     const addressId = metadata.addressId;
 
     if (!professionalId || !serviceId || !selectedTime || !addressId) {
-      console.error(
-        "[PaymentService] Metadados incompletos no PaymentIntent:",
-        metadata
-      );
       throw new Error(
         "Dados do agendamento ausentes nos metadados do pagamento."
       );
     }
 
-    // 4. Encontre o `client_id` real baseado no `user_id` autenticado
-    // (Ajuste esta lógica se 'UserModel' não tiver a FK 'client_id' direta)
     const user = await UserModel.findByPk(authenticatedUserId);
     if (!user) {
       throw new Error("Cliente (usuário) não encontrado.");
@@ -135,20 +112,35 @@ export const PaymentService = {
     // const clientId = client.id;
     const clientId = user.id; // ASSUMINDO que o ID do usuário é o ID do cliente
 
-    // 5. Crie o Agendamento no Banco de Dados
     try {
       const newAppointment = await AppointmentModel.create({
         professional_id: Number(professionalId),
         client_id: clientId,
         service_id: Number(serviceId),
-        address_id: Number(addressId), // Usando o addressId dos metadados
+        address_id: Number(addressId),
         rating: undefined,
         review: undefined,
-        start_time: new Date(selectedTime), // Converte a string ISO para Data
-        end_time: new Date(selectedTime), // TODO: Calcule a hora final (start_time + service.duration)
+        start_time: new Date(selectedTime),
+        end_time: new Date(selectedTime),
         status: "confirmed",
         payment_intent_id: paymentIntentId,
       });
+
+      const service = await ServiceModel.findByPk(Number(serviceId));
+
+      if (!service) {
+        throw new Error("Serviço não encontrado.");
+      }
+
+      await NotificationModel.create({
+        user_id: clientId,
+        title: "Agendamento Criado com Sucesso",
+        message: `Seu agendamento para o serviço '${service.title}' no dia ${selectedTime} foi criado. Aguardando confirmação do profissional.`,
+        notification_type: "appointment",
+        related_entity_id: newAppointment.id,
+        is_read: false,
+      });
+
       return newAppointment;
     } catch (dbError: any) {
       console.error(
@@ -156,12 +148,8 @@ export const PaymentService = {
         dbError.message
       );
 
-      // Lógica de Reembolso: Se o agendamento falhar, o pagamento deve ser reembolsado.
       try {
         await stripe.refunds.create({ payment_intent: paymentIntentId });
-        console.log(
-          `[PaymentService] Reembolso do ${paymentIntentId} processado com sucesso.`
-        );
       } catch (refundError: any) {
         console.error(
           `[PaymentService] FALHA CRÍTICA: Não foi possível criar o agendamento E não foi possível processar o reembolso. PI: ${paymentIntentId}`,
@@ -176,7 +164,6 @@ export const PaymentService = {
     appointmentId: number,
     authenticatedUserId: number
   ): Promise<string> => {
-    // 1. Encontre o client_id (baseado no seu código do appointment.controller)
     const client = await ClientModel.findOne({
       where: { user_id: authenticatedUserId },
     });
@@ -184,11 +171,10 @@ export const PaymentService = {
       throw new Error("Cliente não encontrado.");
     }
 
-    // 2. Busque o agendamento no nosso DB
     const appointment = await AppointmentModel.findOne({
       where: {
         id: appointmentId,
-        client_id: client.id, // Garante que o usuário só possa ver o seu
+        client_id: client.id,
       },
     });
 
@@ -198,7 +184,6 @@ export const PaymentService = {
       );
     }
 
-    // 3. Verifique se há um ID de pagamento
     const paymentIntentId = appointment.payment_intent_id;
     if (!paymentIntentId) {
       throw new Error(
@@ -206,7 +191,6 @@ export const PaymentService = {
       );
     }
 
-    // 4. Busque o PaymentIntent no Stripe
     try {
       const paymentIntent = await stripe.paymentIntents.retrieve(
         paymentIntentId,
@@ -215,7 +199,6 @@ export const PaymentService = {
         }
       );
 
-      // 5. Extraia a URL do recibo
       const latestCharge = paymentIntent.latest_charge as Stripe.Charge;
 
       const receiptUrl = latestCharge?.receipt_url;

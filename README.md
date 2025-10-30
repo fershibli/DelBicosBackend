@@ -30,8 +30,11 @@ This is a TypeScript Express application adapted for deployment on Vercel. The a
 | :------------------------------------------------: | --------------------------- |
 |  [Fernando Chibli](https://github.com/fershibli)   | _Product Owner & FullStack_ |
 | [Douglas Wenzel](https://github.com/douglaswenzel) | _Scrum Master & FullStack_  |
+|    [Eduardo Kamo](https://github.com/edukamoz)     | _Desenvolvedor FullStack_   |
 |  [Gustavo Ferreira](https://github.com/Gspedine)   | _Desenvolvedor FullStack_   |
+|  [Iago Rossan](https://github.com/IagoYuriRossan)  | _Desenvolvedor FullStack_   |
 |   [Isabel Maito](https://github.com/isabelmaito)   | _Desenvolvedora FullStack_  |
+|    [Lucas Consani](https://github.com/konsanii)    | _Desenvolvedor FullStack_   |
 
 <br>
 
@@ -58,27 +61,27 @@ my-vercel-express-app
 
 #### 1. Create a new user
 
--   **Endpoint**: `/api/users`
--   **Method**: `POST`
--   **Request Body**:
+- **Endpoint**: `/api/users`
+- **Method**: `POST`
+- **Request Body**:
 
 ```json
 {
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "password": "password123"
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "password": "password123"
 }
 ```
 
--   **Response**:
+- **Response**:
 
 ```json
 {
-    "id": 1,
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "createdAt": "2023-10-01T00:00:00.000Z",
-    "updatedAt": "2023-10-01T00:00:00.000Z"
+  "id": 1,
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "createdAt": "2023-10-01T00:00:00.000Z",
+  "updatedAt": "2023-10-01T00:00:00.000Z"
 }
 ```
 
@@ -86,26 +89,26 @@ my-vercel-express-app
 
 #### 2. Get all users
 
--   **Endpoint**: `/api/users`
--   **Method**: `GET`
--   **Response**:
+- **Endpoint**: `/api/users`
+- **Method**: `GET`
+- **Response**:
 
 ```json
 [
-    {
-        "id": 1,
-        "name": "John Doe",
-        "email": "johndoe@example.com",
-        "createdAt": "2023-10-01T00:00:00.000Z",
-        "updatedAt": "2023-10-01T00:00:00.000Z"
-    },
-    {
-        "id": 2,
-        "name": "Jane Doe",
-        "email": "johndoe@example.com",
-        "createdAt": "2023-10-01T00:00:00.000Z",
-        "updatedAt": "2023-10-01T00:00:00.000Z"
-    }
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "createdAt": "2023-10-01T00:00:00.000Z",
+    "updatedAt": "2023-10-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Jane Doe",
+    "email": "johndoe@example.com",
+    "createdAt": "2023-10-01T00:00:00.000Z",
+    "updatedAt": "2023-10-01T00:00:00.000Z"
+  }
 ]
 ```
 
@@ -113,17 +116,17 @@ my-vercel-express-app
 
 #### 3. Get a user by ID
 
--   **Endpoint**: `/api/users/:id`
--   **Method**: `GET`
--   **Response**:
+- **Endpoint**: `/api/users/:id`
+- **Method**: `GET`
+- **Response**:
 
 ```json
 {
-    "id": 1,
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "createdAt": "2023-10-01T00:00:00.000Z",
-    "updatedAt": "2023-10-01T00:00:00.000Z"
+  "id": 1,
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "createdAt": "2023-10-01T00:00:00.000Z",
+  "updatedAt": "2023-10-01T00:00:00.000Z"
 }
 ```
 
@@ -131,25 +134,25 @@ my-vercel-express-app
 
 #### 4. Update a user
 
--   **Endpoint**: `/api/users/:id`
--   **Method**: `PUT`
--   **Request Body**:
+- **Endpoint**: `/api/users/:id`
+- **Method**: `PUT`
+- **Request Body**:
 
 ```json
 {
-    "name": "John Smith",
-    "email": "johndoe@example.com"
+  "name": "John Smith",
+  "email": "johndoe@example.com"
 }
 ```
 
--   **Response**:
+- **Response**:
 
 ```json
 {
-    "id": 1,
-    "name": "John Smith",
-    "email": "johndoe@example.com",
-    "createdAt": "2023-10-01T00:00:00.000Z",
-    "updatedAt": "2023-10-01T00:00:00.000Z"
+  "id": 1,
+  "name": "John Smith",
+  "email": "johndoe@example.com",
+  "createdAt": "2023-10-01T00:00:00.000Z",
+  "updatedAt": "2023-10-01T00:00:00.000Z"
 }
 ```

@@ -28,7 +28,6 @@ export const EmailService = {
 
     try {
       await sgMail.send(msg);
-      console.log(`E-mail enviado com sucesso para ${to}`);
       return true;
     } catch (error) {
       console.error("Erro ao enviar e-mail pelo serviço:", error);

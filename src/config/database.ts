@@ -50,7 +50,15 @@ export const sequelize = generateSequelizeConnection();
 async function connectDatabase() {
   try {
     await sequelize.authenticate();
-    console.log("Connection to the database (Neon) established successfully.");
+    if (environment == "development") {
+      console.log(
+        "Connection to the database (Development) established successfully."
+      );
+    } else {
+      console.log(
+        "Connection to the database (Neon) established successfully."
+      );
+    }
   } catch (error) {
     console.error("Unable to connect to the database (Neon):", error);
   }
