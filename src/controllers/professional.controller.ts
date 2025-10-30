@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
-import { Op, literal, fn, col } from "sequelize";
+import { Op, literal } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
 // Importe os modelos associados para os includes
 import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
-import { AmenitiesModel } from "../models/Amenities";
-import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
-import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
 
