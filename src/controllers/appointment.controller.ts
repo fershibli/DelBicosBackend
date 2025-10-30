@@ -7,6 +7,7 @@ import { ServiceModel } from "../models/Service";
 import { PaymentService } from "../services/payment.service";
 import { NotificationModel } from "../models/Notification";
 
+// TODO: Remove this createAppointment and use confirmAndCreateAppointment from PaymentService instead (move remaining logic there)
 export const createAppointment = async (req: Request, res: Response) => {
   try {
     const appointment = await AppointmentModel.create(req.body);
