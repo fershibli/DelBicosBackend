@@ -7,6 +7,9 @@ import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
+import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
+import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
+import { AmenitiesModel } from "../models/Amenities";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
@@ -67,6 +70,22 @@ export const getProfessionals = async (req: Request, res: Response) => {
         {
           model: ServiceModel,
           as: "Services",
+          required: false,
+        },
+        {
+          model: ProfessionalGalleryModel,
+          as: "Gallery",
+          required: false,
+        },
+        {
+          model: ProfessionalAvailabilityModel,
+          as: "Availabilities",
+          required: false,
+        },
+        {
+          model: AmenitiesModel,
+          as: "Amenities",
+          through: { attributes: [] },
           required: false,
         },
         // Inclui appointments apenas com rating válido para calcular média/contagem
@@ -146,6 +165,13 @@ export const getProfessionalById = async (req: Request, res: Response) => {
         },
         { model: AddressModel, as: "MainAddress" },
         { model: ServiceModel, as: "Services" },
+        { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+        { model: ProfessionalGalleryModel, as: "Gallery" },
+        {
+          model: ProfessionalAvailabilityModel,
+          as: "Availabilities",
+          where: { is_available: true },
+        },
         {
           model: AppointmentModel,
           as: "Appointments",
