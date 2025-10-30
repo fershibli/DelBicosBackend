@@ -107,10 +107,9 @@ export const getProfessionals = async (req: Request, res: Response) => {
       // Arredonda para 2 casas decimais (mantendo tipo number)
       const roundedRating =
         rating !== null ? Math.round(rating * 100) / 100 : null;
-      const roundedRatingsCount = Math.round(ratings_count * 100) / 100;
 
       prof.setDataValue("rating", roundedRating); // média arredondada
-      prof.setDataValue("ratings_count", roundedRatingsCount);
+      prof.setDataValue("ratings_count", ratings_count);
 
       // remove o array de appointments do payload
       if (prof.dataValues?.Appointments) {
