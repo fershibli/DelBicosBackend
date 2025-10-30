@@ -14,6 +14,9 @@ import { ClientModel } from "../models/Client";
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
+    const latNum = typeof lat === "string" ? parseFloat(lat) : undefined;
+    const lngNum = typeof lng === "string" ? parseFloat(lng) : undefined;
+    const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
 
     const where: any = {};
     if (termo) {
@@ -24,23 +27,33 @@ export const getProfessionals = async (req: Request, res: Response) => {
       ];
     }
 
-    const order: any[] = [];
-    if (lat && lng && lat !== "null" && lng !== "null") {
-      const distance = literal(`
+    const distanceLiteral = hasLatLng
+      ? literal(`
         6371 * acos(
           LEAST(1, GREATEST(-1,
-            cos(radians(${lat})) * cos(radians("MainAddress"."lat")) *
-            cos(radians("MainAddress"."lng") - radians(${lng})) +
-            sin(radians(${lat})) * sin(radians("MainAddress"."lat"))
+            cos(radians(${latNum})) * cos(radians("MainAddress"."lat")) *
+            cos(radians("MainAddress"."lng") - radians(${lngNum})) +
+            sin(radians(${latNum})) * sin(radians("MainAddress"."lat"))
           ))
         )
-      `);
-      order.push([distance, "ASC"]);
+      `)
+      : null;
+
+    const order: any[] = [];
+    if (hasLatLng && distanceLiteral) {
+      order.push([distanceLiteral, "ASC"]);
     } else {
       order.push(["createdAt", "DESC"]);
     }
 
-    const professionals = await ProfessionalModel.findAll({
+    const attributes: any = {};
+
+    if (hasLatLng && distanceLiteral) {
+      attributes.include = [[distanceLiteral as any, "distance_km"]];
+    }
+
+    const { rows, count } = await ProfessionalModel.findAndCountAll({
+      attributes,
       include: [
         {
           model: UserModel,
@@ -60,17 +73,21 @@ export const getProfessionals = async (req: Request, res: Response) => {
           required: false,
         },
       ],
+      where,
       order,
       limit: Number(limit),
       offset: Number(page) * Number(limit),
+      distinct: true,
     });
 
-    console.log(`Encontrados ${professionals.length} profissionais`);
+    console.log(`Encontrados ${rows.length} profissionais`);
 
     return res.json({
-      professionals,
-      totalCount: professionals.length,
+      professionals: rows,
+      totalCount: count,
       currentPage: Number(page),
+      pageSize: Number(limit),
+      totalPages: Math.ceil(count / Number(limit)),
     });
   } catch (error) {
     console.error("Erro ao buscar profissionais:", error);
