@@ -119,7 +119,11 @@ export const getProfessionalById = async (req: Request, res: Response) => {
               model: ClientModel,
               as: "Client",
               include: [
-                { model: UserModel, attributes: ["name", "avatar_uri"] },
+                {
+                  model: UserModel,
+                  as: "User",
+                  attributes: ["name", "avatar_uri"],
+                },
               ],
             },
           ],
