@@ -434,7 +434,7 @@ router.post("/change-password", authMiddleware, changePassword);
  *       500:
  *         description: Erro no servidor
  */
-router.post("/:id/avatar", authMiddleware, uploadAvatar);
+router.post("/avatar", authMiddleware, uploadAvatar);
 
 /**
  * @swagger
@@ -456,7 +456,7 @@ router.post("/:id/avatar", authMiddleware, uploadAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.get("/:id/avatar", authMiddleware, getAvatar);
+router.get("/avatar", authMiddleware, getAvatar);
 
 /**
  * @swagger
@@ -483,7 +483,7 @@ router.get("/:id/avatar", authMiddleware, getAvatar);
  *       500:
  *         description: Erro no servidor
  */
-router.delete("/:id/avatar", authMiddleware, deleteAvatar);
+router.delete("/avatar", authMiddleware, deleteAvatar);
 
 /**
  * @swagger

@@ -1,6 +1,13 @@
 import { Request, Response } from "express";
 import { Op, literal } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
+// Importe os modelos associados para os includes
+import { UserModel } from "../models/User";
+import { AddressModel } from "../models/Address";
+import { ServiceModel } from "../models/Service";
+import { AmenitiesModel } from "../models/Amenities";
+import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
+import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
@@ -17,23 +24,25 @@ export const getProfessionals = async (req: Request, res: Response) => {
 
     const include = [
       {
-        association: "user",
+        model: UserModel,
+        as: "User",
         attributes: ["name", "email"],
         required: false,
       },
       {
-        association: "main_address",
+        model: AddressModel,
+        as: "MainAddress",
         attributes: ["lat", "lng", "city"],
         required: false,
       },
-      { association: "services" },
-      { association: "amenities", through: { attributes: [] } },
-      { association: "gallery" },
-      { association: "availabilities" },
+      { model: ServiceModel, as: "Services" },
+      // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+      // { model: ProfessionalGalleryModel, as: "Gallery" },
+      // { model: ProfessionalAvailabilityModel, as: "Availabilities" },
     ];
 
     const order: any[] = [];
-    if (lat && lng) {
+    if (lat && lng && lat !== "null" && lng !== "null") {
       const distance = literal(`
         6371 * acos(
           cos(radians(${lat})) * cos(radians(main_address.lat)) *
@@ -65,16 +74,17 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
       include: [
-        { association: "user" },
-        { association: "main_address" },
-        { association: "services" },
-        { association: "amenities", through: { attributes: [] } },
-        { association: "gallery" },
-        {
-          association: "availabilities",
-          where: { is_available: true },
-          required: false,
-        },
+        { model: UserModel, as: "User" },
+        { model: AddressModel, as: "MainAddress" },
+        { model: ServiceModel, as: "Services" },
+        // { model: AmenitiesModel, as: "Amenities", through: { attributes: [] } },
+        // { model: ProfessionalGalleryModel, as: "Gallery" },
+        // {
+        //   model: ProfessionalAvailabilityModel,
+        //   as: "Availabilities",
+        //   where: { is_available: true },
+        //   required: false,
+        // },
       ],
     });
 

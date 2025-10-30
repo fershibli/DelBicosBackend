@@ -19,17 +19,13 @@ export const AuthController = {
 
     // (adicionar mais validações, como formato de e-mail, força da senha, etc.)
 
-    // 2. Gerar o código de verificação
     const verificationCode = generateVerificationCode();
-    console.log(`Código gerado para ${email}: ${verificationCode}`);
 
-    // 3. Salvar os dados do usuário e o código temporariamente
     temporaryStorage[email] = {
       code: verificationCode,
       userData: req.body,
     };
 
-    // 4. Preparar e enviar o e-mail
     const emailSubject = "Seu Código de Verificação";
     const emailHtml = `
       <h1>Olá, ${name}!</h1>
@@ -44,7 +40,6 @@ export const AuthController = {
       html: emailHtml,
     });
 
-    // 5. Responder ao frontend
     if (wasSent) {
       return res
         .status(200)
@@ -55,7 +50,6 @@ export const AuthController = {
   },
 
   handleVerifyCode: async (req: Request, res: Response) => {
-    // 1. Extrair e-mail e código do corpo da requisição
     const { email, code } = req.body;
 
     if (!email || !code) {
@@ -64,7 +58,6 @@ export const AuthController = {
         .json({ error: 'Campos "email" e "code" são obrigatórios.' });
     }
 
-    // 2. Buscar os dados temporários
     const tempData = temporaryStorage[email];
 
     if (!tempData) {
@@ -73,23 +66,15 @@ export const AuthController = {
         .json({ error: "Dados de verificação não encontrados ou expirados." });
     }
 
-    // 3. Comparar o código
     if (tempData.code !== code) {
       return res.status(400).json({ error: "Código de verificação inválido." });
     }
 
-    // 4. SUCESSO! Finalizar o cadastro
     // Posteriormente trocar esta parte para colocar no banco de dados
     const { userData } = tempData;
-    console.log(
-      "Verificação bem-sucedida! Salvando usuário no banco de dados:",
-      userData
-    );
 
-    // 5. Limpar os dados temporários após o sucesso
     delete temporaryStorage[email];
 
-    // 6. Avaliar para mandar token JWT
     return res
       .status(200)
       .json({ message: "Conta verificada com sucesso!", user: userData });
