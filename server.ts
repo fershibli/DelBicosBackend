@@ -63,6 +63,7 @@ app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
 app.use("/api/user", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
+app.use("/api/professionals", professionalRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);

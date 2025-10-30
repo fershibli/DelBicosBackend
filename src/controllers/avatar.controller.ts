@@ -2,55 +2,37 @@ import { Request, Response } from "express";
 import { UserModel } from "../models/User";
 import fs from "fs";
 import path from "path";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 
 export const uploadAvatar = async (req: Request, res: Response) => {
-  console.log("=== INICIANDO UPLOAD DE AVATAR ===");
-  console.log("📦 Headers recebidos:", req.headers);
-  console.log("🔍 Parâmetros da URL:", req.params);
-  console.log(
-    "📊 Tamanho do body:",
-    JSON.stringify(req.body)?.length || 0,
-    "bytes"
-  );
-
   try {
-    const userId = req.params.id;
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
     const { base64Image } = req.body;
 
-    console.log(`👤 UserID recebido: ${userId}`);
-    console.log("🖼️  Base64 image received:", base64Image ? "SIM" : "NÃO");
-
     if (!base64Image) {
-      console.log("❌ Erro: Base64 image é obrigatória");
       return res.status(400).json({ error: "Imagem em base64 é obrigatória" });
     }
 
-    console.log("✅ Base64 image presente");
-    console.log("🔍 Validando formato base64...");
-
     const base64Regex = /^data:image\/(png|jpg|jpeg);base64,/;
     if (!base64Regex.test(base64Image)) {
-      console.log("❌ Formato base64 inválido");
       return res.status(400).json({
         error:
           "Formato base64 inválido. Formato esperado: data:image/(png|jpg|jpeg);base64,...",
       });
     }
 
-    console.log("✅ Formato base64 válido");
+    if (!userId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
 
-    console.log("🔍 Buscando usuário no banco...");
     const user = await UserModel.findByPk(userId);
     if (!user) {
-      console.log(`❌ Usuário ${userId} não encontrado`);
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    console.log("✅ Usuário encontrado:", user.id);
-
     const matches = base64Image.match(/^data:image\/(png|jpg|jpeg);base64,/);
     if (!matches || matches.length < 2) {
-      console.log("❌ Não foi possível extrair tipo da imagem");
       return res.status(400).json({ error: "Formato base64 inválido" });
     }
 
@@ -60,59 +42,53 @@ export const uploadAvatar = async (req: Request, res: Response) => {
       ""
     );
 
-    console.log(`📸 Tipo da imagem: ${imageType}`);
-    console.log(`📊 Tamanho dos dados base64: ${base64Data.length} caracteres`);
-
-    const avatarDir = path.join(__dirname, "..", "..", "avatarBucket", userId);
-    console.log(`📁 Diretório destino: ${avatarDir}`);
+    const avatarDir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "avatarBucket",
+      userId.toString()
+    );
 
     if (!fs.existsSync(avatarDir)) {
-      console.log("📂 Criando diretório...");
       fs.mkdirSync(avatarDir, { recursive: true });
-      console.log("✅ Diretório criado");
     }
 
     const fileName = `avatar.${imageType}`;
     const filePath = path.join(avatarDir, fileName);
-    console.log(`💾 Salvando arquivo: ${filePath}`);
 
     const buffer = Buffer.from(base64Data, "base64");
     fs.writeFileSync(filePath, buffer);
-    console.log("✅ Arquivo salvo com sucesso");
 
     const relativePath = `avatarBucket/${userId}/${fileName}`;
-    console.log(`🔄 Atualizando banco com path: ${relativePath}`);
 
     await user.update({ avatar_uri: relativePath });
-    console.log("✅ Banco atualizado");
 
-    const fullAvatarUrl = `http://localhost:3000/${relativePath}`;
-    console.log("🌐 URL completa do avatar:", fullAvatarUrl);
-
-    console.log("🎉 Upload concluído com sucesso!");
     res.status(200).json({
       success: true,
       message: "Avatar enviado com sucesso",
-      avatar_uri: relativePath,
-      avatarUrl: fullAvatarUrl,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        avatar_uri: user.avatar_uri,
+        // Adicione outros campos do user que o seu store precisa
+      },
     });
   } catch (error: any) {
-    console.error("❌ ERRO NO UPLOAD:", error);
-    console.error("Stack trace:", error.stack);
-
     res.status(500).json({
       error: "Erro interno do servidor",
       details:
         process.env.NODE_ENV === "development" ? error.message : undefined,
     });
-  } finally {
-    console.log("=== FIM DO PROCESSAMENTO ===\n");
   }
 };
 
 export const getAvatar = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
 
     const user = await UserModel.findByPk(userId, {
       attributes: ["id", "avatar_uri"],
@@ -140,11 +116,16 @@ export const getAvatar = async (req: Request, res: Response) => {
 
 export const deleteAvatar = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
 
     const user = await UserModel.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
     }
 
     if (!user.avatar_uri) {
