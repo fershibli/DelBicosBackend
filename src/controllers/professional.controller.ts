@@ -136,8 +136,6 @@ export const getProfessionals = async (req: Request, res: Response) => {
       }
     }
 
-    console.log(`Encontrados ${rows.length} profissionais`);
-
     return res.json({
       professionals: rows,
       totalCount: count,
