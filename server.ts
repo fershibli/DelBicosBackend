@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 // import mongoose from "mongoose";
-import cors from "cors";
+import { setupCors } from "./src/middlewares/cors.middleware";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
 import categoryRoutes from "./src/routes/category.routes";
@@ -14,6 +14,7 @@ import swaggerOptions from "./src/config/swagger";
 import authRouter from "./src/routes/auth.routes";
 import notificationRoutes from "./src/routes/notification.routes";
 import path from "path";
+import fs from "fs";
 import { initializeAssociations } from "./src/models/associations";
 import paymentRouter from "./src/routes/payment.routes";
 
@@ -33,21 +34,17 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:8081",
-      "http://localhost:19000",
-      "exp://localhost:8081",
-      "exp://host.docker.internal:8081",
-    ],
-    credentials: true,
-  })
-);
+setupCors(app);
 
 app.use(express.json());
-const AVATAR_BUCKET_PATH = path.join(__dirname, "avatarBucket"); // <-- VERIFIQUE ESTE CAMINHO
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const baseDir =
+  process.env.ENVIRONMENT === "production" ? process.cwd() : __dirname;
+const AVATAR_BUCKET_PATH = path.resolve(baseDir, "avatarBucket");
+if (!fs.existsSync(AVATAR_BUCKET_PATH)) {
+  fs.mkdirSync(AVATAR_BUCKET_PATH, { recursive: true });
+}
+
+app.use("/docs", swaggerUi.serve as any, swaggerUi.setup(swaggerSpec) as any);
 
 app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
 
@@ -74,8 +71,9 @@ app.use("/auth", authRouter);
 const isServerless = process.env.IS_SERVERLESS == "true";
 
 if (!isServerless) {
-  app.listen(3000, () => {
-    console.log("Servidor rodando na porta 3000");
+  const port = Number(process.env.PORT || 3000);
+  app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
   });
 } else {
   console.log("Servidor rodando em ambiente serverless");
