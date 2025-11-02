@@ -54,7 +54,7 @@ if (!fs.existsSync(AVATAR_BUCKET_PATH)) {
   fs.mkdirSync(AVATAR_BUCKET_PATH, { recursive: true });
 }
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/docs", swaggerUi.serve as any, swaggerUi.setup(swaggerSpec) as any);
 
 app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
 
