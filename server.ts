@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 // import mongoose from "mongoose";
-import cors, { CorsOptions } from "cors";
+import { setupCors } from "./src/middlewares/cors.middleware";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
 import categoryRoutes from "./src/routes/category.routes";
@@ -34,43 +34,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-const rawAllowed = process.env.ALLOWED_ORIGINS || "";
-const allowedOrigins = rawAllowed
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
-
-// Normaliza para protocolo + host (com porta, se houver), sem barra final e em minúsculas.
-const normalizeOrigin = (o?: string) => {
-  if (!o) return "";
-  try {
-    const u = new URL(o);
-    return `${u.protocol}//${u.host}`.toLowerCase();
-  } catch {
-    return o.replace(/\/+$/, "").toLowerCase();
-  }
-};
-const allowedNormalized = allowedOrigins.map(normalizeOrigin);
-
-const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // curl/Postman
-    const norm = normalizeOrigin(origin);
-    if (allowedNormalized.includes(norm)) return callback(null, true);
-    try {
-      const host = new URL(origin).hostname.toLowerCase();
-      // Libera previews do Vercel (*.vercel.app). Ajuste se quiser restringir mais.
-      if (/\.vercel\.app$/.test(host)) return callback(null, true);
-    } catch (_) {}
-    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
-  },
-  credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400,
-};
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // pré-flight
+setupCors(app);
 
 app.use(express.json());
 const baseDir =
