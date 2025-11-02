@@ -6,6 +6,18 @@ import { ProfessionalModel } from "../models/Professional";
 import { ServiceModel } from "../models/Service";
 import { PaymentService } from "../services/payment.service";
 import { NotificationModel } from "../models/Notification";
+import { AddressModel } from "../models/Address";
+import { SubCategoryModel } from "../models/Subcategory";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
+
+const formatDate = (dateStr: string | Date) =>
+  new Date(dateStr).toLocaleDateString("pt-BR");
+
+const formatTime = (dateStr: string | Date) =>
+  new Date(dateStr).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 // TODO: Remove this createAppointment and use confirmAndCreateAppointment from PaymentService instead (move remaining logic there)
 export const createAppointment = async (req: Request, res: Response) => {
@@ -169,33 +181,96 @@ export const reviewAppointment = async (req: Request, res: Response) => {
 };
 
 export const getAppointmentInvoice = async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+
   try {
     const appointmentId = Number(req.params.id);
+    const authenticatedUserId = authReq.user?.id;
 
-    // 2. LEIA O ID DO USUÁRIO DO QUERY (JÁ QUE NÃO TEMOS authMiddleware)
-    // A chamada do frontend será: GET /api/appointments/123/receipt?userId=5
-    const userId = Number(req.query.userId);
-
-    // 3. Validação
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ error: "ID do usuário (userId) é obrigatório." });
+    if (!authenticatedUserId) {
+      return res.status(401).json({ error: "Usuário não autenticado." });
     }
     if (isNaN(appointmentId)) {
       return res.status(400).json({ error: "ID do agendamento inválido." });
     }
 
-    // 4. Chame o serviço para buscar a URL do recibo
-    const receiptUrl = await PaymentService.getAppointmentReceipt(
-      appointmentId,
-      userId // Passa o userId do query
-    );
+    const client = await ClientModel.findOne({
+      where: { user_id: authenticatedUserId },
+    });
+    if (!client) {
+      return res.status(404).json({ error: "Cliente não encontrado." });
+    }
 
-    // 5. Retorne a URL
-    res.status(200).json({ receiptUrl });
+    const appointment = await AppointmentModel.findOne({
+      where: {
+        id: appointmentId,
+        client_id: client.id,
+      },
+      include: [
+        {
+          model: ServiceModel,
+          as: "Service",
+          include: [{ model: SubCategoryModel, as: "Subcategory" }],
+        },
+        {
+          model: ClientModel,
+          as: "Client",
+          include: [{ model: UserModel, as: "User" }],
+        },
+        {
+          model: ProfessionalModel,
+          as: "Professional",
+          include: [{ model: UserModel, as: "User" }],
+        },
+        {
+          model: AddressModel,
+          as: "Address",
+        },
+      ],
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        error: "Agendamento não encontrado ou não pertence a este usuário.",
+      });
+    }
+
+    const apptData: any = appointment;
+
+    const invoice = {
+      invoiceNumber: `NF${appointment.id.toString().padStart(6, "0")}`,
+      date: formatDate(appointment.createdAt),
+
+      customerName: apptData.Client?.User?.name || "Cliente não encontrado",
+      customerCpf: apptData.Client?.cpf || "CPF não encontrado",
+      customerAddress: apptData.Address
+        ? `${apptData.Address.street}, ${apptData.Address.number} - ${apptData.Address.neighborhood} - ${apptData.Address.city}/${apptData.Address.state}`
+        : "Endereço não fornecido",
+
+      professionalName:
+        apptData.Professional?.User?.name || "Profissional não encontrado",
+      professionalCpf: apptData.Professional?.cpf || "CPF/CNPJ não encontrado",
+
+      serviceName: apptData.Service?.title || "Serviço não encontrado",
+      serviceDescription: apptData.Service?.description || "",
+      servicePrice: parseFloat(apptData.Service?.price || "0"),
+
+      serviceDate: formatDate(appointment.start_time),
+      serviceTime: `${formatTime(appointment.start_time)} - ${formatTime(
+        appointment.end_time
+      )}`,
+
+      total: parseFloat(apptData.Service?.price || "0"), // TODO: Se o preço puder mudar, buscar do PaymentIntent
+
+      paymentMethod: "Cartão de Crédito", // TODO: Buscar do PaymentIntent
+      transactionId: appointment.payment_intent_id || "N/A",
+    };
+
+    res.json(invoice);
   } catch (error: any) {
-    console.error(`[ApptController] Erro ao buscar recibo:`, error.message);
-    res.status(500).json({ error: error.message || "Erro ao gerar recibo" });
+    console.error("Erro ao gerar invoice:", error);
+    res
+      .status(500)
+      .json({ error: "Erro ao gerar invoice", details: error.message });
   }
 };
