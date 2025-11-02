@@ -14,6 +14,7 @@ import swaggerOptions from "./src/config/swagger";
 import authRouter from "./src/routes/auth.routes";
 import notificationRoutes from "./src/routes/notification.routes";
 import path from "path";
+import fs from "fs";
 import { initializeAssociations } from "./src/models/associations";
 import paymentRouter from "./src/routes/payment.routes";
 
@@ -46,7 +47,13 @@ app.use(
 );
 
 app.use(express.json());
-const AVATAR_BUCKET_PATH = path.join(__dirname, "avatarBucket"); // <-- VERIFIQUE ESTE CAMINHO
+const baseDir =
+  process.env.ENVIRONMENT === "production" ? process.cwd() : __dirname;
+const AVATAR_BUCKET_PATH = path.resolve(baseDir, "avatarBucket");
+if (!fs.existsSync(AVATAR_BUCKET_PATH)) {
+  fs.mkdirSync(AVATAR_BUCKET_PATH, { recursive: true });
+}
+
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
