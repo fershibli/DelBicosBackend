@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 // import mongoose from "mongoose";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
 import categoryRoutes from "./src/routes/category.routes";
@@ -34,17 +34,30 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:8081",
-      "http://localhost:19000",
-      "exp://localhost:8081",
-      "exp://host.docker.internal:8081",
-    ],
-    credentials: true,
-  })
-);
+const rawAllowed = process.env.ALLOWED_ORIGINS || "";
+const allowedOrigins = rawAllowed
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // curl/Postman
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const host = new URL(origin).hostname;
+      // Libera previews do Vercel (*.vercel.app). Ajuste se quiser restringir mais.
+      if (/\.vercel\.app$/.test(host)) return callback(null, true);
+    } catch (_) {}
+    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400,
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // pré-flight
 
 app.use(express.json());
 const baseDir =
