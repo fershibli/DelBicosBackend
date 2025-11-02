@@ -74,8 +74,9 @@ app.use("/auth", authRouter);
 const isServerless = process.env.IS_SERVERLESS == "true";
 
 if (!isServerless) {
-  app.listen(3000, () => {
-    console.log("Servidor rodando na porta 3000");
+  const port = Number(process.env.PORT || 3000);
+  app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
   });
 } else {
   console.log("Servidor rodando em ambiente serverless");
