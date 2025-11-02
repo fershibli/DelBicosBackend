@@ -40,12 +40,25 @@ const allowedOrigins = rawAllowed
   .map((o) => o.trim())
   .filter(Boolean);
 
+// Normaliza para protocolo + host (com porta, se houver), sem barra final e em minúsculas.
+const normalizeOrigin = (o?: string) => {
+  if (!o) return "";
+  try {
+    const u = new URL(o);
+    return `${u.protocol}//${u.host}`.toLowerCase();
+  } catch {
+    return o.replace(/\/+$/, "").toLowerCase();
+  }
+};
+const allowedNormalized = allowedOrigins.map(normalizeOrigin);
+
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // curl/Postman
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    const norm = normalizeOrigin(origin);
+    if (allowedNormalized.includes(norm)) return callback(null, true);
     try {
-      const host = new URL(origin).hostname;
+      const host = new URL(origin).hostname.toLowerCase();
       // Libera previews do Vercel (*.vercel.app). Ajuste se quiser restringir mais.
       if (/\.vercel\.app$/.test(host)) return callback(null, true);
     } catch (_) {}
