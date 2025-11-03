@@ -129,6 +129,7 @@ AppointmentModel.init(
   {
     sequelize,
     tableName: "appointment",
+    underscored: true,
     indexes: [
       {
         name: "idx_appointment_times",
