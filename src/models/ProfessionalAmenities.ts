@@ -37,6 +37,7 @@ ProfessionalAmenityModel.init(
   {
     sequelize,
     tableName: "professional_amenities",
+    underscored: true,
     timestamps: false,
   }
 );
