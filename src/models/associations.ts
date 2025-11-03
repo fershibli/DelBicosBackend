@@ -13,6 +13,7 @@ import { ProfessionalAvailabilityModel } from "./ProfessionalAvailability";
 import { ProfessionalAvailabilityLockModel } from "./ProfessionalAvailabilityLock";
 import { AppointmentModel } from "./Appointment";
 import { AdminServiceOrderModel } from "./AdminServiceOrder";
+import { UserTokenModel } from "./UserToken";
 
 export function initializeAssociations() {
   // User associations
@@ -34,6 +35,15 @@ export function initializeAssociations() {
   UserModel.hasMany(AddressModel, {
     foreignKey: "user_id",
     as: "Addresses",
+  });
+
+  UserModel.hasOne(UserTokenModel, {
+    foreignKey: "user_id",
+    as: "UserToken",
+  });
+  UserTokenModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "User",
   });
 
   // Address associations
