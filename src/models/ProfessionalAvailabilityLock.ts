@@ -60,6 +60,7 @@ ProfessionalAvailabilityLockModel.init(
   {
     sequelize,
     tableName: "professional_availability_lock",
+    underscored: true,
     timestamps: true,
   }
 );
