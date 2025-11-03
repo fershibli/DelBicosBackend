@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Op, literal } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
-// Importe os modelos associados para os includes
 import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
@@ -94,10 +93,10 @@ export const getProfessionals = async (req: Request, res: Response) => {
           as: "Appointments",
           attributes: ["rating"],
           required: false,
-          separate: true, // evita duplicar linhas do profissional
+          separate: true,
           where: {
             status: "completed",
-            rating: { [Op.ne]: null } as any, // evita conflito de tipagem TS
+            rating: { [Op.ne]: null } as any,
           },
         },
       ],
@@ -200,5 +199,253 @@ export const getProfessionalById = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Erro ao buscar profissional:", error);
     return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+async function getAvailableSlots(
+  professionalId: number,
+  date: string,
+  serviceDuration: number
+) {
+  const targetDate = new Date(`${date}T12:00:00.000Z`);
+  const dayOfWeek = targetDate.getUTCDay();
+  const bitmaskDay = "_".repeat(dayOfWeek) + "1" + "_".repeat(6 - dayOfWeek);
+
+  const availabilityRules = await ProfessionalAvailabilityModel.findAll({
+    where: {
+      professional_id: professionalId,
+      is_available: true,
+      [Op.or]: [
+        {
+          recurrence_pattern: "weekly",
+          days_of_week: { [Op.like]: `%${bitmaskDay}%` },
+        },
+        {
+          recurrence_pattern: "none",
+          start_day: { [Op.lte]: targetDate },
+          end_day: { [Op.gte]: targetDate },
+        },
+      ],
+    },
+  });
+
+  const startOfDay = new Date(`${date}T00:00:00.000Z`);
+  const endOfDay = new Date(`${date}T23:59:59.999Z`);
+
+  const appointments = await AppointmentModel.findAll({
+    where: {
+      professional_id: professionalId,
+      status: { [Op.in]: ["confirmed", "pending"] },
+      start_time: { [Op.between]: [startOfDay, endOfDay] },
+    },
+  });
+
+  const blocks = await ProfessionalAvailabilityModel.findAll({
+    where: {
+      professional_id: professionalId,
+      is_available: false,
+      recurrence_pattern: "none",
+      start_day: { [Op.lte]: targetDate },
+      end_day: { [Op.gte]: targetDate },
+    },
+  });
+
+  const allBlockages = [
+    ...appointments.map((a) => ({
+      start: new Date(a.start_time),
+      end: new Date(a.end_time),
+    })),
+    ...blocks.map((b) => {
+      const [startH, startM] = b.start_time.split(":").map(Number);
+      const [endH, endM] = b.end_time.split(":").map(Number);
+      const blockStart = new Date(startOfDay);
+      blockStart.setUTCHours(startH, startM);
+      const blockEnd = new Date(startOfDay);
+      blockEnd.setUTCHours(endH, endM);
+      return { start: blockStart, end: blockEnd };
+    }),
+  ];
+
+  const availableSlots: string[] = [];
+  const slotInterval = 30;
+
+  for (const rule of availabilityRules) {
+    const [startH, startM] = rule.start_time.split(":").map(Number);
+    const [endH, endM] = rule.end_time.split(":").map(Number);
+
+    const ruleStart = new Date(startOfDay);
+    ruleStart.setUTCHours(startH, startM, 0, 0);
+    const ruleEnd = new Date(startOfDay);
+    ruleEnd.setUTCHours(endH, endM, 0, 0);
+
+    let currentSlotStart = new Date(ruleStart);
+
+    while (currentSlotStart < ruleEnd) {
+      const slotEnd = new Date(
+        currentSlotStart.getTime() + serviceDuration * 60000
+      );
+
+      if (slotEnd > ruleEnd) {
+        break;
+      }
+
+      const isBlocked = allBlockages.some((block) => {
+        return currentSlotStart < block.end && slotEnd > block.start;
+      });
+
+      if (!isBlocked) {
+        availableSlots.push(
+          currentSlotStart.toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "UTC",
+          })
+        );
+      }
+      currentSlotStart.setMinutes(currentSlotStart.getMinutes() + slotInterval);
+    }
+  }
+  return [...new Set(availableSlots)].sort();
+}
+
+export const searchProfessionalAvailability = async (
+  req: Request,
+  res: Response
+) => {
+  const { subCategoryId, date, lat, lng } = req.query;
+
+  if (!subCategoryId || !date) {
+    return res
+      .status(400)
+      .json({ error: "subCategoryId e date são obrigatórios." });
+  }
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res
+      .status(400)
+      .json({ error: "Formato de data inválido. Use AAAA-MM-DD." });
+  }
+
+  const latNum = typeof lat === "string" ? parseFloat(lat) : undefined;
+  const lngNum = typeof lng === "string" ? parseFloat(lng) : undefined;
+  const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
+
+  try {
+    const professionals = await ProfessionalModel.findAll({
+      include: [
+        {
+          model: ServiceModel,
+          as: "Services",
+          where: { subcategory_id: Number(subCategoryId), active: true },
+          required: true, // INNER JOIN para garantir que só venham profissionais da subcategoria
+        },
+        { model: UserModel, as: "User", attributes: ["name", "avatar_uri"] },
+        {
+          model: AddressModel,
+          as: "MainAddress",
+          attributes: ["city", "state", "lat", "lng"],
+        },
+      ],
+    });
+    if (!professionals.length) {
+      return res.json([]);
+    }
+
+    const getDistance = (profLat: number, profLng: number) => {
+      if (!hasLatLng) return 0;
+      const toRad = (x: number) => (x * Math.PI) / 180;
+      const R = 6371; // Raio da Terra em km
+
+      const dLat = toRad(profLat - latNum!);
+      const dLon = toRad(profLng - lngNum!);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(latNum!)) *
+          Math.cos(toRad(profLat)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    const resultsPromises = professionals.map(async (prof: any) => {
+      const relevantService = prof.Services.find(
+        (s: any) => s.subcategory_id === Number(subCategoryId)
+      );
+      const serviceDuration = relevantService?.duration || 60;
+      const availableTimes = await getAvailableSlots(
+        prof.id,
+        date as string,
+        serviceDuration
+      );
+
+      if (availableTimes.length === 0) {
+        return null;
+      }
+
+      type ProfWithAppointments = ProfessionalModel & {
+        Appointments?: { rating: number | null }[];
+      };
+
+      const professionalWithAppointments = (await ProfessionalModel.findByPk(
+        prof.id,
+        {
+          include: [
+            {
+              model: AppointmentModel,
+              as: "Appointments",
+              where: { status: "completed", rating: { [Op.not]: null } },
+              attributes: ["rating"],
+              required: false,
+            },
+          ],
+        }
+      )) as ProfWithAppointments | null;
+
+      const ratings =
+        professionalWithAppointments?.Appointments?.map((a) => a.rating) || [];
+      const ratingsCount = ratings.length;
+      const averageRating =
+        ratingsCount > 0
+          ? ratings.reduce(
+              (acc: number, val: number | null | undefined) => acc + (val || 0),
+              0
+            ) / ratingsCount
+          : 0;
+      const distance = prof.MainAddress
+        ? getDistance(
+            parseFloat(prof.MainAddress.lat),
+            parseFloat(prof.MainAddress.lng)
+          )
+        : 0;
+      return {
+        id: prof.id,
+        name: prof.User.name,
+        imageUrl: prof.User.avatar_uri,
+        serviceName: relevantService.title,
+        priceFrom: relevantService.price,
+        serviceId: relevantService.id,
+        rating: parseFloat(averageRating.toFixed(1)),
+        ratingsCount: ratingsCount,
+        distance: parseFloat(distance.toFixed(1)),
+        location: `${prof.MainAddress?.city}, ${prof.MainAddress?.state}`,
+        offeredServices: prof.Services.map((s: any) => s.title),
+        availableTimes: availableTimes,
+      };
+    });
+
+    let results = (await Promise.all(resultsPromises)).filter(
+      (result) => result !== null
+    ) as any[];
+
+    if (hasLatLng) {
+      results.sort((a, b) => a.distance - b.distance);
+    }
+
+    return res.json(results);
+  } catch (error: any) {
+    console.error("Erro ao buscar disponibilidade:", error);
+    return res
+      .status(500)
+      .json({ error: "Erro interno do servidor", details: error.message });
   }
 };
