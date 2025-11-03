@@ -57,6 +57,7 @@ AmenitiesModel.init(
   {
     sequelize,
     tableName: "amenities",
+    underscored: true,
     timestamps: true,
   }
 );
