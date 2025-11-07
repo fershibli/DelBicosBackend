@@ -69,6 +69,7 @@ ProfessionalGalleryModel.init(
   {
     sequelize,
     tableName: "professional_gallery",
+    underscored: true,
     timestamps: true,
   }
 );

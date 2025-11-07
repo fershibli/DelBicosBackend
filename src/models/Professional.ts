@@ -86,6 +86,7 @@ ProfessionalModel.init(
   {
     sequelize,
     tableName: "professional",
+    underscored: true,
     timestamps: true,
   }
 );

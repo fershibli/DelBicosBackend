@@ -67,6 +67,7 @@ SubCategoryModel.init(
     sequelize,
     modelName: "SubCategory",
     tableName: "subcategory",
+    underscored: true,
     timestamps: true,
   }
 );

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getProfessionals,
   getProfessionalById,
+  searchProfessionalAvailability,
 } from "../controllers/professional.controller";
 
 const router = Router();
@@ -45,6 +46,8 @@ const router = Router();
  *         description: Lista de profissionais
  */
 router.get("/", getProfessionals);
+
+router.get("/search-availability", searchProfessionalAvailability);
 
 /**
  * @swagger

@@ -131,9 +131,10 @@ ProfessionalAvailabilityModel.init(
   {
     sequelize,
     tableName: "professional_availability",
+    underscored: true,
     indexes: [
       {
-        name: "idx_recurrence_combo",
+        name: "idx_prof_availability_recurrence",
         fields: [
           "professional_id",
           "recurrence_pattern",

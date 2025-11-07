@@ -89,9 +89,11 @@ UserModel.init(
     sequelize,
     modelName: "User",
     tableName: "users",
+    underscored: true,
+    timestamps: true,
     indexes: [
       {
-        name: "active_index_users",
+        name: "idx_users_active",
         fields: ["active"],
       },
     ],

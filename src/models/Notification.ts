@@ -22,21 +22,32 @@ export interface INotification {
   title: string;
   message: string;
   is_read: boolean;
-  notification_type?: 'appointment' | 'service' | 'system' | 'general';
+  notification_type?: "appointment" | "service" | "system" | "general";
   related_entity_id?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-type NotificationCreationalAttributes = Optional<INotification, "id" | "is_read" | "notification_type" | "related_entity_id" | "createdAt" | "updatedAt">;
+type NotificationCreationalAttributes = Optional<
+  INotification,
+  | "id"
+  | "is_read"
+  | "notification_type"
+  | "related_entity_id"
+  | "createdAt"
+  | "updatedAt"
+>;
 
-export class NotificationModel extends Model<INotification, NotificationCreationalAttributes> implements INotification {
+export class NotificationModel
+  extends Model<INotification, NotificationCreationalAttributes>
+  implements INotification
+{
   public id!: number;
   public user_id!: number;
   public title!: string;
   public message!: string;
   public is_read!: boolean;
-  public notification_type!: 'appointment' | 'service' | 'system' | 'general';
+  public notification_type!: "appointment" | "service" | "system" | "general";
   public related_entity_id?: number;
 
   public readonly createdAt!: Date;
@@ -58,8 +69,8 @@ NotificationModel.init(
         model: "users",
         key: "id",
       },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     title: {
       type: DataTypes.STRING(100),
@@ -75,8 +86,8 @@ NotificationModel.init(
       defaultValue: false,
     },
     notification_type: {
-      type: DataTypes.ENUM('appointment', 'service', 'system', 'general'),
-      defaultValue: 'system',
+      type: DataTypes.ENUM("appointment", "service", "system", "general"),
+      defaultValue: "system",
       allowNull: true,
     },
     related_entity_id: {

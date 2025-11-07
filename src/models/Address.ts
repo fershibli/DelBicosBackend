@@ -56,7 +56,6 @@ export class AddressModel extends Model<IAddress, AddressCreationalAttributes> {
   public user_id!: number;
   public active?: boolean;
 
-  // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -122,13 +121,15 @@ AddressModel.init(
     sequelize,
     modelName: "Address",
     tableName: "address",
+    underscored: true,
+    timestamps: true,
     indexes: [
       {
-        name: "active_index_address",
+        name: "idx_address_active",
         fields: ["active"],
       },
       {
-        name: "idx_location",
+        name: "idx_address_location",
         fields: ["lat", "lng"],
         using: "SPATIAL",
       },

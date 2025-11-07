@@ -108,14 +108,15 @@ ServiceModel.init(
   {
     sequelize,
     tableName: "service",
+    underscored: true,
     timestamps: true,
     indexes: [
       {
-        name: "active_index_service",
+        name: "idx_service_active",
         fields: ["active"],
       },
       {
-        name: "professional_service_index",
+        name: "idx_service_professional",
         fields: ["professional_id"],
       },
     ],
