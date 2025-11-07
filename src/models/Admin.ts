@@ -45,6 +45,7 @@ AdminModel.init(
   {
     sequelize,
     tableName: "admin",
+    underscored: true,
     timestamps: true,
   }
 );

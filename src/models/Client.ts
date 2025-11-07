@@ -66,6 +66,7 @@ ClientModel.init(
     sequelize,
     tableName: "client",
     modelName: "Client",
+    underscored: true,
     timestamps: true,
   }
 );

@@ -12,15 +12,15 @@ const normalizeOrigin = (o?: string) => {
   }
 };
 
-const rawAllowed = process.env.ALLOWED_ORIGINS || "";
-const allowedOrigins = rawAllowed
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
-const allowedNormalized = allowedOrigins.map(normalizeOrigin);
-
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
+    const rawAllowed = process.env.ALLOWED_ORIGINS || "";
+    const allowedOrigins = rawAllowed
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
+    const allowedNormalized = allowedOrigins.map(normalizeOrigin);
+
     if (!origin) return callback(null, true); // curl/Postman
     const norm = normalizeOrigin(origin);
     if (allowedNormalized.includes(norm)) return callback(null, true);

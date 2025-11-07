@@ -81,18 +81,11 @@ AdminServiceOrderModel.init(
       type: DataTypes.ENUM("pending", "in_progress", "completed", "canceled"),
       defaultValue: "pending",
     },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
   },
   {
     sequelize,
     tableName: "admin_service_order",
-    timestamps: false,
+    underscored: true,
+    timestamps: true,
   }
 );
