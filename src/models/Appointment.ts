@@ -31,6 +31,8 @@ export interface IAppointment {
   address_id: number;
   start_time: Date;
   end_time: Date;
+  completed_at?: Date;
+  final_price?: number;
   rating?: number;
   review?: string;
   status?: "pending" | "confirmed" | "completed" | "canceled";
@@ -50,6 +52,8 @@ export class AppointmentModel extends Model<
   public address_id!: number;
   public start_time!: Date;
   public end_time!: Date;
+  public completed_at?: Date;
+  public final_price?: number;
   public rating?: number;
   public review?: string;
   public status!: "pending" | "confirmed" | "completed" | "canceled";
@@ -108,6 +112,14 @@ AppointmentModel.init(
       type: DataTypes.STRING(1000),
       allowNull: true,
     },
+    completed_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    final_price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
     start_time: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -138,6 +150,10 @@ AppointmentModel.init(
       {
         name: "idx_status_check",
         fields: ["status", "start_time"],
+      },
+      {
+        name: "idx_prof_status_completed_at",
+        fields: ["professional_id", "status", "completed_at"],
       },
     ],
     timestamps: true,
