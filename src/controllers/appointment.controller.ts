@@ -112,12 +112,40 @@ export const getAllAppointments = async (req: Request, res: Response) => {
         {
           model: ClientModel,
           as: "Client",
-          include: [{ model: UserModel, as: "User" }],
+          include: [
+            {
+              model: UserModel,
+              as: "User",
+              attributes: [
+                "id",
+                "name",
+                "email",
+                "phone",
+                "avatar_uri",
+                "banner_uri",
+                "active",
+              ],
+            },
+          ],
         },
         {
           model: ProfessionalModel,
           as: "Professional",
-          include: [{ model: UserModel, as: "User" }],
+          include: [
+            {
+              model: UserModel,
+              as: "User",
+              attributes: [
+                "id",
+                "name",
+                "email",
+                "phone",
+                "avatar_uri",
+                "banner_uri",
+                "active",
+              ],
+            },
+          ],
         },
       ],
       order: [["start_time", "ASC"]],
