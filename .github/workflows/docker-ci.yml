@@ -14,6 +14,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # ensure tags and full history are available for tag runs
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
       - name: Set up QEMU (optional, for multi-arch builds)
         uses: docker/setup-qemu-action@v2
