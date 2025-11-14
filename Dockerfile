@@ -1,29 +1,19 @@
-FROM node:20-alpine AS builder
+FROM node:24.10.0-alpine
 
 WORKDIR /app
 
-# Copy dependency manifests first to leverage Docker layer cache
-COPY package*.json ./
+COPY package.json */package-lock.json* ./
 
-# Install all dependencies (including devDependencies) to build TypeScript
-RUN npm ci
+# Instalar dependências baseado no lockfile presente
+RUN npm install
 
-# Copy source and build
+# Copiar o restante dos arquivos do projeto
 COPY . .
-RUN npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-
-# Run in production mode
-ENV NODE_ENV=production
-
-# Copy only runtime artifacts from builder
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+# Altera .env se existir, substituindo SEQUELIZE_HOST=localhost por SEQUELIZE_HOST=postgres
+RUN if [ -f .env ]; then sed -i 's/SEQUELIZE_HOST = localhost/SEQUELIZE_HOST = postgres/g' .env; fi
 
 EXPOSE 3000
 
-# Start the built app
-CMD ["node", "dist/server.js"]
+# Container em idle
+CMD ["tail", "-f", "/dev/null"]
