@@ -1,8 +1,8 @@
-name: Buildar e publicar imagem Docker
+name: 02 - Buildar e publicar imagem Docker
 
 on:
   workflow_run:
-    workflows: ["semantic-versioning"]
+    workflows: ["01 - Análise Semântica Pós-Merge"]
     types:
       - completed
 
