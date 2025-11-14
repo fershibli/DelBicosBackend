@@ -1,4 +1,4 @@
-name: Build and push Docker image
+name: Buildar e publicar imagem Docker
 
 on:
   workflow_run:
@@ -8,23 +8,22 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and Push to DockerHub
+    name: Buildar e Publicar no DockerHub
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout do repositório
         uses: actions/checkout@v4
         with:
-          # ensure tags and full history are available for tag runs
           fetch-depth: 0
 
-      - name: Login to DockerHub
+      - name: Login no DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Prepare image tags (latest, sha, version if available)
+      - name: Preparar tags da imagem (latest, sha, versão se disponível)
         id: prepare-tags
         env:
           DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -36,7 +35,6 @@ jobs:
           DOCKER_REPO="${DOCKER_USER}/${REPO}"
           git fetch --tags --force
 
-          # Tenta achar o tag criado pelo workflow anterior
           TAG_NAME="$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)"
           if [[ -z "${TAG_NAME}" ]]; then
             TAG_NAME="$(git describe --tags "$(git rev-list --tags --max-count=1)" 2>/dev/null || true)"
@@ -63,12 +61,11 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Build and push Docker image
+      - name: Buildar e enviar imagem Docker
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          # tags prepared in previous step (latest, sha and version if present)
           tags: ${{ steps.prepare-tags.outputs.tags }}
