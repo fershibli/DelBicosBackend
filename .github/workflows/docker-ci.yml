@@ -18,56 +18,50 @@ jobs:
           # ensure tags and full history are available for tag runs
           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Set up QEMU (optional, for multi-arch builds)
-        uses: docker/setup-qemu-action@v2
-
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Prepare image tags (latest, sha, version if available)
         id: prepare-tags
         env:
-          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           REPO: ${{ github.event.repository.name }}
+        shell: bash
         run: |
-          # build list of tags: latest + sha + version (if package.json exists)
-          TAGS="${DOCKER_USER}/${REPO}:latest"
-          # full SHA tag
-          TAGS="$TAGS\n${DOCKER_USER}/${REPO}:${GITHUB_SHA}"
-          # short SHA (7 chars) tag - extra tag for convenience
-          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
-          TAGS="$TAGS\n${DOCKER_USER}/${REPO}:$SHORT_SHA"
-          if [ -f package.json ]; then
-            # only add version tag when this run was triggered by a Git tag (refs/tags/*)
-            case "$GITHUB_REF" in
-              refs/tags/*)
-                VERSION=$(node -p "require('./package.json').version")
-                if [ -n "$VERSION" ] && [ "$VERSION" != "null" ]; then
-                  TAGS="$TAGS\n${DOCKER_USER}/${REPO}:$VERSION"
-                fi
-                # also add the git tag name itself (e.g. v1.2.3) as an extra tag
-                TAG_NAME=${GITHUB_REF#refs/tags/}
-                if [ -n "$TAG_NAME" ]; then
-                  TAGS="$TAGS\n${DOCKER_USER}/${REPO}:$TAG_NAME"
-                fi
-                ;;
-              *)
-                echo "Not a tag run (GITHUB_REF=$GITHUB_REF) — skipping version/tag-name tags"
-                ;;
-            esac
+          set -euo pipefail
+
+          DOCKER_REPO="${DOCKER_USER}/${REPO}"
+          git fetch --tags --force
+
+          # Tenta achar o tag criado pelo workflow anterior
+          TAG_NAME="$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)"
+          if [[ -z "${TAG_NAME}" ]]; then
+            TAG_NAME="$(git describe --tags "$(git rev-list --tags --max-count=1)" 2>/dev/null || true)"
           fi
-          # write output for subsequent steps
-          echo "tags<<EOF" >> $GITHUB_OUTPUT
-          printf "%s" "$TAGS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          VERSION="$(node -p "require('./package.json').version" || true)"
+
+          declare -a TAGS
+          TAGS+=("${DOCKER_REPO}:latest")
+          TAGS+=("${DOCKER_REPO}:${GITHUB_SHA}")
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TAGS+=("${DOCKER_REPO}:${SHORT_SHA}")
+
+          if [[ -n "${VERSION}" && "${VERSION}" != "null" ]]; then
+            TAGS+=("${DOCKER_REPO}:${VERSION}")
+          fi
+          if [[ -n "${TAG_NAME}" ]]; then
+            TAGS+=("${DOCKER_REPO}:${TAG_NAME}")
+          fi
+
+          {
+            echo "tags<<EOF"
+            printf "%s\n" "${TAGS[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
