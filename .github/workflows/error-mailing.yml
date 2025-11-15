@@ -28,13 +28,13 @@ jobs:
             -o logs.zip
           unzip -q logs.zip -d logs || true
 
-          # Extrai até 200 linhas relevantes (error/fatal/failed/exception)
-          find logs -type f -name "*.txt" -print0 | xargs -0 grep -i -E "error|fatal|failed|exception" | head -n 200 > errors.txt || true
+          # Extrai até 20 linhas relevantes (error/fatal/failed/exception)
+          find logs -type f -name "*.txt" -print0 | xargs -0 grep -i -E "error|fatal|failed|exception" | head -n 20 > errors.txt || true
           if [ ! -s errors.txt ]; then
-            echo "Nenhuma linha contendo erros; adicionando últimas 200 linhas do primeiro log."
+            echo "Nenhuma linha contendo erros; adicionando últimas 20 linhas do primeiro log."
             FIRST_LOG=$(find logs -type f -name "*.txt" | head -n1)
             if [ -n "$FIRST_LOG" ]; then
-              tail -n 200 "$FIRST_LOG" > errors.txt
+              tail -n 20 "$FIRST_LOG" > errors.txt
             else
               echo "Sem logs disponíveis." > errors.txt
             fi
