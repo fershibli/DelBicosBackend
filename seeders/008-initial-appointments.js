@@ -56,10 +56,23 @@ module.exports = {
 
         let rating = null;
         let review = null;
+        let completed_at = null;
+        let final_price = null;
         if (status === "completed") {
+          // deterministic distribution across last 12 months for testing
+          const monthsBack = 1 + ((clientIndex * statuses.length + statusIndex) % 12);
+          completed_at = new Date(now);
+          completed_at.setMonth(completed_at.getMonth() - monthsBack);
+          // keep hour aligned with appointment start
+          completed_at.setHours(appointmentDate.getHours(), appointmentDate.getMinutes(), 0, 0);
+
           const randomReview = reviews[clientIndex % reviews.length];
           rating = randomReview.rating;
           review = randomReview.text;
+
+          // final_price deterministic: base price + statusIndex (so tests can assert)
+          const basePrice = service && service.price ? parseFloat(service.price) : 0;
+          final_price = parseFloat((basePrice + statusIndex).toFixed(2));
         }
 
         appointments.push({
@@ -72,6 +85,8 @@ module.exports = {
           status: status,
           rating: rating,
           review: review,
+          completed_at: completed_at,
+          final_price: final_price,
           payment_intent_id:
             status === "completed" || status === "confirmed"
               ? `pi_seed_${client.id}_${professional.id}_${status}`
