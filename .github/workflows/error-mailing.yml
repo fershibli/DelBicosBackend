@@ -1,0 +1,107 @@
+name: Alerta de Erro Versionamento
+
+on:
+  workflow_run:
+    workflows:
+      - "01 - Análise Semântica Pós-Merge"
+      - "02 - Buildar e publicar imagem Docker"
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  enviar-alerta:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar logs do workflow com falha
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "Run ID: ${{ github.event.workflow_run.id }}"
+          curl -L \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/logs \
+            -o logs.zip
+          unzip -q logs.zip -d logs || true
+
+          # Extrai até 200 linhas relevantes (error/fatal/failed/exception)
+          find logs -type f -name "*.txt" -print0 | xargs -0 grep -i -E "error|fatal|failed|exception" | head -n 200 > errors.txt || true
+          if [ ! -s errors.txt ]; then
+            echo "Nenhuma linha contendo erros; adicionando últimas 200 linhas do primeiro log."
+            FIRST_LOG=$(find logs -type f -name "*.txt" | head -n1)
+            if [ -n "$FIRST_LOG" ]; then
+              tail -n 200 "$FIRST_LOG" > errors.txt
+            else
+              echo "Sem logs disponíveis." > errors.txt
+            fi
+          fi
+
+          {
+            echo "Workflow: ${{ github.event.workflow_run.name }}"
+            echo "Run ID: ${{ github.event.workflow_run.id }}"
+            echo "Conclusão: ${{ github.event.workflow_run.conclusion }}"
+            echo "URL Execução: ${{ github.event.workflow_run.html_url }}"
+            echo ""
+            echo "Recorte de erros/log:"
+            echo "--------------------------------------"
+            cat errors.txt
+          } > email_body.txt
+
+      - name: Montar JSON do e-mail (SendGrid)
+        run: |
+          SUBJECT="[ALERTA] Falha no workflow: ${{ github.event.workflow_run.name }}"
+          BODY_JSON=$(jq -Rs . email_body.txt)
+
+          cat > email.json <<'JSON'
+          {
+            "personalizations": [
+              {
+                "to": [
+                  { "email": "__TO__" }
+                ]
+              }
+            ],
+            "from": { "email": "__FROM__" },
+            "subject": "__SUBJECT__",
+            "content": [
+              { "type": "text/plain", "value": __BODY__ }
+            ]
+          }
+          JSON
+
+          sed -i.bak "s|__TO__|${{ secrets.SENDGRID_TO }}|g" email.json
+          sed -i.bak "s|__FROM__|${{ secrets.SENDGRID_FROM }}|g" email.json
+          sed -i.bak "s|__SUBJECT__|$SUBJECT|g" email.json
+          BODY_ESCAPED=$(cat <<< "$BODY_JSON")
+          perl -0777 -pe "s|__BODY__|$BODY_ESCAPED|g" -i email.json
+          rm -f email.json.bak
+
+          echo "Preview do payload:"
+          head -n 30 email.json
+
+      - name: Enviar e-mail via SendGrid
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        run: |
+          set -e
+          HTTP_CODE=$(curl -sS -o sendgrid_resp.txt -w "%{http_code}" \
+            -X POST "https://api.sendgrid.com/v3/mail/send" \
+            -H "Authorization: Bearer $SENDGRID_API_KEY" \
+            -H "Content-Type: application/json" \
+            --data-binary @email.json)
+
+          echo "HTTP: $HTTP_CODE"
+          echo "Resposta:"
+          cat sendgrid_resp.txt || true
+
+          if [ "$HTTP_CODE" != "202" ]; then
+            echo "Falha ao enviar e-mail via SendGrid (HTTP $HTTP_CODE)" >&2
+            exit 1
+          fi
+
+      - name: Log final
+        run: echo "Alerta de erro enviado por e-mail (SendGrid)."
