@@ -47,16 +47,13 @@ jobs:
           VERSION="$(node -p "require('./package.json').version" || true)"
 
           declare -a TAGS
-          TAGS+=("${DOCKER_REPO}:latest")
-          TAGS+=("${DOCKER_REPO}:${GITHUB_SHA}")
-          SHORT_SHA="${GITHUB_SHA::7}"
-          TAGS+=("${DOCKER_REPO}:${SHORT_SHA}")
 
           if [[ -n "${VERSION}" && "${VERSION}" != "null" ]]; then
             TAGS+=("${DOCKER_REPO}:${VERSION}")
-          fi
-          if [[ -n "${TAG_NAME}" ]]; then
+          elif [[ -n "${TAG_NAME}" ]]; then
             TAGS+=("${DOCKER_REPO}:${TAG_NAME}")
+          else
+            TAGS+=("${DOCKER_REPO}:sha-${{ GITHUB_SHA::8 }}")
           fi
 
           {
