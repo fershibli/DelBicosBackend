@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getDashboardKpis, getEarningsOverTime, getServicesByCategory } from "../controllers/DashboardController";
+import { getDashboardKpis, getEarningsOverTime, getServicesByCategory } from "../controllers/dashboard.controller";
 import auth from "../middlewares/auth.middleware";
 
 const router = Router();
