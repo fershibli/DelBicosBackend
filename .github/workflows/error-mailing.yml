@@ -1,4 +1,4 @@
-name: Alerta de Erro Versionamento
+name: Alerta de Erro GitHub Actions
 
 on:
   workflow_run:
