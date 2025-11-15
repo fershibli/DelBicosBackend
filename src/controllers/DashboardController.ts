@@ -4,9 +4,8 @@ import { QueryTypes } from "sequelize";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { ProfessionalModel } from "../models/Professional";
 
-export default class DashboardController {
-  static async getKpis(req: Request, res: Response) {
-    const authReq = req as AuthenticatedRequest;
+export const getDashboardKpis = async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
   const userId = authReq.user?.id;
   if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
 
@@ -14,172 +13,164 @@ export default class DashboardController {
   if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
   const professionalId = professional.id;
 
-    try {
-      const sql = `
-        SELECT
-          COUNT(*) AS totalServices,
-          COALESCE(SUM(COALESCE(a.final_price, s.price)), 0) AS totalEarnings,
-          AVG(a.rating) AS avgRating
-        FROM appointment a
-        JOIN service s ON s.id = a.service_id
-        WHERE a.professional_id = :id
-          AND a.status = 'completed'
-      `;
+  try {
+    const sql = `
+      SELECT
+        COUNT(*) AS totalServices,
+        COALESCE(SUM(COALESCE(a.final_price, s.price)), 0) AS totalEarnings,
+        AVG(a.rating) AS avgRating
+      FROM appointment a
+      JOIN service s ON s.id = a.service_id
+      WHERE a.professional_id = :id
+        AND a.status = 'completed'
+    `;
 
-      const [results]: any = await sequelize.query(sql, {
-        replacements: { id: professionalId },
-        type: QueryTypes.SELECT,
-      });
+    const [results]: any = await sequelize.query(sql, {
+      replacements: { id: professionalId },
+      type: QueryTypes.SELECT,
+    });
 
-      return res.json({
-        totalServices: Number(results.totalServices || 0),
-        totalEarnings: parseFloat(String(results.totalEarnings || 0)),
-        avgRating: results.avgRating !== null ? parseFloat(String(results.avgRating)) : undefined,
-      });
-    } catch (error: any) {
-      console.error("Error in getKpis:", error);
-      return res.status(500).json({ error: "Erro interno" });
-    }
+    return res.json({
+      totalServices: Number(results.totalServices || 0),
+      totalEarnings: parseFloat(String(results.totalEarnings || 0)),
+      avgRating: results.avgRating !== null ? parseFloat(String(results.avgRating)) : undefined,
+    });
+  } catch (error: any) {
+    console.error("Error in getDashboardKpis:", error);
+    return res.status(500).json({ error: "Erro interno" });
   }
+};
 
-  static async getEarningsOverTime(req: Request, res: Response) {
-    const authReq = req as AuthenticatedRequest;
-    const userId = authReq.user?.id;
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+export const getEarningsOverTime = async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+  const userId = authReq.user?.id;
+  if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
 
-    const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
-    if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
-    const professionalId = professional.id;
+  const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
+  if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
+  const professionalId = professional.id;
 
-    try {
-      const { from, to } = req.query as { from?: string; to?: string };
+  try {
+    const { from, to } = req.query as { from?: string; to?: string };
+    const now = new Date();
+    const defaultFrom = new Date(now);
+    defaultFrom.setMonth(defaultFrom.getMonth() - 11);
+    defaultFrom.setDate(1);
 
-      const now = new Date();
-      const defaultFrom = new Date(now);
-      defaultFrom.setMonth(defaultFrom.getMonth() - 11);
-      defaultFrom.setDate(1);
+    const parseOrDefault = (d?: string, fallback?: Date) => {
+      if (!d) return fallback;
+      const parsed = new Date(d);
+      if (isNaN(parsed.getTime())) return fallback;
+      return parsed;
+    };
 
-      const parseOrDefault = (d?: string, fallback?: Date) => {
-        if (!d) return fallback;
-        const parsed = new Date(d);
-        if (isNaN(parsed.getTime())) return fallback;
-        return parsed;
-      };
+    const fromDate = parseOrDefault(from, defaultFrom)!;
+    const toDate = parseOrDefault(to, now)!;
 
-      const fromDate = parseOrDefault(from, defaultFrom)!;
-      const toDate = parseOrDefault(to, now)!;
+    const queryProfessionalId = (req.query as any).professionalId;
+    const idToUse = queryProfessionalId ? Number(queryProfessionalId) : professionalId;
+    if (!idToUse || isNaN(idToUse)) return res.status(400).json({ error: "professionalId inválido" });
 
-      // Allow passing professionalId via query for development/testing when auth isn't used
-      const queryProfessionalId = (req.query as any).professionalId;
-      const idToUse = queryProfessionalId ? Number(queryProfessionalId) : professionalId;
-      if (!idToUse || isNaN(idToUse)) return res.status(400).json({ error: "professionalId inválido" });
+    const fromReplacement = fromDate.toISOString().slice(0, 19).replace("T", " ");
+    const toReplacement = toDate.toISOString().slice(0, 19).replace("T", " ");
 
-      // Normalize date strings for replacements
-      const fromReplacement = fromDate.toISOString().slice(0, 19).replace("T", " ");
-      const toReplacement = toDate.toISOString().slice(0, 19).replace("T", " ");
-
-      // Build SQL depending on dialect to avoid DATE_FORMAT errors on Postgres
-      const dialect = (sequelize.getDialect && sequelize.getDialect()) || process.env.SEQUELIZE_DIALECT || "mysql";
-      let monthExpr: string;
-      if (dialect === "postgres" || dialect === "postgresql") {
-        monthExpr = "to_char(a.completed_at, 'MM-YYYY')";
-      } else {
-        // default to MySQL/compatible
-        monthExpr = "DATE_FORMAT(a.completed_at, '%m-%Y')";
-      }
-
-      const sql = `
-        SELECT ${monthExpr} AS month,
-               SUM(COALESCE(a.final_price, s.price)) AS total
-        FROM appointment a
-        JOIN service s ON s.id = a.service_id
-        WHERE a.professional_id = :id
-          AND a.status = 'completed'
-          AND a.completed_at IS NOT NULL
-          AND a.completed_at BETWEEN :from AND :to
-        GROUP BY DATE_TRUNC_CANDIDATE
-        ORDER BY DATE_TRUNC_CANDIDATE
-      `;
-
-      // Replace DATE_TRUNC_CANDIDATE with expressions compatible per dialect
-      let finalSql = sql;
-      if (dialect === "postgres" || dialect === "postgresql") {
-        // group/order by year and month
-        finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "EXTRACT(YEAR FROM a.completed_at), EXTRACT(MONTH FROM a.completed_at)");
-      } else {
-        finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "YEAR(a.completed_at), MONTH(a.completed_at)");
-      }
-
-      const results: any[] = await sequelize.query(finalSql, {
-        replacements: {
-          id: idToUse,
-          from: fromReplacement,
-          to: toReplacement,
-        },
-        type: QueryTypes.SELECT,
-      });
-
-      const mapped = results.map((r: any) => ({ month: r.month, total: parseFloat(String(r.total || 0)) }));
-      return res.json(mapped);
-    } catch (error: any) {
-      console.error("Error in getEarningsOverTime:", error?.stack || error);
-      return res.status(500).json({ error: "Erro interno" });
+    const dialect = (sequelize.getDialect && sequelize.getDialect()) || process.env.SEQUELIZE_DIALECT || "mysql";
+    let monthExpr: string;
+    if (dialect === "postgres" || dialect === "postgresql") {
+      monthExpr = "to_char(a.completed_at, 'MM-YYYY')";
+    } else {
+      monthExpr = "DATE_FORMAT(a.completed_at, '%m-%Y')";
     }
-  }
 
-  static async getServicesByCategory(req: Request, res: Response) {
-    const authReq = req as AuthenticatedRequest;
-    const userId = authReq.user?.id;
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    const sql = `
+      SELECT ${monthExpr} AS month,
+             SUM(COALESCE(a.final_price, s.price)) AS total
+      FROM appointment a
+      JOIN service s ON s.id = a.service_id
+      WHERE a.professional_id = :id
+        AND a.status = 'completed'
+        AND a.completed_at IS NOT NULL
+        AND a.completed_at BETWEEN :from AND :to
+      GROUP BY DATE_TRUNC_CANDIDATE
+      ORDER BY DATE_TRUNC_CANDIDATE
+    `;
 
-    const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
-    if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
-    const professionalId = professional.id;
-
-    try {
-      const { from, to } = req.query as { from?: string; to?: string };
-      const now = new Date();
-      const defaultFrom = new Date(now);
-      defaultFrom.setMonth(defaultFrom.getMonth() - 11);
-      defaultFrom.setDate(1);
-
-      const parseOrDefault = (d?: string, fallback?: Date) => {
-        if (!d) return fallback;
-        const parsed = new Date(d);
-        if (isNaN(parsed.getTime())) return fallback;
-        return parsed;
-      };
-
-      const fromDate = parseOrDefault(from, defaultFrom)!;
-      const toDate = parseOrDefault(to, now)!;
-
-      const sql = `
-        SELECT c.title AS category, COUNT(*) AS count
-        FROM appointment a
-        JOIN service s ON s.id = a.service_id
-        JOIN subcategory sc ON sc.id = s.subcategory_id
-        JOIN category c ON c.id = sc.category_id
-        WHERE a.professional_id = :id
-          AND a.status = 'completed'
-          AND a.completed_at BETWEEN :from AND :to
-        GROUP BY c.id, c.title
-        ORDER BY count DESC
-      `;
-
-      const results: any[] = await sequelize.query(sql, {
-        replacements: {
-          id: professionalId,
-          from: fromDate.toISOString().slice(0, 19).replace("T", " "),
-          to: toDate.toISOString().slice(0, 19).replace("T", " "),
-        },
-        type: QueryTypes.SELECT,
-      });
-
-      const mapped = results.map((r: any) => ({ category: r.category, count: Number(r.count) }));
-      return res.json(mapped);
-    } catch (error: any) {
-      console.error("Error in getServicesByCategory:", error);
-      return res.status(500).json({ error: "Erro interno" });
+    let finalSql = sql;
+    if (dialect === "postgres" || dialect === "postgresql") {
+      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "EXTRACT(YEAR FROM a.completed_at), EXTRACT(MONTH FROM a.completed_at)");
+    } else {
+      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "YEAR(a.completed_at), MONTH(a.completed_at)");
     }
+
+    const results: any[] = await sequelize.query(finalSql, {
+      replacements: {
+        id: idToUse,
+        from: fromReplacement,
+        to: toReplacement,
+      },
+      type: QueryTypes.SELECT,
+    });
+
+    const mapped = results.map(r => ({ month: r.month, total: parseFloat(String(r.total || 0)) }));
+    return res.json(mapped);
+  } catch (error: any) {
+    console.error("Error in getEarningsOverTime:", error?.stack || error);
+    return res.status(500).json({ error: "Erro interno" });
   }
-}
+};
+
+export const getServicesByCategory = async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+  const userId = authReq.user?.id;
+  if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+
+  const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
+  if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
+  const professionalId = professional.id;
+
+  try {
+    const { from, to } = req.query as { from?: string; to?: string };
+    const now = new Date();
+    const defaultFrom = new Date(now);
+    defaultFrom.setMonth(defaultFrom.getMonth() - 11);
+    defaultFrom.setDate(1);
+
+    const parseOrDefault = (d?: string, fallback?: Date) => {
+      if (!d) return fallback;
+      const parsed = new Date(d);
+      if (isNaN(parsed.getTime())) return fallback;
+      return parsed;
+    };
+
+    const fromDate = parseOrDefault(from, defaultFrom)!;
+    const toDate = parseOrDefault(to, now)!;
+
+    const sql = `
+      SELECT c.title AS category, COUNT(*) AS count
+      FROM appointment a
+      JOIN service s ON s.id = a.service_id
+      JOIN subcategory sc ON sc.id = s.subcategory_id
+      JOIN category c ON c.id = sc.category_id
+      WHERE a.professional_id = :id
+        AND a.status = 'completed'
+        AND a.completed_at BETWEEN :from AND :to
+      GROUP BY c.id, c.title
+      ORDER BY count DESC
+    `;
+
+    const results: any[] = await sequelize.query(sql, {
+      replacements: {
+        id: professionalId,
+        from: fromDate.toISOString().slice(0, 19).replace("T", " "),
+        to: toDate.toISOString().slice(0, 19).replace("T", " "),
+      },
+      type: QueryTypes.SELECT,
+    });
+
+    const mapped = results.map(r => ({ category: r.category, count: Number(r.count) }));
+    return res.json(mapped);
+  } catch (error: any) {
+    console.error("Error in getServicesByCategory:", error);
+    return res.status(500).json({ error: "Erro interno" });
+  }
+};
