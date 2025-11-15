@@ -1,0 +1,71 @@
+name: 02 - Buildar e publicar imagem Docker
+
+on:
+  workflow_run:
+    workflows: ["01 - Análise Semântica Pós-Merge"]
+    types:
+      - completed
+
+jobs:
+  build-and-push:
+    name: Buildar e Publicar no DockerHub
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login no DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Preparar tags da imagem (latest, sha, versão se disponível)
+        id: prepare-tags
+        env:
+          DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          REPO: ${{ github.event.repository.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DOCKER_REPO="${DOCKER_USER}/${REPO}"
+          git fetch --tags --force
+
+          TAG_NAME="$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)"
+          if [[ -z "${TAG_NAME}" ]]; then
+            TAG_NAME="$(git describe --tags "$(git rev-list --tags --max-count=1)" 2>/dev/null || true)"
+          fi
+
+          VERSION="$(node -p "require('./package.json').version" || true)"
+
+          declare -a TAGS
+          TAGS+=("${DOCKER_REPO}:latest")
+          TAGS+=("${DOCKER_REPO}:${GITHUB_SHA}")
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TAGS+=("${DOCKER_REPO}:${SHORT_SHA}")
+
+          if [[ -n "${VERSION}" && "${VERSION}" != "null" ]]; then
+            TAGS+=("${DOCKER_REPO}:${VERSION}")
+          fi
+          if [[ -n "${TAG_NAME}" ]]; then
+            TAGS+=("${DOCKER_REPO}:${TAG_NAME}")
+          fi
+
+          {
+            echo "tags<<EOF"
+            printf "%s\n" "${TAGS[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Buildar e enviar imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.prepare-tags.outputs.tags }}
