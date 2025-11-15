@@ -53,7 +53,7 @@ jobs:
           elif [[ -n "${TAG_NAME}" ]]; then
             TAGS+=("${DOCKER_REPO}:${TAG_NAME}")
           else
-            TAGS+=("${DOCKER_REPO}:sha-${{ GITHUB_SHA::8 }}")
+            TAGS+=("${DOCKER_REPO}:sha-${{ github.sha::8 }}")
           fi
 
           {
