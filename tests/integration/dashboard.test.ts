@@ -42,12 +42,12 @@ describe("Dashboard integration tests", () => {
   });
 
   test("GET /api/dashboard/kpis without token returns 401", async () => {
-    const res = await request(app).get("/api/dashboard/kpis");
+    const res = await (request(app) as any).get("/api/dashboard/kpis");
     expect(res.status).toBe(401);
   });
 
   test("Authenticated professional receives KPIs and is isolated", async () => {
-    const res = await request(app)
+    const res = await (request(app) as any)
       .get("/api/dashboard/kpis")
       .set("Authorization", `Bearer ${token}`)
       .expect(200);
@@ -64,7 +64,7 @@ describe("Dashboard integration tests", () => {
     from.setMonth(from.getMonth() - 6);
     const to = new Date();
 
-    const res = await request(app)
+    const res = await (request(app) as any)
       .get("/api/dashboard/earnings-over-time")
       .query({ from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) })
       .set("Authorization", `Bearer ${token}`)
