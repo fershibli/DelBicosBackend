@@ -84,9 +84,9 @@ jobs:
           # Analisando mensagens de commit
           IFS='|' read -ra COMMITS <<< "$COMMIT_MESSAGES"
           for COMMIT in "${COMMITS[@]}"; do
-            if echo "$COMMIT" | grep -q -i -E "(^(refactor|refatorar|refatoração)|BREAKING CHANGE)"; then
+            if echo "$COMMIT" | grep -q -i -E "BREAKING CHANGE"; then
               MAJOR=1
-              echo "Encontrado refactor ou BREAKING CHANGE"
+              echo "Encontrado BREAKING CHANGE"
             elif echo "$COMMIT" | grep -q -i -E "^(feat|feature)"; then
               MINOR=1
               echo "Encontrado feat"
