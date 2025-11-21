@@ -1,38 +1,56 @@
-import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { UserModel } from '../models/User';
-import { AdminModel } from '../models/Admin';
-import { sequelize } from '../config/database';
-import { QueryTypes } from 'sequelize';
+import { Request, Response } from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { UserModel } from "../models/User";
+import { AdminModel } from "../models/Admin";
+import { sequelize } from "../config/database";
+import { QueryTypes } from "sequelize";
 
 // Removidos imports não usados (AppointmentModel, ProfessionalModel, Op, Sequelize)
 
 export const adminLogin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email e senha obrigatórios' });
+  if (!email || !password)
+    return res.status(400).json({ error: "Email e senha obrigatórios" });
   try {
     const user = await UserModel.findOne({ where: { email } });
-    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
 
     const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ error: 'Senha inválida' });
+    if (!isValid) return res.status(401).json({ error: "Senha inválida" });
 
     const isAdmin = await AdminModel.findOne({ where: { user_id: user.id } });
-    if (!isAdmin) return res.status(403).json({ error: 'Apenas administradores têm acesso' });
+    if (!isAdmin)
+      return res
+        .status(403)
+        .json({ error: "Apenas administradores têm acesso" });
 
     const payload = {
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
       admin: true,
     } as any;
 
-    const secret = (process.env.SECRET_KEY || 'secret') as jwt.Secret;
-    const token = jwt.sign(payload, secret, { expiresIn: process.env.EXPIRES_IN || '1h' });
+    const secret = process.env.SECRET_KEY || "secret";
+    const expiresIn = process.env.EXPIRES_IN || "1h";
+    const options: jwt.SignOptions = {
+      expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
+    };
+    const token = jwt.sign(payload, secret, options);
 
-    return res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, admin: true } });
+    return res
+      .status(200)
+      .json({
+        token,
+        user: { id: user.id, name: user.name, email: user.email, admin: true },
+      });
   } catch (error: any) {
-    console.error('Admin login error', error);
-    return res.status(500).json({ error: 'Erro interno' });
+    console.error("Admin login error", error);
+    return res.status(500).json({ error: "Erro interno" });
   }
 };
 
@@ -70,10 +88,22 @@ export const getAdminStats = async (req: Request, res: Response) => {
       GROUP BY status
     `;
 
-    const users: any[] = await sequelize.query(usersSql, { replacements: { year }, type: QueryTypes.SELECT }) as any[];
-    const professionals: any[] = await sequelize.query(professionalsSql, { replacements: { year }, type: QueryTypes.SELECT }) as any[];
-    const appointments: any[] = await sequelize.query(appointmentsSql, { replacements: { year }, type: QueryTypes.SELECT }) as any[];
-    const servicesSummaryRows: any[] = await sequelize.query(servicesSummarySql, { replacements: { year }, type: QueryTypes.SELECT }) as any[];
+    const users: any[] = (await sequelize.query(usersSql, {
+      replacements: { year },
+      type: QueryTypes.SELECT,
+    })) as any[];
+    const professionals: any[] = (await sequelize.query(professionalsSql, {
+      replacements: { year },
+      type: QueryTypes.SELECT,
+    })) as any[];
+    const appointments: any[] = (await sequelize.query(appointmentsSql, {
+      replacements: { year },
+      type: QueryTypes.SELECT,
+    })) as any[];
+    const servicesSummaryRows: any[] = (await sequelize.query(
+      servicesSummarySql,
+      { replacements: { year }, type: QueryTypes.SELECT }
+    )) as any[];
 
     const servicesSummary: Record<string, number> = {
       pending: 0,
@@ -89,21 +119,62 @@ export const getAdminStats = async (req: Request, res: Response) => {
     }
 
     const months = Array.from({ length: 12 }, (_, i) => ({ month: i + 1 }));
-    const usersByMonth = months.map(m => ({ month: m.month, count: Number((users.find(u => Number(u.month) === m.month) || { count: 0 }).count) }));
-    const professionalsByMonth = months.map(m => ({ month: m.month, count: Number((professionals.find(p => Number(p.month) === m.month) || { count: 0 }).count) }));
-    const appointmentsByMonth = months.map(m => {
+    const usersByMonth = months.map((m) => ({
+      month: m.month,
+      count: Number(
+        (users.find((u) => Number(u.month) === m.month) || { count: 0 }).count
+      ),
+    }));
+    const professionalsByMonth = months.map((m) => ({
+      month: m.month,
+      count: Number(
+        (professionals.find((p) => Number(p.month) === m.month) || { count: 0 })
+          .count
+      ),
+    }));
+    const appointmentsByMonth = months.map((m) => {
       const month = m.month;
-      const pending = Number((appointments.find(a => Number(a.month) === month && a.status === 'pending') || { count: 0 }).count || 0);
-      const confirmed = Number((appointments.find(a => Number(a.month) === month && a.status === 'confirmed') || { count: 0 }).count || 0);
-      const completed = Number((appointments.find(a => Number(a.month) === month && a.status === 'completed') || { count: 0 }).count || 0);
-      const canceled = Number((appointments.find(a => Number(a.month) === month && a.status === 'canceled') || { count: 0 }).count || 0);
+      const pending = Number(
+        (
+          appointments.find(
+            (a) => Number(a.month) === month && a.status === "pending"
+          ) || { count: 0 }
+        ).count || 0
+      );
+      const confirmed = Number(
+        (
+          appointments.find(
+            (a) => Number(a.month) === month && a.status === "confirmed"
+          ) || { count: 0 }
+        ).count || 0
+      );
+      const completed = Number(
+        (
+          appointments.find(
+            (a) => Number(a.month) === month && a.status === "completed"
+          ) || { count: 0 }
+        ).count || 0
+      );
+      const canceled = Number(
+        (
+          appointments.find(
+            (a) => Number(a.month) === month && a.status === "canceled"
+          ) || { count: 0 }
+        ).count || 0
+      );
       const totalRequested = pending + confirmed + completed + canceled;
       return { month, totalRequested, completed, canceled, pending, confirmed };
     });
 
-    return res.json({ year, usersByMonth, professionalsByMonth, appointmentsByMonth, servicesSummary });
+    return res.json({
+      year,
+      usersByMonth,
+      professionalsByMonth,
+      appointmentsByMonth,
+      servicesSummary,
+    });
   } catch (error: any) {
-    console.error('Admin stats error', error);
-    return res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    console.error("Admin stats error", error);
+    return res.status(500).json({ error: "Erro ao buscar estatísticas" });
   }
 };
