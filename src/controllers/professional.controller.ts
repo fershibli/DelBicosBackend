@@ -186,6 +186,11 @@ export const getProfessionalById = async (req: Request, res: Response) => {
                 },
               ],
             },
+            {
+              model: ServiceModel,
+              as: "Service",
+              attributes: ["title"],
+            },
           ],
         },
       ],
@@ -194,6 +199,26 @@ export const getProfessionalById = async (req: Request, res: Response) => {
     if (!professional) {
       return res.status(404).json({ error: "Profissional não encontrado" });
     }
+
+    // Calcular rating e ratings_count a partir dos appointments
+    const profData: any = professional;
+    const appointments = (profData.Appointments ?? []) as Array<{
+      rating: number | null;
+    }>;
+
+    const ratings = appointments
+      .map((a) => a?.rating ?? null)
+      .filter((v): v is number => v !== null && Number.isFinite(v));
+
+    const ratings_count = ratings.length;
+    const rating =
+      ratings_count > 0
+        ? Math.round((ratings.reduce((s, n) => s + n, 0) / ratings_count) * 100) / 100
+        : null;
+
+    // Adicionar campos calculados
+    profData.setDataValue("rating", rating);
+    profData.setDataValue("ratings_count", ratings_count);
 
     return res.json(professional);
   } catch (error) {
