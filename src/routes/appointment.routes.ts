@@ -378,7 +378,7 @@ router.post("/:id/confirm", confirmAppointment);
  *               example:
  *                 error: "Erro ao avaliar agendamento"
  */
-router.post("/:id/review", reviewAppointment);
+router.post("/:id/review", authMiddleware, reviewAppointment);
 
 /**
  * @swagger
