@@ -2,7 +2,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     const welcomeNotifications = [];
-    const NUM_USERS = 40;
+    const NUM_USERS = 10;
     
     for (let i = 1; i <= NUM_USERS; i++) {
       welcomeNotifications.push({
