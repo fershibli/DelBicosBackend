@@ -14,6 +14,7 @@ import { ProfessionalAvailabilityLockModel } from "./ProfessionalAvailabilityLoc
 import { AppointmentModel } from "./Appointment";
 import { AdminServiceOrderModel } from "./AdminServiceOrder";
 import { UserTokenModel } from "./UserToken";
+import { FavoriteModel } from "./Favorite";
 
 export function initializeAssociations() {
   // User associations
@@ -44,6 +45,11 @@ export function initializeAssociations() {
   UserTokenModel.belongsTo(UserModel, {
     foreignKey: "user_id",
     as: "User",
+  });
+
+  UserModel.hasMany(FavoriteModel, {
+    foreignKey: "user_id",
+    as: "Favorites",
   });
 
   // Address associations
@@ -124,6 +130,11 @@ export function initializeAssociations() {
   ProfessionalModel.hasMany(AppointmentModel, {
     foreignKey: "professional_id",
     as: "Appointments",
+  });
+
+  ProfessionalModel.hasMany(FavoriteModel, {
+    foreignKey: "professional_id",
+    as: "FavoritedBy",
   });
 
   // Admin associations
@@ -242,5 +253,16 @@ export function initializeAssociations() {
   AdminServiceOrderModel.belongsTo(AppointmentModel, {
     foreignKey: "appointment_id",
     as: "Appointment",
+  });
+
+  // Favorite associations
+  FavoriteModel.belongsTo(UserModel, {
+    foreignKey: "user_id",
+    as: "User",
+  });
+
+  FavoriteModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
   });
 }
