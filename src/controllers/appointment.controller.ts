@@ -182,26 +182,104 @@ export const confirmAppointment = async (req: Request, res: Response) => {
 export const reviewAppointment = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { rating, review } = req.body;
+  const authReq = req as AuthenticatedRequest;
+
   try {
-    const appointment = await AppointmentModel.findByPk(id);
+    // Validação: rating é obrigatório
+    if (!rating) {
+      return res.status(400).json({
+        error: "O campo 'rating' é obrigatório",
+      });
+    }
+
+    // Validação: rating deve estar entre 1 e 5
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        error: "A avaliação deve estar entre 1 e 5",
+      });
+    }
+
+    // Validação: review máximo 500 caracteres
+    if (review && review.length > 500) {
+      return res.status(400).json({
+        error: "O comentário deve ter no máximo 500 caracteres",
+      });
+    }
+
+    const appointment = await AppointmentModel.findByPk(id, {
+      include: [
+        {
+          model: ClientModel,
+          as: "Client",
+          include: [{ model: UserModel, as: "User" }],
+        },
+      ],
+    });
+
     if (!appointment) {
       return res.status(404).json({ error: "Agendamento não encontrado" });
     }
+
+    // Validação: apenas appointment com status 'completed'
     if (appointment.status !== "completed") {
       return res.status(400).json({
         error: `Não é possível avaliar um agendamento com status '${appointment.status}'`,
       });
     }
-    if (rating < 0 || rating > 5) {
-      return res.status(400).json({
-        error: `A avaliação deve estar entre 0 e 5`,
+
+    // Validação: apenas o cliente dono do appointment pode avaliar
+    const authenticatedUserId = authReq.user?.id;
+    if (!authenticatedUserId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    const apptData: any = appointment;
+    const clientUserId = apptData.Client?.User?.id;
+
+    if (clientUserId !== authenticatedUserId) {
+      return res.status(403).json({
+        error: "Você não tem permissão para avaliar este agendamento",
       });
     }
 
+    // Verificar se é uma atualização de avaliação
+    const isUpdate = appointment.rating !== null && appointment.rating !== undefined;
+
+    // Atualizar avaliação
     appointment.rating = rating;
-    appointment.review = review;
+    appointment.review = review || null;
     await appointment.save();
-    res.json(appointment);
+
+    // Criar notificação para o profissional (apenas na primeira avaliação)
+    if (!isUpdate) {
+      const professional = await ProfessionalModel.findByPk(
+        appointment.professional_id
+      );
+      if (professional) {
+        const professionalUser = await UserModel.findByPk(professional.user_id);
+        const service = await ServiceModel.findByPk(appointment.service_id);
+
+        if (professionalUser) {
+          await NotificationModel.create({
+            user_id: professionalUser.id,
+            title: "Nova Avaliação Recebida",
+            message: `Você recebeu uma avaliação de ${rating} estrelas${
+              service ? ` para o serviço '${service.title}'` : ""
+            }${review ? `: "${review}"` : "."}`,
+            notification_type: "service",
+            related_entity_id: appointment.id,
+            is_read: false,
+          });
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: isUpdate 
+        ? "Avaliação atualizada com sucesso" 
+        : "Avaliação registrada com sucesso",
+    });
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: "Erro ao avaliar agendamento" });
