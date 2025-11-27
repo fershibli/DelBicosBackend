@@ -4,6 +4,7 @@ import {
   getUserById,
   logInUser,
   changePassword,
+  getUserByToken,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -485,6 +486,8 @@ router.get("/avatar", authMiddleware, getAvatar);
  *         description: Erro no servidor
  */
 router.delete("/avatar", authMiddleware, deleteAvatar);
+
+router.get("/me", authMiddleware, getUserByToken);
 
 /**
  * @swagger
