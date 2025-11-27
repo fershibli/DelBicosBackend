@@ -6,6 +6,7 @@ import { sequelize } from "../config/database";
 import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
+import { NotificationModel } from "../models/Notification";
 
 const temporaryStorage: { [email: string]: { code: string; userData: any } } =
   {};
@@ -133,6 +134,16 @@ export const AuthController = {
         newClient,
         null
       );
+
+      // Cria notificação de boas-vindas
+
+      await NotificationModel.create({
+        user_id: newUser.id,
+        title: "Bem-vindo ao DelBicos!",
+        message: "Sua conta foi criada com sucesso. Aproveite nossos serviços!",
+        is_read: false,
+        notification_type: "system",
+      });
 
       return res.status(200).json({
         message: "Conta verificada e usuário criado com sucesso!",
