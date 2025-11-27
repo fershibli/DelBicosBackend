@@ -85,7 +85,14 @@ export const AuthController = {
         .json({ error: "Dados de verificação não encontrados ou expirados." });
     }
 
-    if (tempData.code !== code) {
+    // Normalize and compare as strings so frontends that send numbers still match
+    const expectedCode = String(tempData.code || "").trim();
+    const receivedCode = String(code || "").trim();
+
+    if (expectedCode !== receivedCode) {
+      console.warn(
+        `Falha na verificação: código esperado=${expectedCode} recebido=${receivedCode} (email=${email})`
+      );
       return res.status(400).json({ error: "Código de verificação inválido." });
     }
 
