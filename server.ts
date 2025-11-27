@@ -19,6 +19,7 @@ import { initializeAssociations } from "./src/models/associations";
 import paymentRouter from "./src/routes/payment.routes";
 import adminRoutes from "./src/routes/admin.routes";
 import dashboardRoutes from "./src/routes/dashboard.routes";
+import favoriteRoutes from "./src/routes/favorite.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -71,6 +72,7 @@ app.use("/api/payments", paymentRouter);
 app.use("/auth", authRouter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 
