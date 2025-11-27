@@ -4,11 +4,13 @@ import {
   getUserById,
   logInUser,
   changePassword,
+  getUserByToken,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
   getAvatar,
   uploadAvatar,
+  uploadImgBBAvatar,
 } from "../controllers/avatar.controller";
 
 const router = Router();
@@ -485,6 +487,8 @@ router.get("/avatar", authMiddleware, getAvatar);
  */
 router.delete("/avatar", authMiddleware, deleteAvatar);
 
+router.get("/me", authMiddleware, getUserByToken);
+
 /**
  * @swagger
  * /user/{id}:
@@ -506,5 +510,34 @@ router.delete("/avatar", authMiddleware, deleteAvatar);
  *         $ref: '#/components/responses/ServerError'
  */
 router.get("/:id", authMiddleware, getUserById);
+
+/**
+ * @swagger
+ * /user/imgbb/avatar:
+ *   post:
+ *     summary: Faz upload de um avatar para o usuário usando o IMGBB
+ *     tags: [Avatar]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AvatarUploadRequest'
+ *     responses:
+ *       200:
+ *         description: Avatar enviado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AvatarResponse'
+ *       400:
+ *         description: Formato base64 inválido ou imagem muito grande
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+
+router.post("/imgbb/avatar", authMiddleware, uploadImgBBAvatar);
 
 export default router;
