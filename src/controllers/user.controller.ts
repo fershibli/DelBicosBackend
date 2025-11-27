@@ -118,3 +118,36 @@ export const deleteUser = async (req: Request, res: Response) => {
     ? res.json({ message: "Usuário deletado com sucesso" })
     : res.status(404).json({ error: "Usuário não encontrado" });
 };
+
+export const getUserByToken = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    const user = await UserModel.findByPk(userId, {
+      attributes: ["id", "name", "email", "phone", "avatar_uri", "banner_uri"],
+      include: [
+        {
+          model: ClientModel,
+          as: "Client",
+          attributes: ["id", "cpf"],
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error: any) {
+    console.error("Erro ao buscar usuário pelo token:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
