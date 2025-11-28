@@ -9,6 +9,7 @@ import { NotificationModel } from "../models/Notification";
 import { AddressModel } from "../models/Address";
 import { SubCategoryModel } from "../models/Subcategory";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
+import { Op } from "sequelize";
 
 const formatDate = (dateStr: string | Date) =>
   new Date(dateStr).toLocaleDateString("pt-BR");
@@ -19,7 +20,6 @@ const formatTime = (dateStr: string | Date) =>
     minute: "2-digit",
   });
 
-// TODO: Remove this createAppointment and use confirmAndCreateAppointment from PaymentService instead (move remaining logic there)
 export const createAppointment = async (req: Request, res: Response) => {
   try {
     const appointment = await AppointmentModel.create(req.body);
@@ -82,31 +82,24 @@ export const createAppointment = async (req: Request, res: Response) => {
 export const getAllAppointments = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
+
     const user = await UserModel.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
+
     const client = await ClientModel.findOne({ where: { user_id: userId } });
-    const professional = await ProfessionalModel.findOne({
-      where: { user_id: userId },
-    });
 
     const whereClause: any = {};
 
     if (client) {
       whereClause.client_id = client.id;
-    } else if (professional) {
-      whereClause.professional_id = professional.id;
     } else {
-      return res
-        .status(404)
-        .json({ error: "Nenhum cliente ou profissional associado ao usuário" });
+      return res.json([]);
     }
 
     const appointments = await AppointmentModel.findAll({
-      where: {
-        ...whereClause,
-      },
+      where: whereClause,
       include: [
         { model: ServiceModel, as: "Service" },
         {
@@ -116,15 +109,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: [
-                "id",
-                "name",
-                "email",
-                "phone",
-                "avatar_uri",
-                "banner_uri",
-                "active",
-              ],
+              attributes: ["name", "avatar_uri"],
             },
           ],
         },
@@ -135,15 +120,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: [
-                "id",
-                "name",
-                "email",
-                "phone",
-                "avatar_uri",
-                "banner_uri",
-                "active",
-              ],
+              attributes: ["name", "avatar_uri"],
             },
           ],
         },
@@ -153,7 +130,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 
     res.json(appointments);
   } catch (error: any) {
-    console.error(error);
+    console.error("❌ Erro ao buscar agendamentos:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
@@ -185,21 +162,18 @@ export const reviewAppointment = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
 
   try {
-    // Validação: rating é obrigatório
     if (!rating) {
       return res.status(400).json({
         error: "O campo 'rating' é obrigatório",
       });
     }
 
-    // Validação: rating deve estar entre 1 e 5
     if (rating < 1 || rating > 5) {
       return res.status(400).json({
         error: "A avaliação deve estar entre 1 e 5",
       });
     }
 
-    // Validação: review máximo 500 caracteres
     if (review && review.length > 500) {
       return res.status(400).json({
         error: "O comentário deve ter no máximo 500 caracteres",
@@ -220,14 +194,12 @@ export const reviewAppointment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Agendamento não encontrado" });
     }
 
-    // Validação: apenas appointment com status 'completed'
     if (appointment.status !== "completed") {
       return res.status(400).json({
         error: `Não é possível avaliar um agendamento com status '${appointment.status}'`,
       });
     }
 
-    // Validação: apenas o cliente dono do appointment pode avaliar
     const authenticatedUserId = authReq.user?.id;
     if (!authenticatedUserId) {
       return res.status(401).json({ error: "Usuário não autenticado" });
@@ -242,15 +214,13 @@ export const reviewAppointment = async (req: Request, res: Response) => {
       });
     }
 
-    // Verificar se é uma atualização de avaliação
-    const isUpdate = appointment.rating !== null && appointment.rating !== undefined;
+    const isUpdate =
+      appointment.rating !== null && appointment.rating !== undefined;
 
-    // Atualizar avaliação
     appointment.rating = rating;
     appointment.review = review || null;
     await appointment.save();
 
-    // Criar notificação para o profissional (apenas na primeira avaliação)
     if (!isUpdate) {
       const professional = await ProfessionalModel.findByPk(
         appointment.professional_id
@@ -276,8 +246,8 @@ export const reviewAppointment = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: isUpdate 
-        ? "Avaliação atualizada com sucesso" 
+      message: isUpdate
+        ? "Avaliação atualizada com sucesso"
         : "Avaliação registrada com sucesso",
     });
   } catch (error: any) {
@@ -366,9 +336,9 @@ export const getAppointmentInvoice = async (req: Request, res: Response) => {
         appointment.end_time
       )}`,
 
-      total: parseFloat(apptData.Service?.price || "0"), // TODO: Se o preço puder mudar, buscar do PaymentIntent
+      total: parseFloat(apptData.Service?.price || "0"),
 
-      paymentMethod: "Cartão de Crédito", // TODO: Buscar do PaymentIntent
+      paymentMethod: "Cartão de Crédito",
       transactionId: appointment.payment_intent_id || "N/A",
     };
 
