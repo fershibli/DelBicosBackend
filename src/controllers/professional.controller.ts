@@ -13,8 +13,8 @@ import { AmenitiesModel } from "../models/Amenities";
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
-    const latNum = typeof lat === "string" ? parseFloat(lat) : undefined;
-    const lngNum = typeof lng === "string" ? parseFloat(lng) : undefined;
+    const latNum = lat ? parseFloat(String(lat)) : undefined;
+    const lngNum = lng ? parseFloat(String(lng)) : undefined;
     const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
 
     const where: any = {};
@@ -53,6 +53,7 @@ export const getProfessionals = async (req: Request, res: Response) => {
 
     const { rows, count } = await ProfessionalModel.findAndCountAll({
       attributes,
+      subQuery: false,
       include: [
         {
           model: UserModel,
@@ -71,6 +72,7 @@ export const getProfessionals = async (req: Request, res: Response) => {
           as: "Services",
           required: false,
           attributes: ["title"],
+          separate: true,
         },
         {
           model: AppointmentModel,
