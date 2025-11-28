@@ -1,5 +1,4 @@
 import express, { Express } from "express";
-// import mongoose from "mongoose";
 import { setupCors } from "./src/middlewares/cors.middleware";
 import * as dotenv from "dotenv";
 import addressRoutes from "./src/routes/address.routes";
@@ -50,14 +49,6 @@ if (!fs.existsSync(AVATAR_BUCKET_PATH)) {
 app.use("/docs", swaggerUi.serve as any, swaggerUi.setup(swaggerSpec) as any);
 
 app.use("/avatarBucket", express.static(AVATAR_BUCKET_PATH));
-
-// // Conectar ao MongoDB
-// mongoose.connect(process.env.MONGO_URI as string, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// } as any)
-//   .then(() => console.log('Conectado ao MongoDB'))
-//   .catch((err: any) => console.error('Erro ao conectar ao MongoDB:', err));
 
 // Rotas
 app.use("/api/user", userRoutes);
