@@ -151,3 +151,52 @@ export const getUserByToken = async (
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updateUserProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Usuário não autenticado." });
+  }
+
+  const { name, email, phone } = req.body;
+
+  try {
+    const user = await UserModel.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    if (email && email !== user.email) {
+      const emailExists = await UserModel.findOne({ where: { email } });
+      if (emailExists) {
+        return res.status(409).json({ error: "Este e-mail já está em uso." });
+      }
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+
+    await user.save();
+
+    return res.status(200).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatar_uri: user.avatar_uri,
+      banner_uri: user.banner_uri,
+    });
+  } catch (error: any) {
+    console.error("Erro ao atualizar perfil:", error);
+    return res.status(500).json({
+      error: "Erro interno ao atualizar perfil.",
+      details: error.message,
+    });
+  }
+};
