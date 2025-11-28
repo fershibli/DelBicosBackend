@@ -7,6 +7,7 @@ import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
 import { NotificationModel } from "../models/Notification";
+import logger, { logAuth, logError } from "../utils/logger";
 
 const temporaryStorage: { [email: string]: { code: string; userData: any } } =
   {};
@@ -61,10 +62,12 @@ export const AuthController = {
     });
 
     if (wasSent) {
+      logger.info("E-mail de verificação enviado", { email });
       return res
         .status(200)
         .json({ message: "E-mail de verificação enviado com sucesso!" });
     } else {
+      logger.error("Falha ao enviar e-mail de verificação", { email });
       return res.status(500).json({ error: "Falha ao enviar o e-mail." });
     }
   },
@@ -91,9 +94,11 @@ export const AuthController = {
     const receivedCode = String(code || "").trim();
 
     if (expectedCode !== receivedCode) {
-      console.warn(
-        `Falha na verificação: código esperado=${expectedCode} recebido=${receivedCode} (email=${email})`
-      );
+      logger.warn("Código de verificação inválido", {
+        email,
+        expectedCode,
+        receivedCode,
+      });
       return res.status(400).json({ error: "Código de verificação inválido." });
     }
 
@@ -152,6 +157,9 @@ export const AuthController = {
         notification_type: "system",
       });
 
+      logAuth("register", newUser.id, email, true);
+      logger.info("Usuário registrado com sucesso", { userId: newUser.id, email });
+
       return res.status(200).json({
         message: "Conta verificada e usuário criado com sucesso!",
         token: token,
@@ -159,7 +167,7 @@ export const AuthController = {
       });
     } catch (error: any) {
       await t.rollback();
-      console.error("Erro ao criar usuário após verificação:", error);
+      logError("Erro ao criar usuário após verificação", error, { email });
       if (error.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({ error: "E-mail ou CPF já cadastrado." });
       }
