@@ -1,7 +1,9 @@
 import express, { Express } from "express";
 // import mongoose from "mongoose";
 import { setupCors } from "./src/middlewares/cors.middleware";
+import { loggingMiddleware } from "./src/middlewares/logging.middleware";
 import * as dotenv from "dotenv";
+import logger from "./src/utils/logger";
 import addressRoutes from "./src/routes/address.routes";
 import categoryRoutes from "./src/routes/category.routes";
 import subcategoryRoutes from "./src/routes/subcategory.routes";
@@ -28,8 +30,8 @@ if (result.error) {
 
 initializeAssociations();
 
-console.log("Variáveis de ambiente carregadas com sucesso");
-console.log("Ambiente:", process.env.ENVIRONMENT);
+logger.info("Variáveis de ambiente carregadas com sucesso");
+logger.info(`Ambiente: ${process.env.ENVIRONMENT}`);
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
@@ -38,6 +40,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 setupCors(app);
+
+// Middleware de logging de requisições
+app.use(loggingMiddleware);
 
 app.use(express.json());
 const baseDir =
@@ -79,10 +84,10 @@ const isServerless = process.env.IS_SERVERLESS == "true";
 if (!isServerless) {
   const port = Number(process.env.PORT || 3000);
   app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
+    logger.info(`Servidor rodando na porta ${port}`);
   });
 } else {
-  console.log("Servidor rodando em ambiente serverless");
+  logger.info("Servidor rodando em ambiente serverless");
 }
 
 export default app;
