@@ -38,6 +38,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@logtail/node": "^0.5.6",
+    "@logtail/winston": "^0.5.6",
     "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -53,7 +55,8 @@
     "stripe": "^19.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
