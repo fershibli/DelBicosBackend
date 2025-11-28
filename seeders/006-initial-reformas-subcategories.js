@@ -65,6 +65,7 @@ module.exports = {
       { title: "Cabelo & Barba", cat: "Beleza & Estética" },
       { title: "Manicure & Pedicure", cat: "Beleza & Estética" },
       { title: "Maquiagem", cat: "Beleza & Estética" },
+      { title: "Manicure", cat: "Beleza & Estética" },
       { title: "Depilação", cat: "Beleza & Estética" },
       { title: "Esteticista", cat: "Beleza & Estética" },
       { title: "Micropigmentação", cat: "Beleza & Estética" },
