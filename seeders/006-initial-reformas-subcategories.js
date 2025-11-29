@@ -3,7 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // 1. Buscar todas as categorias
     const categories = await queryInterface.sequelize.query(
       `SELECT id, title FROM category`,
       { type: Sequelize.QueryTypes.SELECT }
@@ -14,55 +13,104 @@ module.exports = {
       return acc;
     }, {});
 
-    if (!categoryMap["Reformas & Reparos"]) {
+    const requiredCategories = [
+      "Reformas & Reparos",
+      "Serviços Domésticos",
+      "Beleza & Estética",
+      "Serviços Gerais",
+      "Saúde & Bem-Estar",
+      "Pet",
+    ];
+
+    const missingCategories = requiredCategories.filter((c) => !categoryMap[c]);
+    if (missingCategories.length > 0) {
       throw new Error(
-        "Categorias principais não encontradas. Rode o seeder 001 primeiro."
+        `Categorias principais faltando: ${missingCategories.join(
+          ", "
+        )}. Rode o seeder 001 primeiro.`
       );
     }
 
     const now = new Date();
+
     const allSubcategories = [
-      { title: "Chaveiro", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Eletricista", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Encanador", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Gás & Água", category_id: categoryMap["Reformas & Reparos"] },
-      {
-        title: "Limpeza pós Obra",
-        category_id: categoryMap["Reformas & Reparos"],
-      },
-      {
-        title: "Marido de Aluguel",
-        category_id: categoryMap["Reformas & Reparos"],
-      },
-      { title: "Marceneiro", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Pedreiro", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Pintor", category_id: categoryMap["Reformas & Reparos"] },
-      { title: "Vidraceiro", category_id: categoryMap["Reformas & Reparos"] },
+      // --- Reformas & Reparos ---
+      { title: "Chaveiro", cat: "Reformas & Reparos" },
+      { title: "Eletricista", cat: "Reformas & Reparos" },
+      { title: "Encanador", cat: "Reformas & Reparos" },
+      { title: "Gás & Água", cat: "Reformas & Reparos" },
+      { title: "Limpeza pós Obra", cat: "Reformas & Reparos" },
+      { title: "Marido de Aluguel", cat: "Reformas & Reparos" },
+      { title: "Designer de Interiores", cat: "Reformas & Reparos" },
+      { title: "Marceneiro", cat: "Reformas & Reparos" },
+      { title: "Pedreiro", cat: "Reformas & Reparos" },
+      { title: "Pintor", cat: "Reformas & Reparos" },
+      { title: "Vidraceiro", cat: "Reformas & Reparos" },
+      { title: "Serralheiro", cat: "Reformas & Reparos" },
+      { title: "Gesseiro", cat: "Reformas & Reparos" },
 
-      { title: "Diarista", category_id: categoryMap["Serviços Domésticos"] },
-      { title: "Jardineiro", category_id: categoryMap["Serviços Domésticos"] },
-      {
-        title: "Personal Organizer",
-        category_id: categoryMap["Serviços Domésticos"],
-      },
+      // --- Serviços Domésticos ---
+      { title: "Babá", cat: "Serviços Domésticos" },
+      { title: "Cozinheira", cat: "Serviços Domésticos" },
+      { title: "Diarista", cat: "Serviços Domésticos" },
+      { title: "Jardineiro", cat: "Serviços Domésticos" },
+      { title: "Lavadeira", cat: "Serviços Domésticos" },
+      { title: "Limpeza de sofá", cat: "Serviços Domésticos" },
+      { title: "Passadeira", cat: "Serviços Domésticos" },
+      { title: "Personal Organizer", cat: "Serviços Domésticos" },
+      { title: "Sanitização de Ambientes", cat: "Serviços Domésticos" },
+      { title: "Piscineiro", cat: "Serviços Domésticos" },
 
-      { title: "Manicure", category_id: categoryMap["Beleza & Estética"] },
-      {
-        title: "Cabeleireiro(a)",
-        category_id: categoryMap["Beleza & Estética"],
-      },
+      // --- Beleza & Estética ---
+      { title: "Cabelo & Barba", cat: "Beleza & Estética" },
+      { title: "Manicure & Pedicure", cat: "Beleza & Estética" },
+      { title: "Maquiagem", cat: "Beleza & Estética" },
+      { title: "Manicure", cat: "Beleza & Estética" },
+      { title: "Depilação", cat: "Beleza & Estética" },
+      { title: "Esteticista", cat: "Beleza & Estética" },
+      { title: "Micropigmentação", cat: "Beleza & Estética" },
+      { title: "Podologia", cat: "Beleza & Estética" },
+      { title: "Design de Sobrancelhas", cat: "Beleza & Estética" },
+      { title: "Massagem Modeladora", cat: "Beleza & Estética" },
 
-      {
-        title: "Designer de Interiores",
-        category_id: categoryMap["Serviços Gerais"],
-      },
+      // --- Serviços Gerais ---
+      { title: "Corte & Costura", cat: "Serviços Gerais" },
+      { title: "Sapateiro", cat: "Serviços Gerais" },
+      { title: "Desentupidor", cat: "Serviços Gerais" },
+      { title: "Mudanças & Carretos", cat: "Serviços Gerais" },
+      { title: "Recepcionista", cat: "Serviços Gerais" },
+      { title: "Fotógrafo", cat: "Serviços Gerais" },
+      { title: "Animador de Festa", cat: "Serviços Gerais" },
+      { title: "Motorista", cat: "Serviços Gerais" },
+      { title: "Montador de Móveis", cat: "Serviços Gerais" },
+      { title: "Dedetizador", cat: "Serviços Gerais" },
+
+      // --- Saúde & Bem-Estar ---
+      { title: "Enfermeiro(a)", cat: "Saúde & Bem-Estar" },
+      { title: "Psicólogo(a)", cat: "Saúde & Bem-Estar" },
+      { title: "Cuidador de Idoso", cat: "Saúde & Bem-Estar" },
+      { title: "Terapeuta Ocupacional", cat: "Saúde & Bem-Estar" },
+      { title: "Doula", cat: "Saúde & Bem-Estar" },
+      { title: "Massoterapeuta", cat: "Saúde & Bem-Estar" },
+      { title: "Nutricionista", cat: "Saúde & Bem-Estar" },
+      { title: "Fonoaudiólogo(a)", cat: "Saúde & Bem-Estar" },
+      { title: "Personal Trainer", cat: "Saúde & Bem-Estar" },
+
+      // --- Pets ---
+      { title: "Pet Sitter", cat: "Pet" },
+      { title: "Dog Walker", cat: "Pet" },
+      { title: "Veterinário", cat: "Pet" },
+      { title: "Creche & Hotel", cat: "Pet" },
+      { title: "Banho & Tosa", cat: "Pet" },
+      { title: "Adestrador", cat: "Pet" },
     ];
 
     const subcategoriesToInsert = allSubcategories
-      .filter((sub) => sub.category_id)
+      .filter((sub) => categoryMap[sub.cat])
       .map((sub) => ({
-        ...sub,
-        description: `Serviços de ${sub.title}`,
+        title: sub.title,
+        category_id: categoryMap[sub.cat],
+        description: `Serviços profissionais de ${sub.title}`,
         active: true,
         created_at: now,
         updated_at: now,
