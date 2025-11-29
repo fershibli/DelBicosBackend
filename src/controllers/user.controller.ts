@@ -5,18 +5,21 @@ import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ClientModel } from "../models/Client";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
+import logger, { logAuth, logError } from "../utils/logger";
 
 export const logInUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
   try {
     const user = await UserModel.findOne({ where: { email } });
     if (!user) {
+      logAuth("login", undefined, email, false, "Usuário não encontrado");
       res.status(404).json({ message: "Usuário não encontrado" });
       return;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      logAuth("login", user.id, email, false, "Senha inválida");
       res.status(401).json({ message: "Senha inválida" });
       return;
     }
@@ -24,6 +27,7 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
     const client = await ClientModel.findOne({ where: { user_id: user.id } });
 
     if (!client) {
+      logAuth("login", user.id, email, false, "Cliente não encontrado");
       res.status(404).json({ message: "Cliente não encontrado" });
       return;
     }
@@ -36,13 +40,16 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       address
     );
 
+    logAuth("login", user.id, email, true);
+    logger.info("Login realizado com sucesso", { userId: user.id, email });
+
     res.status(200).json({
       message: "Login realizado com sucesso",
       token: token,
       user: userPayload,
     });
   } catch (error) {
-    console.error("Erro ao fazer login:", error);
+    logError("Erro ao fazer login", error, { email });
     res.status(500).json({
       message: "Erro interno do servidor",
       error: error instanceof Error ? error.message : "Erro desconhecido",
@@ -96,6 +103,7 @@ export const changePassword = async (
 
     const isMatch = await bcrypt.compare(current_password, user.password);
     if (!isMatch) {
+      logger.warn("Tentativa de mudança de senha com senha incorreta", { userId });
       res.status(400).json({ message: "Senha atual incorreta" });
       return;
     }
@@ -105,9 +113,10 @@ export const changePassword = async (
     user.password = hashed;
     await user.save();
 
+    logger.info("Senha alterada com sucesso", { userId });
     res.status(204).send();
   } catch (error) {
-    console.error("Erro ao alterar senha:", error);
+    logError("Erro ao alterar senha", error, { userId });
     res.status(500).json({ message: "Erro interno do servidor" });
   }
 };
@@ -147,7 +156,7 @@ export const getUserByToken = async (
 
     res.status(200).json({ user });
   } catch (error: any) {
-    console.error("Erro ao buscar usuário pelo token:", error);
+    logError("Erro ao buscar usuário pelo token", error, { userId });
     res.status(500).json({ error: error.message });
   }
 };

@@ -8,6 +8,7 @@ import { ClientModel } from "../models/Client";
 import { AddressModel } from "../models/Address";
 import { NotificationModel } from "../models/Notification";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
+import logger, { logAuth, logError } from "../utils/logger";
 
 interface ActiveCode {
   value: string;
@@ -168,10 +169,12 @@ export const AuthController = {
     });
 
     if (wasSent) {
+      logger.info("E-mail de verificação enviado", { email });
       return res
         .status(200)
         .json({ message: "E-mail de verificação enviado com sucesso!" });
     } else {
+      logger.error("Falha ao enviar e-mail de verificação", { email });
       return res.status(500).json({ error: "Falha ao enviar o e-mail." });
     }
   },
@@ -274,8 +277,7 @@ export const AuthController = {
       });
     } catch (error: any) {
       await t.rollback();
-      console.error("Erro ao criar usuário após verificação:", error);
-
+      logError("Erro ao criar usuário após verificação", error, { email });
       if (error.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({ error: "E-mail ou CPF já cadastrado." });
       }
