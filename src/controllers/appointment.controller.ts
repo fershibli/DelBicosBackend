@@ -9,6 +9,7 @@ import { NotificationModel } from "../models/Notification";
 import { AddressModel } from "../models/Address";
 import { SubCategoryModel } from "../models/Subcategory";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
+import logger, { logError, logDatabase } from "../utils/logger";
 
 const formatDate = (dateStr: string | Date) =>
   new Date(dateStr).toLocaleDateString("pt-BR");
@@ -31,7 +32,7 @@ export const createAppointment = async (req: Request, res: Response) => {
     const service = await ServiceModel.findByPk(appointment.service_id);
 
     if (!professional || !client || !service) {
-      console.error("Missing linked data for notification trigger.");
+      logger.warn("Missing linked data for notification trigger", { appointmentId: appointment.id });
     } else {
       const clientUser = await UserModel.findByPk(client.user_id);
       const professionalUser = await UserModel.findByPk(professional.user_id);
@@ -73,8 +74,10 @@ export const createAppointment = async (req: Request, res: Response) => {
         });
       }
     }
+    logger.info("Appointment criado com sucesso", { appointmentId: appointment.id, clientId: appointment.client_id, professionalId: appointment.professional_id });
     res.status(201).json(appointment);
   } catch (error: any) {
+    logError("Erro ao criar appointment", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -153,7 +156,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 
     res.json(appointments);
   } catch (error: any) {
-    console.error(error);
+    logError("Erro ao buscar appointments", error, { userId });
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
@@ -172,9 +175,10 @@ export const confirmAppointment = async (req: Request, res: Response) => {
     }
     appointment.status = "confirmed";
     await appointment.save();
+    logger.info("Appointment confirmado", { appointmentId: id });
     res.json(appointment);
   } catch (error: any) {
-    console.error(error);
+    logError("Erro ao confirmar agendamento", error, { appointmentId: id });
     res.status(500).json({ error: "Erro ao confirmar agendamento" });
   }
 };
