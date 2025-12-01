@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { AddressModel } from "../models/Address";
+import { ClientModel } from "../models/Client";
 
 export const getAllAddressByUserId = async (req: Request, res: Response) => {
   try {
@@ -32,10 +33,23 @@ export const getAddressesForAuthenticatedUser = async (
   }
 
   try {
+    const client = await ClientModel.findOne({ where: { user_id: userId } });
+    const mainAddressId = client?.main_address_id;
+
     const addresses = await AddressModel.findAll({
       where: { user_id: userId },
+      order: [["created_at", "DESC"]],
     });
-    res.json(addresses);
+
+    const addressesWithPrimaryFlag = addresses.map((addr) => {
+      const addrJSON = addr.toJSON();
+      return {
+        ...addrJSON,
+        isPrimary: addr.id === mainAddressId,
+      };
+    });
+
+    res.json(addressesWithPrimaryFlag);
   } catch (error: any) {
     console.error("Erro ao buscar endereços do usuário autenticado:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -90,9 +104,16 @@ export const updateAddressForAuthenticatedUser = async (
       return;
     }
 
-    // Prevent changing ownership via update
-    const { user_id, id, ...updatable } = req.body as any;
+    const { user_id, id, isPrimary, ...updatable } = req.body as any;
+
     await address.update(updatable);
+
+    if (isPrimary === true) {
+      const client = await ClientModel.findOne({ where: { user_id: userId } });
+      if (client) {
+        await client.update({ main_address_id: address.id });
+      }
+    }
     res.json(address);
   } catch (error: any) {
     console.error("Erro ao atualizar endereço do usuário autenticado:", error);

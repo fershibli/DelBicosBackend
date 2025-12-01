@@ -5,6 +5,7 @@ import {
   logInUser,
   changePassword,
   getUserByToken,
+  updateUserProfile,
 } from "../controllers/user.controller";
 import {
   deleteAvatar,
@@ -488,6 +489,7 @@ router.get("/avatar", authMiddleware, getAvatar);
 router.delete("/avatar", authMiddleware, deleteAvatar);
 
 router.get("/me", authMiddleware, getUserByToken);
+router.put("/me", authMiddleware, updateUserProfile);
 
 /**
  * @swagger

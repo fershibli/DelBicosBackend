@@ -222,7 +222,6 @@ export const uploadImgBBAvatar = async (req: Request, res: Response) => {
     });
 
     const data = await response.json();
-    console.log("Resposta do imgbb:", data);
 
     if (!data.success) {
       return res.status(500).json({
