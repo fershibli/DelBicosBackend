@@ -8,6 +8,7 @@ import {
   hppMiddleware,
   mongoSanitizeMiddleware,
   xssSanitizer,
+  sqlInjectionGuard,
 } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
@@ -60,6 +61,9 @@ app.use(mongoSanitizeMiddleware);
 
 // XSS Sanitizer – escapa HTML e scripts maliciosos
 app.use(xssSanitizer);
+
+// SQL Injection Guard – detecta e bloqueia SQL injection
+app.use(sqlInjectionGuard);
 
 setupCors(app);
 

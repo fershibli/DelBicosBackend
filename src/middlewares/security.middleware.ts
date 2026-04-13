@@ -3,6 +3,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
+import logger from "../utils/logger";
 
 // ---------------------------------------------------------------------------
 // Helmet – define HTTP headers seguros (XSS-Protection, Content-Security-Policy, etc.)
@@ -87,6 +88,51 @@ export const xssSanitizer = (
   }
   if (req.params && typeof req.params === "object") {
     req.params = sanitizeObject(req.params) as typeof req.params;
+  }
+  next();
+};
+
+// ---------------------------------------------------------------------------
+// SQL Injection detection – camada extra de defesa (Sequelize já parametriza)
+// ---------------------------------------------------------------------------
+
+const SQL_INJECTION_PATTERNS = [
+  /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|EXEC|EXECUTE)\b.*\b(FROM|INTO|TABLE|SET|WHERE|ALL)\b)/i,
+  /(';\s*(DROP|ALTER|DELETE|UPDATE|INSERT)\b)/i,
+  /(--\s*$|;\s*--)/m,
+  /(\b(OR|AND)\b\s+[\d'"]+=[\d'"]+)/i,
+];
+
+function containsSqlInjection(value: unknown): boolean {
+  if (typeof value === "string") {
+    return SQL_INJECTION_PATTERNS.some((pattern) => pattern.test(value));
+  }
+  if (Array.isArray(value)) {
+    return value.some(containsSqlInjection);
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).some(
+      containsSqlInjection
+    );
+  }
+  return false;
+}
+
+export const sqlInjectionGuard = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const targets = [req.body, req.query, req.params];
+  for (const target of targets) {
+    if (target && containsSqlInjection(target)) {
+      logger.warn(
+        `SQL Injection attempt detected from IP ${req.ip} on ${req.method} ${req.originalUrl}`
+      );
+      return res.status(400).json({
+        msg: "Requisição bloqueada: entrada inválida detectada.",
+      });
+    }
   }
   next();
 };
