@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import { setupCors } from "./src/middlewares/cors.middleware";
 import { loggingMiddleware } from "./src/middlewares/logging.middleware";
+import { helmetMiddleware } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
 import addressRoutes from "./src/routes/address.routes";
@@ -37,6 +38,9 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+// Helmet – protege contra ataques comuns com HTTP headers
+app.use(helmetMiddleware);
 
 setupCors(app);
 
