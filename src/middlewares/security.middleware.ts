@@ -6,12 +6,12 @@ import mongoSanitize from "express-mongo-sanitize";
 import logger from "../utils/logger";
 
 // ---------------------------------------------------------------------------
-// Helmet – define HTTP headers seguros (XSS-Protection, Content-Security-Policy, etc.)
+// 1. Helmet – define HTTP headers seguros (XSS-Protection, Content-Security-Policy, etc.)
 // ---------------------------------------------------------------------------
 export const helmetMiddleware = helmet();
 
 // ---------------------------------------------------------------------------
-// Rate Limiting – protege contra brute-force e DDoS
+// 2. Rate Limiting – protege contra brute-force e DDoS
 // ---------------------------------------------------------------------------
 export const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -34,17 +34,17 @@ export const authRateLimiter = rateLimit({
 });
 
 // ---------------------------------------------------------------------------
-// HPP – HTTP Parameter Pollution protection
+// 3. HPP – HTTP Parameter Pollution protection
 // ---------------------------------------------------------------------------
 export const hppMiddleware = hpp();
 
 // ---------------------------------------------------------------------------
-// NoSQL Injection protection (MongoDB)
+// 4. NoSQL Injection protection (MongoDB)
 // ---------------------------------------------------------------------------
 export const mongoSanitizeMiddleware = mongoSanitize();
 
 // ---------------------------------------------------------------------------
-// XSS Sanitization – remove tags HTML e scripts maliciosos do input
+// 5. XSS Sanitization – remove tags HTML e scripts maliciosos do input
 // ---------------------------------------------------------------------------
 function sanitizeValue(value: unknown): unknown {
   if (typeof value === "string") {
@@ -65,9 +65,7 @@ function sanitizeValue(value: unknown): unknown {
   return value;
 }
 
-function sanitizeObject(
-  obj: Record<string, unknown>
-): Record<string, unknown> {
+function sanitizeObject(obj: Record<string, unknown>): Record<string, unknown> {
   const sanitized: Record<string, unknown> = {};
   for (const key of Object.keys(obj)) {
     sanitized[key] = sanitizeValue(obj[key]);
@@ -78,7 +76,7 @@ function sanitizeObject(
 export const xssSanitizer = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (req.body && typeof req.body === "object") {
     req.body = sanitizeObject(req.body);
@@ -93,9 +91,8 @@ export const xssSanitizer = (
 };
 
 // ---------------------------------------------------------------------------
-// SQL Injection detection – camada extra de defesa (Sequelize já parametriza)
+// 6. SQL Injection detection – camada extra de defesa (Sequelize já parametriza)
 // ---------------------------------------------------------------------------
-
 const SQL_INJECTION_PATTERNS = [
   /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|EXEC|EXECUTE)\b.*\b(FROM|INTO|TABLE|SET|WHERE|ALL)\b)/i,
   /(';\s*(DROP|ALTER|DELETE|UPDATE|INSERT)\b)/i,
@@ -112,7 +109,7 @@ function containsSqlInjection(value: unknown): boolean {
   }
   if (value !== null && typeof value === "object") {
     return Object.values(value as Record<string, unknown>).some(
-      containsSqlInjection
+      containsSqlInjection,
     );
   }
   return false;
@@ -121,13 +118,13 @@ function containsSqlInjection(value: unknown): boolean {
 export const sqlInjectionGuard = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const targets = [req.body, req.query, req.params];
   for (const target of targets) {
     if (target && containsSqlInjection(target)) {
       logger.warn(
-        `SQL Injection attempt detected from IP ${req.ip} on ${req.method} ${req.originalUrl}`
+        `SQL Injection attempt detected from IP ${req.ip} on ${req.method} ${req.originalUrl}`,
       );
       return res.status(400).json({
         msg: "Requisição bloqueada: entrada inválida detectada.",
