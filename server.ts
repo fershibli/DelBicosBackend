@@ -6,6 +6,7 @@ import {
   globalRateLimiter,
   authRateLimiter,
   hppMiddleware,
+  mongoSanitizeMiddleware,
 } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
@@ -52,6 +53,9 @@ app.use(globalRateLimiter);
 
 // HPP – protege contra HTTP Parameter Pollution
 app.use(hppMiddleware);
+
+// Mongo Sanitize – protege contra NoSQL injection
+app.use(mongoSanitizeMiddleware);
 
 setupCors(app);
 

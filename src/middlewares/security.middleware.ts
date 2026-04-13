@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
+import mongoSanitize from "express-mongo-sanitize";
 
 // ---------------------------------------------------------------------------
 // Helmet – define HTTP headers seguros (XSS-Protection, Content-Security-Policy, etc.)
@@ -35,3 +36,8 @@ export const authRateLimiter = rateLimit({
 // HPP – HTTP Parameter Pollution protection
 // ---------------------------------------------------------------------------
 export const hppMiddleware = hpp();
+
+// ---------------------------------------------------------------------------
+// NoSQL Injection protection (MongoDB)
+// ---------------------------------------------------------------------------
+export const mongoSanitizeMiddleware = mongoSanitize();
