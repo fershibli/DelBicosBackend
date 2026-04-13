@@ -7,6 +7,7 @@ import {
   authRateLimiter,
   hppMiddleware,
   mongoSanitizeMiddleware,
+  xssSanitizer,
 } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
@@ -56,6 +57,9 @@ app.use(hppMiddleware);
 
 // Mongo Sanitize – protege contra NoSQL injection
 app.use(mongoSanitizeMiddleware);
+
+// XSS Sanitizer – escapa HTML e scripts maliciosos
+app.use(xssSanitizer);
 
 setupCors(app);
 
