@@ -5,6 +5,7 @@ import {
   helmetMiddleware,
   globalRateLimiter,
   authRateLimiter,
+  hppMiddleware,
 } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
@@ -48,6 +49,9 @@ app.use(helmetMiddleware);
 
 // Rate limiting – protege contra brute-force e DDoS
 app.use(globalRateLimiter);
+
+// HPP – protege contra HTTP Parameter Pollution
+app.use(hppMiddleware);
 
 setupCors(app);
 

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import hpp from "hpp";
 
 // ---------------------------------------------------------------------------
 // Helmet – define HTTP headers seguros (XSS-Protection, Content-Security-Policy, etc.)
@@ -29,3 +30,8 @@ export const authRateLimiter = rateLimit({
     msg: "Muitas tentativas de login. Tente novamente após 15 minutos.",
   },
 });
+
+// ---------------------------------------------------------------------------
+// HPP – HTTP Parameter Pollution protection
+// ---------------------------------------------------------------------------
+export const hppMiddleware = hpp();
