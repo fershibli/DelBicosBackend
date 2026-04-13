@@ -4,6 +4,7 @@ import { loggingMiddleware } from "./src/middlewares/logging.middleware";
 import {
   helmetMiddleware,
   globalRateLimiter,
+  authRateLimiter,
 } from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
@@ -75,7 +76,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/professionals", professionalRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRouter);
-app.use("/auth", authRouter);
+app.use("/auth", authRateLimiter, authRouter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/favorites", favoriteRoutes);

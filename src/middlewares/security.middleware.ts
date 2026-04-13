@@ -19,3 +19,13 @@ export const globalRateLimiter = rateLimit({
     msg: "Muitas requisições deste IP. Tente novamente após 15 minutos.",
   },
 });
+
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20, // limite mais restrito para rotas de autenticação
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    msg: "Muitas tentativas de login. Tente novamente após 15 minutos.",
+  },
+});
