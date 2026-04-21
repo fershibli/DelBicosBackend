@@ -5,6 +5,8 @@ on:
     workflows: ["01 - Análise Semântica Pós-Merge"]
     types:
       - completed
+  # Permite acionamento manual para testes sem necessidade de merge
+  workflow_dispatch: {}
 
 jobs:
   build-and-push:
