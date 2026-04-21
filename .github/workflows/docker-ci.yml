@@ -5,6 +5,12 @@ on:
     workflows: ["01 - Análise Semântica Pós-Merge"]
     types:
       - completed
+  # Permite acionamento manual para testes sem necessidade de merge
+  workflow_dispatch: {}
+  # Dispara quando houver push na branch 'stag' (qualquer commit nessa branch)
+  push:
+    branches:
+      - stag
 
 jobs:
   build-and-push:
