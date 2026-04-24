@@ -6,6 +6,7 @@ import { AddressModel } from "../models/Address";
 import { ClientModel } from "../models/Client";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
 import logger, { logAuth, logError } from "../utils/logger";
+import { saveLoginLog } from "../services/loginLog.service";
 
 export const logInUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
@@ -39,6 +40,13 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       client,
       address
     );
+
+    // Salva log de login no MongoDB (fire-and-forget, não bloqueia a resposta)
+    saveLoginLog(req, {
+      userId: user.id,
+      username: user.email,
+      jwt: token,
+    });
 
     logAuth("login", user.id, email, true);
     logger.info("Login realizado com sucesso", { userId: user.id, email });
