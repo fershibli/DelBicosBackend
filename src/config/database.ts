@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { Sequelize } from "sequelize";
 
 dotenv.config();
@@ -141,5 +142,18 @@ async function connectDatabase(): Promise<void> {
   }
 }
 
+export async function connectMongo() {
+  try {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error("MONGODB_URI não definida");
+
+    await mongoose.connect(uri);
+    console.log("Conectado ao MongoDB (EC2) para logs com sucesso.");
+  } catch (error) {
+    console.error("Erro ao conectar no MongoDB da EC2:", error);
+  }
+}
+
 // Test the database connection
+connectMongo();
 connectDatabase();
