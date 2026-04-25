@@ -56,7 +56,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.0",
-    "winston": "^3.18.3"
+    "winston": "^3.18.3",
+    "winston-cloudwatch": "^6.3.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
