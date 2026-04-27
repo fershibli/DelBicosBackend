@@ -463,3 +463,115 @@ export const searchProfessionalAvailability = async (
       .json({ error: "Erro interno do servidor", details: error.message });
   }
 };
+
+export const createProfessional = async (
+  req: any,
+  res: Response
+): Promise<any> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Usuário não autenticado",
+      });
+    }
+
+    const { cpf, cnpj, description } = req.body;
+
+    // Validação de campos obrigatórios
+    if (!cpf) {
+      return res.status(400).json({
+        error: "CPF é obrigatório",
+      });
+    }
+
+    if (!description) {
+      return res.status(400).json({
+        error: "Descrição é obrigatória",
+      });
+    }
+
+    // Verificar se o usuário existe
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        error: "Usuário não encontrado",
+      });
+    }
+
+    // Verificar se o usuário já é um profissional
+    const existingProfessional = await ProfessionalModel.findOne({
+      where: { user_id: userId },
+    });
+    if (existingProfessional) {
+      return res.status(409).json({
+        error: "Usuário já é um profissional",
+      });
+    }
+
+    // Buscar o endereço principal do usuário (via Client)
+    const client = await ClientModel.findOne({
+      where: { user_id: userId },
+      attributes: ["main_address_id"],
+    });
+
+    const mainAddressId = client?.main_address_id || undefined;
+
+    // Criar novo profissional
+    const newProfessional = await ProfessionalModel.create({
+      user_id: userId,
+      main_address_id: mainAddressId,
+      cpf,
+      cnpj: cnpj || undefined,
+      description,
+    });
+
+    // Buscar o profissional criado com as associações
+    const professionalWithRelations = await ProfessionalModel.findByPk(
+      newProfessional.id,
+      {
+        include: [
+          {
+            model: UserModel,
+            as: "User",
+            attributes: ["id", "name", "email", "avatar_uri", "banner_uri"],
+          },
+          {
+            model: AddressModel,
+            as: "MainAddress",
+            attributes: ["id", "city", "state", "lat", "lng"],
+          },
+        ],
+      }
+    );
+
+    return res.status(201).json({
+      message: "Profissional criado com sucesso",
+      professional: professionalWithRelations,
+    });
+  } catch (error: any) {
+    console.error("Erro ao criar profissional:", error);
+
+    // Tratamento de erros de constraint UNIQUE
+    if (error.name === "SequelizeUniqueConstraintError") {
+      const field = error.errors?.[0]?.path || "campo";
+      let errorMessage = `${field} já está registrado`;
+
+      if (field === "cpf") {
+        errorMessage = "Este CPF já está associado a um profissional";
+      } else if (field === "cnpj") {
+        errorMessage = "Este CNPJ já está associado a um profissional";
+      }
+
+      return res.status(409).json({
+        error: errorMessage,
+      });
+    }
+
+    return res.status(500).json({
+      error: "Erro ao criar profissional",
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
