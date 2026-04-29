@@ -7,9 +7,13 @@ import { ClientModel } from "../models/Client";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
 import logger, { logAuth, logError } from "../utils/logger";
 import { saveLoginLog } from "../services/loginLog.service";
+import { S3Service } from "../services/s3Service";
+
+const s3Service = new S3Service();
 
 export const logInUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
+  
   try {
     const user = await UserModel.findOne({ where: { email } });
     if (!user) {
@@ -26,7 +30,6 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const client = await ClientModel.findOne({ where: { user_id: user.id } });
-
     if (!client) {
       logAuth("login", user.id, email, false, "Cliente não encontrado");
       res.status(404).json({ message: "Cliente não encontrado" });
@@ -41,7 +44,6 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       address
     );
 
-    // Salva log de login no MongoDB (fire-and-forget, não bloqueia a resposta)
     saveLoginLog(req, {
       userId: user.id,
       username: user.email,
@@ -66,24 +68,30 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const getUserById = async (req: Request, res: Response) => {
-  const user = await UserModel.findByPk(req.params.id);
-  if (!user) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const user = await UserModel.findByPk(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      avatar_uri: user.avatar_uri,
+      banner_uri: user.banner_uri,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar usuário" });
   }
-  res.json({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    avatar_uri: user.avatar_uri,
-    banner_uri: user.banner_uri,
-  });
 };
 
 export const changePassword = async (
   req: AuthenticatedRequest,
   res: Response
 ): Promise<void> => {
+  const userId = req.user?.id; // Declarado fora para o catch enxergar
+
   try {
     const { current_password, new_password } = req.body as {
       current_password: string;
@@ -91,15 +99,12 @@ export const changePassword = async (
     };
 
     if (!current_password || !new_password) {
-      res
-        .status(400)
-        .json({ message: "current_password and new_password are required" });
+      res.status(400).json({ message: "Senha atual e nova senha são obrigatórias" });
       return;
     }
 
-    const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Não autorizado" });
       return;
     }
 
@@ -130,19 +135,23 @@ export const changePassword = async (
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
-  const deleted = await UserModel.destroy({ where: { id: req.params.id } });
-  deleted
-    ? res.json({ message: "Usuário deletado com sucesso" })
-    : res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const deleted = await UserModel.destroy({ where: { id: req.params.id } });
+    deleted
+      ? res.json({ message: "Usuário deletado com sucesso" })
+      : res.status(404).json({ error: "Usuário não encontrado" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao deletar usuário" });
+  }
 };
 
 export const getUserByToken = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  try {
-    const userId = req.user?.id;
+  const userId = req.user?.id; // Declarado fora
 
+  try {
     if (!userId) {
       return res.status(401).json({ error: "Usuário não autenticado" });
     }
@@ -173,7 +182,7 @@ export const updateUserProfile = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const userId = req.user?.id;
+  const userId = req.user?.id; // Declarado fora
 
   if (!userId) {
     return res.status(401).json({ error: "Usuário não autenticado." });
@@ -210,10 +219,53 @@ export const updateUserProfile = async (
       banner_uri: user.banner_uri,
     });
   } catch (error: any) {
-    console.error("Erro ao atualizar perfil:", error);
+    logError("Erro ao atualizar perfil", error, { userId });
     return res.status(500).json({
       error: "Erro interno ao atualizar perfil.",
       details: error.message,
     });
+  }
+};
+
+/**
+ * NOVAS FUNÇÕES PARA PoC S3 (AWS)
+ */
+
+export const getAvatarUploadUrl = async (req: Request, res: Response) => {
+  try {
+    const { fileName, fileType } = req.body;
+    if (!fileName || !fileType) {
+      return res.status(400).json({ error: "fileName e fileType são obrigatórios" });
+    }
+
+    const uploadUrl = await s3Service.generateUploadUrl(fileName, fileType);
+    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+    res.json({ uploadUrl, fileUrl });
+  } catch (error: any) {
+    logError("Erro ao gerar URL do S3", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateUserAvatarUri = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { avatar_uri } = req.body;
+
+  try {
+    if (!avatar_uri) return res.status(400).json({ error: "avatar_uri é obrigatório" });
+
+    const user = await UserModel.findByPk(userId);
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    await user.update({ avatar_uri });
+    
+    res.json({ 
+      message: "URI do avatar atualizada com sucesso!", 
+      user: { id: user.id, avatar_uri: user.avatar_uri } 
+    });
+  } catch (error: any) {
+    logError("Erro ao atualizar URI do avatar", error, { userId });
+    res.status(500).json({ error: error.message });
   }
 };
