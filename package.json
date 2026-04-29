@@ -38,6 +38,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1037.0",
+    "@aws-sdk/lib-storage": "^3.1037.0",
     "@logtail/node": "^0.5.6",
     "@logtail/winston": "^0.5.6",
     "@sendgrid/mail": "^8.1.5",
@@ -55,7 +57,7 @@
     "stripe": "^19.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^14.0.0",
+    "uuid": "^8.3.2",
     "winston": "^3.18.3",
     "winston-cloudwatch": "^6.3.0"
   },
