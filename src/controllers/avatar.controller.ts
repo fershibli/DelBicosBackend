@@ -47,16 +47,40 @@ export const AvatarController = {
   },
 
   updateAvatarDatabase: async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { avatar_uri } = req.body;
-      const user = await UserModel.findByPk(id);
-      if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+  try {
+    const userId = (req as any).userId;
+    const userObject = (req as any).user;
+    const { avatar_uri } = req.body;
 
-      await user.update({ avatar_uri });
-      res.json({ mensagem: "Perfil atualizado no banco!", avatar_uri });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+    console.log("--- DEBUG UPDATE PATH ---");
+    console.log("req.userId:", userId);
+    console.log("req.user:", userObject);
+    console.log("Body:", req.body);
+
+    const finalId = userId || userObject?.id || userObject?._id;
+
+    if (!finalId) {
+      return res.status(401).json({ 
+        error: "401 - Não foi possível extrair o ID do usuário do token." 
+      });
     }
+
+    const user = await UserModel.findByPk(finalId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado no banco." });
+    }
+
+    await user.update({ avatar_uri });
+    
+    return res.json({ 
+      mensagem: "Perfil atualizado no banco!", 
+      avatar_uri 
+    });
+
+  } catch (error: any) {
+    console.error("ERRO NO UPDATE:", error);
+    return res.status(500).json({ error: error.message });
   }
+}
 };
