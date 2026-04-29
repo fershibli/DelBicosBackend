@@ -7,12 +7,6 @@ import {
   getUserByToken,
   updateUserProfile,
 } from "../controllers/user.controller";
-import {
-  deleteAvatar,
-  getAvatar,
-  uploadAvatar,
-  uploadImgBBAvatar,
-} from "../controllers/avatar.controller";
 
 const router = Router();
 
@@ -409,85 +403,6 @@ router.post("/login", logInUser);
  */
 router.post("/change-password", authMiddleware, changePassword);
 
-/**
- * @swagger
- * /user/{id}/avatar:
- *   post:
- *     summary: Faz upload de um avatar para o usuário
- *     tags: [Avatar]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AvatarUploadRequest'
- *     responses:
- *       200:
- *         description: Avatar enviado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AvatarResponse'
- *       400:
- *         description: Formato base64 inválido
- *       404:
- *         description: Usuário não encontrado
- *       500:
- *         description: Erro no servidor
- */
-router.post("/avatar", authMiddleware, uploadAvatar);
-
-/**
- * @swagger
- * /user/{id}/avatar:
- *   get:
- *     summary: Obtém informações do avatar do usuário
- *     tags: [Avatar]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     responses:
- *       200:
- *         description: Informações do avatar
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AvatarInfo'
- *       404:
- *         description: Usuário ou avatar não encontrado
- *       500:
- *         description: Erro no servidor
- */
-router.get("/avatar", authMiddleware, getAvatar);
-
-/**
- * @swagger
- * /user/{id}/avatar:
- *   delete:
- *     summary: Remove o avatar do usuário
- *     tags: [Avatar]
- *     parameters:
- *       - $ref: '#/components/parameters/userIdParam'
- *     responses:
- *       200:
- *         description: Avatar deletado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *               example:
- *                 message: "Avatar deletado com sucesso"
- *       404:
- *         description: Usuário ou avatar não encontrado
- *       500:
- *         description: Erro no servidor
- */
-router.delete("/avatar", authMiddleware, deleteAvatar);
-
 router.get("/me", authMiddleware, getUserByToken);
 router.put("/me", authMiddleware, updateUserProfile);
 
@@ -512,34 +427,5 @@ router.put("/me", authMiddleware, updateUserProfile);
  *         $ref: '#/components/responses/ServerError'
  */
 router.get("/:id", authMiddleware, getUserById);
-
-/**
- * @swagger
- * /user/imgbb/avatar:
- *   post:
- *     summary: Faz upload de um avatar para o usuário usando o IMGBB
- *     tags: [Avatar]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AvatarUploadRequest'
- *     responses:
- *       200:
- *         description: Avatar enviado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AvatarResponse'
- *       400:
- *         description: Formato base64 inválido ou imagem muito grande
- *       404:
- *         description: Usuário não encontrado
- *       500:
- *         description: Erro no servidor
- */
-
-router.post("/imgbb/avatar", authMiddleware, uploadImgBBAvatar);
 
 export default router;
