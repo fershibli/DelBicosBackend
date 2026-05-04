@@ -11,25 +11,18 @@ const getDialect = () => {
   if (process.env.RDS_DIALECT) {
     return process.env.RDS_DIALECT;
   }
-  return "mysql";
+  return "postgres";
 };
 
 /**
  * Retorna as opções de SSL apropriadas para o dialect
  */
-const getSSLOptions = (dialect, environment) => {
+// No seu src/config/config.js
+const getSSLOptions = (dialect) => {
   if (dialect === "postgres") {
     return {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    };
-  }
-  // MySQL RDS com SSL (opcional mas recomendado)
-  if (environment !== "development") {
-    return {
-      ssl: "Amazon RDS",
+      require: true,               // Mudança sutil aqui
+      rejectUnauthorized: false,
     };
   }
   return undefined;
@@ -59,6 +52,8 @@ const config = {
     host: process.env.SEQUELIZE_HOST || "localhost",
     port: Number(process.env.SEQUELIZE_PORT) || 3306,
     dialect,
+    dialect,
+    dialectOptions: getSSLOptions(dialect, "development"), 
     logging: process.env.DB_LOGGING === "true" ? console.log : false,
   },
   production: {
