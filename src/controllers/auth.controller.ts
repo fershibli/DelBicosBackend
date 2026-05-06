@@ -9,6 +9,7 @@ import { AddressModel } from "../models/Address";
 import { NotificationModel } from "../models/Notification";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
 import logger, { logAuth, logError } from "../utils/logger";
+import { saveLoginLog } from "../services/loginLog.service";
 
 interface ActiveCode {
   value: string;
@@ -269,6 +270,13 @@ export const AuthController = {
         newClient,
         newAddress
       );
+
+      // Salva log de login no MongoDB (fire-and-forget, não bloqueia a resposta)
+      saveLoginLog(req, {
+        userId: newUser.id,
+        username: newUser.email,
+        jwt: token,
+      });
 
       return res.status(200).json({
         message: "Conta verificada e usuário criado com sucesso!",
