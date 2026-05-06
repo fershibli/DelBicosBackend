@@ -1,0 +1,58 @@
+name: 03 - Deploy na instância EC2
+
+on:
+  workflow_run:
+    workflows: ["02 - Buildar e publicar imagem Docker"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    name: Deploy no EC2 via SSH
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+
+            # ── Instalar Docker (caso ainda não esteja instalado) ──────────────
+            if ! command -v docker &>/dev/null; then
+              curl -fsSL https://get.docker.com | sh
+              sudo usermod -aG docker "$USER"
+              newgrp docker
+            fi
+
+            # ── Garantir que o daemon está rodando ────────────────────────────
+            sudo systemctl enable --now docker
+
+            # ── Gravar o .env de produção ─────────────────────────────────────
+            # O conteúdo completo do arquivo está no secret ENV_FILE
+            printf '%s' '${{ secrets.ENV_FILE }}' > /home/${{ secrets.EC2_USER }}/.env
+            chmod 600 /home/${{ secrets.EC2_USER }}/.env
+
+            # ── Variáveis da imagem ───────────────────────────────────────────
+            DOCKER_USER="$(echo '${{ secrets.DOCKERHUB_USERNAME }}' | tr '[:upper:]' '[:lower:]')"
+            REPO="$(echo 'delbicosbackend' | tr '[:upper:]' '[:lower:]')"
+            IMAGE="${DOCKER_USER}/${REPO}:latest"
+
+            # ── Parar e remover container anterior (se existir) ───────────────
+            docker stop delbicos-backend 2>/dev/null || true
+            docker rm   delbicos-backend 2>/dev/null || true
+
+            # ── Baixar imagem mais recente ────────────────────────────────────
+            docker pull "${IMAGE}"
+
+            # ── Subir novo container ──────────────────────────────────────────
+            docker run -d \
+              --name delbicos-backend \
+              --restart unless-stopped \
+              --env-file /home/${{ secrets.EC2_USER }}/.env \
+              -p 3000:3000 \
+              "${IMAGE}"
