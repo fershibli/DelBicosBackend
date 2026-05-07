@@ -131,8 +131,7 @@ AddressModel.init(
       {
         name: "idx_address_location",
         fields: ["lat", "lng"],
-        using: "SPATIAL",
       },
     ],
-  }
+  },
 );
