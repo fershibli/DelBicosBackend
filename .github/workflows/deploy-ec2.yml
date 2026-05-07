@@ -38,7 +38,7 @@ jobs:
             set -euo pipefail
 
             # ── Decodificar .env a partir do secret Base64 ─────────────────
-            echo "$ENV_FILE" | base64 -d > /home/$EC2_USER/.env
+            printf '%s' "$ENV_FILE" | tr -d '\r\n' | base64 -d > /home/$EC2_USER/.env
             chmod 600 /home/$EC2_USER/.env
 
             # ── Garantir que o Docker está ativo ────────────────────────────
