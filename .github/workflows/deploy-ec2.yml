@@ -58,6 +58,10 @@ jobs:
             df -h || true
             sudo docker system df || true
 
+            # Optional: keep a little log for troubleshooting
+            df -h || true
+            sudo docker system df || true
+
             # ── Baixar imagem mais recente (repositório público) ───────────
             sudo docker pull "${IMAGE}"
 
