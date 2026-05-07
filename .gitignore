@@ -12,3 +12,6 @@ yarn.lock
 
 ## Image Directories ##
 avatarBucket
+
+## Build Output ##
+dist/
