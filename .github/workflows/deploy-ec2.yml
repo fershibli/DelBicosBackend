@@ -59,6 +59,7 @@ jobs:
             # ── Subir novo container ──────────────────────────────────────
             sudo docker run -d \
               --name delbicos-backend \
+              --restart on-failure:3 \
               -v /home/$EC2_USER/.env:/app/.env:ro \
               -p 3000:3000 \
               "${IMAGE}"

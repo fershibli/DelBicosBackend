@@ -66,11 +66,6 @@ if (shouldEnableCloudWatch && process.env.AWS_ACCESS_KEY_ID_CW) {
     logGroupName: "/fatec/projeto-pi/backend",
     logStreamName: `${os.hostname()}-${new Date().toISOString().split("T")[0]}`,
     awsOptions: {
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID_CW!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_CW!,
-        sessionToken: process.env.AWS_SESSION_TOKEN_CW,
-      },
       region: process.env.AWS_REGION_CW || "us-east-1",
     },
     messageFormatter: ({ level, message, ...meta }) =>
@@ -92,11 +87,6 @@ if (shouldEnableCloudWatch && process.env.AWS_ACCESS_KEY_ID_CW) {
     logGroupName: "/fatec/projeto-pi/backend",
     logStreamName: `${os.hostname()}-${new Date().toISOString().split("T")[0]}-info`,
     awsOptions: {
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID_CW!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_CW!,
-        sessionToken: process.env.AWS_SESSION_TOKEN_CW,
-      },
       region: process.env.AWS_REGION_CW || "us-east-1",
     },
     messageFormatter: ({ level, message, ...meta }) =>
