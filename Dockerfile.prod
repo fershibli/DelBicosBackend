@@ -1,16 +1,26 @@
+# ---- Build Stage ----
+FROM node:24.10.0-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json */package-lock.json* ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# ---- Production Stage ----
 FROM node:24.10.0-alpine
 
 WORKDIR /app
 
 COPY package.json */package-lock.json* ./
 
-# Instalar dependências baseado no lockfile presente
 RUN npm install --only=production
 
-# Copiar o restante dos arquivos do projeto
-COPY . .
-
-RUN npm run build
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
