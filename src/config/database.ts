@@ -23,6 +23,10 @@ const getDialect = (): "mysql" | "postgres" => {
  */
 const getSSLOptions = (dialect: "mysql" | "postgres") => {
   if (dialect === "postgres") {
+    // SSL only when there's an external DATABASE_URL (e.g. Neon) or non-development env
+    if (!process.env.DATABASE_URL && environment === "development") {
+      return false; // Docker local Postgres does not support SSL
+    }
     return {
       require: true,
       rejectUnauthorized: false, // Necessário para o Neon
@@ -39,7 +43,7 @@ const getSSLOptions = (dialect: "mysql" | "postgres") => {
  */
 const generateSequelizeConnection = (): Sequelize => {
   const dialect = getDialect();
-  
+
   // Se existir DATABASE_URL (Caso do seu Neon)
   if (databaseUrl) {
     return new Sequelize(databaseUrl, {
@@ -66,7 +70,7 @@ const generateSequelizeConnection = (): Sequelize => {
         ssl: getSSLOptions(dialect),
       },
       logging: process.env.DB_LOGGING === "true" ? console.log : false,
-    }
+    },
   );
 };
 
@@ -78,7 +82,7 @@ export const sequelize = generateSequelizeConnection();
 async function connectDatabase(): Promise<void> {
   try {
     await sequelize.authenticate();
-    
+
     // Lógica da POC: Sincronização automática de tabelas
     // O 'alter: true' atualiza o banco sem apagar dados se você mudar o Model
     if (environment === "development" || process.env.DB_SYNC === "true") {
@@ -87,7 +91,9 @@ async function connectDatabase(): Promise<void> {
     }
 
     const dialect = getDialect();
-    console.log(`✅ Database connection established [${dialect.toUpperCase()}]`);
+    console.log(
+      `✅ Database connection established [${dialect.toUpperCase()}]`,
+    );
   } catch (error) {
     console.error("❌ Unable to connect to the database:", error);
     // process.exit(1); // Opcional: encerra se o banco falhar
@@ -97,10 +103,13 @@ async function connectDatabase(): Promise<void> {
 export async function connectMongo() {
   try {
     const uri = process.env.MONGODB_URI;
-    if (!uri) return console.warn("⚠️ MONGODB_URI não definida. Logs salvos apenas localmente.");
+    if (!uri)
+      return console.warn(
+        "⚠️ MONGODB_URI não definida. Logs salvos apenas localmente.",
+      );
 
     await mongoose.connect(uri);
-    console.log("✅ Conectado ao MongoDB (EC2).");
+    console.log("✅ Conectado ao MongoDB.");
   } catch (error) {
     console.error("❌ Erro MongoDB:", error);
   }
