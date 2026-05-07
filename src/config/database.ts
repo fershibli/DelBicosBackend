@@ -23,10 +23,10 @@ const getDialect = (): "mysql" | "postgres" => {
  */
 const getSSLOptions = (dialect: "mysql" | "postgres") => {
   if (dialect === "postgres") {
-    // SSL only when there's an external DATABASE_URL (e.g. Neon) or non-development env
     if (!process.env.DATABASE_URL && environment === "development") {
       return false; // Docker local Postgres does not support SSL
     }
+    // SSL only when there's an external DATABASE_URL (e.g. Neon) or non-development env
     return {
       require: true,
       rejectUnauthorized: false, // Necessário para o Neon
