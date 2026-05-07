@@ -1,6 +1,8 @@
 import { Options } from "swagger-jsdoc";
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction =
+  process.env.ENVIRONMENT === "production" ||
+  process.env.NODE_ENV === "production";
 
 const swaggerOptions: Options = {
   definition: {
