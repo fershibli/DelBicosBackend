@@ -23,9 +23,10 @@ const getDialect = (): "mysql" | "postgres" => {
  */
 const getSSLOptions = (dialect: "mysql" | "postgres") => {
   if (dialect === "postgres") {
-    if (environment === "development") {
-      return false;
+    if (!process.env.DATABASE_URL && environment === "development") {
+      return false; // Docker local Postgres does not support SSL
     }
+    // SSL only when there's an external DATABASE_URL (e.g. Neon) or non-development env
     return {
       require: true,
       rejectUnauthorized: false, // Necessário para o Neon
@@ -86,7 +87,13 @@ async function connectDatabase(): Promise<void> {
     // O 'alter: true' atualiza o banco sem apagar dados se você mudar o Model
     if (environment === "development" || process.env.DB_SYNC === "true") {
       await sequelize.sync({ alter: true });
-      console.log("✅ Tabelas sincronizadas no Neon.");
+      if (databaseUrl?.includes("aws")) {
+        console.log("✅ Tabelas sincronizadas no RDS.");
+      } else if (databaseUrl?.includes("neon")) {
+        console.log("✅ Tabelas sincronizadas no Neon.");
+      } else {
+        console.log("✅ Tabelas sincronizadas no banco local.");
+      }
     }
 
     const dialect = getDialect();
@@ -108,7 +115,7 @@ export async function connectMongo() {
       );
 
     await mongoose.connect(uri);
-    console.log("✅ Conectado ao MongoDB (EC2).");
+    console.log("✅ Conectado ao MongoDB.");
   } catch (error) {
     console.error("❌ Erro MongoDB:", error);
   }
