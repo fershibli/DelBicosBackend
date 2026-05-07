@@ -37,8 +37,8 @@ jobs:
           script: |
             set -euo pipefail
 
-            # ── Decodificar .env a partir do secret Base64 ─────────────────
-            printf '%s' "$ENV_FILE" | tr -d '\r\n' | base64 -d > /home/$EC2_USER/.env
+            # ── Escrever .env a partir do secret (texto plano) ────────────
+            printf '%s\n' "$ENV_FILE" > /home/$EC2_USER/.env
             chmod 600 /home/$EC2_USER/.env
 
             # ── Garantir que o Docker está ativo ────────────────────────────
