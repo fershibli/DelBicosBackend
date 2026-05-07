@@ -6,16 +6,17 @@ import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
-import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
-import { AmenitiesModel } from "../models/Amenities";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
-    const latNum = typeof lat === "string" ? parseFloat(lat) : undefined;
-    const lngNum = typeof lng === "string" ? parseFloat(lng) : undefined;
+    console.log(lat, lng);
+    const latNum = lat ? parseFloat(String(lat)) : undefined;
+    const lngNum = lng ? parseFloat(String(lng)) : undefined;
+    console.log(latNum, lngNum);
     const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
+    console.log(hasLatLng);
 
     const where: any = {};
     if (termo) {
@@ -38,56 +39,44 @@ export const getProfessionals = async (req: Request, res: Response) => {
       `)
       : null;
 
+    console.log(distanceLiteral);
+
     const order: any[] = [];
     if (hasLatLng && distanceLiteral) {
       order.push([distanceLiteral, "ASC"]);
     } else {
-      order.push(["createdAt", "DESC"]);
+      order.push(["created_at", "DESC"]);
     }
 
-    const attributes: any = {};
+    const attributes: any = { include: [] };
 
     if (hasLatLng && distanceLiteral) {
-      attributes.include = [[distanceLiteral as any, "distance_km"]];
+      attributes.include.push([distanceLiteral, "distance_km"]);
     }
 
     const { rows, count } = await ProfessionalModel.findAndCountAll({
       attributes,
+      subQuery: false,
       include: [
         {
           model: UserModel,
           as: "User",
           attributes: ["id", "name", "email", "avatar_uri", "banner_uri"],
-          required: false,
+          required: true,
         },
         {
           model: AddressModel,
           as: "MainAddress",
-          attributes: ["lat", "lng", "city"],
+          attributes: ["lat", "lng", "city", "state"],
           required: false,
         },
         {
           model: ServiceModel,
           as: "Services",
           required: false,
+          attributes: ["title"],
+          separate: true,
         },
-        // {
-        //   model: ProfessionalGalleryModel,
-        //   as: "Gallery",
-        //   required: false,
-        // },
-        // {
-        //   model: ProfessionalAvailabilityModel,
-        //   as: "Availabilities",
-        //   required: false,
-        // },
-        // {
-        //   model: AmenitiesModel,
-        //   as: "Amenities",
-        //   through: { attributes: [] },
-        //   required: false,
-        // },
-        // Inclui appointments apenas com rating válido para calcular média/contagem
         {
           model: AppointmentModel,
           as: "Appointments",
@@ -96,7 +85,7 @@ export const getProfessionals = async (req: Request, res: Response) => {
           separate: true,
           where: {
             status: "completed",
-            rating: { [Op.ne]: null } as any,
+            rating: { [Op.ne]: null },
           },
         },
       ],
@@ -107,36 +96,39 @@ export const getProfessionals = async (req: Request, res: Response) => {
       distinct: true,
     });
 
-    // Calcula ratings_avg e ratings_count a partir dos appointments incluídos
-    for (const prof of rows as any[]) {
-      const apps = (prof.Appointments ?? []) as Array<{
-        rating: number | null;
-      }>;
-      const ratings = apps
-        .map((a) => a?.rating ?? null)
-        .filter((v): v is number => v !== null && Number.isFinite(v));
+    const professionals = rows.map((prof: any) => {
+      const apps = (prof.Appointments ?? []) as Array<{ rating: number }>;
+      const ratingsCount = apps.length;
+      const ratingSum = apps.reduce((sum, a) => sum + a.rating, 0);
+      const ratingAvg = ratingsCount > 0 ? ratingSum / ratingsCount : 0;
 
-      const ratings_count = ratings.length;
-      const rating =
-        ratings_count > 0
-          ? ratings.reduce((s, n) => s + n, 0) / ratings_count
-          : null;
+      return {
+        id: prof.id,
+        name: prof.User?.name || "Profissional",
+        email: prof.User?.email,
+        avatar_uri: prof.User?.avatar_uri,
+        banner_uri: prof.User?.banner_uri,
 
-      // Arredonda para 2 casas decimais (mantendo tipo number)
-      const roundedRating =
-        rating !== null ? Math.round(rating * 100) / 100 : null;
+        MainAddress: prof.MainAddress
+          ? {
+              city: prof.MainAddress.city,
+              state: prof.MainAddress.state,
+              lat: prof.MainAddress.lat,
+              lng: prof.MainAddress.lng,
+            }
+          : null,
 
-      prof.setDataValue("rating", roundedRating); // média arredondada
-      prof.setDataValue("ratings_count", ratings_count);
+        Services: prof.Services || [],
 
-      // remove o array de appointments do payload
-      if (prof.dataValues?.Appointments) {
-        delete prof.dataValues.Appointments;
-      }
-    }
+        distance_km: prof.dataValues.distance_km,
+
+        rating: parseFloat(ratingAvg.toFixed(1)),
+        ratings_count: ratingsCount,
+      };
+    });
 
     return res.json({
-      professionals: rows,
+      professionals,
       totalCount: count,
       currentPage: Number(page),
       pageSize: Number(limit),
@@ -200,7 +192,6 @@ export const getProfessionalById = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Profissional não encontrado" });
     }
 
-    // Calcular rating e ratings_count a partir dos appointments
     const profData: any = professional;
     const appointments = (profData.Appointments ?? []) as Array<{
       rating: number | null;
@@ -213,10 +204,11 @@ export const getProfessionalById = async (req: Request, res: Response) => {
     const ratings_count = ratings.length;
     const rating =
       ratings_count > 0
-        ? Math.round((ratings.reduce((s, n) => s + n, 0) / ratings_count) * 100) / 100
+        ? Math.round(
+            (ratings.reduce((s, n) => s + n, 0) / ratings_count) * 100,
+          ) / 100
         : null;
 
-    // Adicionar campos calculados
     profData.setDataValue("rating", rating);
     profData.setDataValue("ratings_count", ratings_count);
 
@@ -230,7 +222,7 @@ export const getProfessionalById = async (req: Request, res: Response) => {
 async function getAvailableSlots(
   professionalId: number,
   date: string,
-  serviceDuration: number
+  serviceDuration: number,
 ) {
   const targetDate = new Date(`${date}T12:00:00.000Z`);
   const dayOfWeek = targetDate.getUTCDay();
@@ -307,7 +299,7 @@ async function getAvailableSlots(
 
     while (currentSlotStart < ruleEnd) {
       const slotEnd = new Date(
-        currentSlotStart.getTime() + serviceDuration * 60000
+        currentSlotStart.getTime() + serviceDuration * 60000,
       );
 
       if (slotEnd > ruleEnd) {
@@ -324,7 +316,7 @@ async function getAvailableSlots(
             hour: "2-digit",
             minute: "2-digit",
             timeZone: "UTC",
-          })
+          }),
         );
       }
       currentSlotStart.setMinutes(currentSlotStart.getMinutes() + slotInterval);
@@ -335,7 +327,7 @@ async function getAvailableSlots(
 
 export const searchProfessionalAvailability = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { subCategoryId, date, lat, lng } = req.query;
 
@@ -361,7 +353,7 @@ export const searchProfessionalAvailability = async (
           model: ServiceModel,
           as: "Services",
           where: { subcategory_id: Number(subCategoryId), active: true },
-          required: true, // INNER JOIN para garantir que só venham profissionais da subcategoria
+          required: true,
         },
         { model: UserModel, as: "User", attributes: ["name", "avatar_uri"] },
         {
@@ -378,7 +370,7 @@ export const searchProfessionalAvailability = async (
     const getDistance = (profLat: number, profLng: number) => {
       if (!hasLatLng) return 0;
       const toRad = (x: number) => (x * Math.PI) / 180;
-      const R = 6371; // Raio da Terra em km
+      const R = 6371;
 
       const dLat = toRad(profLat - latNum!);
       const dLon = toRad(profLng - lngNum!);
@@ -394,13 +386,13 @@ export const searchProfessionalAvailability = async (
 
     const resultsPromises = professionals.map(async (prof: any) => {
       const relevantService = prof.Services.find(
-        (s: any) => s.subcategory_id === Number(subCategoryId)
+        (s: any) => s.subcategory_id === Number(subCategoryId),
       );
       const serviceDuration = relevantService?.duration || 60;
       const availableTimes = await getAvailableSlots(
         prof.id,
         date as string,
-        serviceDuration
+        serviceDuration,
       );
 
       if (availableTimes.length === 0) {
@@ -423,7 +415,7 @@ export const searchProfessionalAvailability = async (
               required: false,
             },
           ],
-        }
+        },
       )) as ProfWithAppointments | null;
 
       const ratings =
@@ -433,13 +425,13 @@ export const searchProfessionalAvailability = async (
         ratingsCount > 0
           ? ratings.reduce(
               (acc: number, val: number | null | undefined) => acc + (val || 0),
-              0
+              0,
             ) / ratingsCount
           : 0;
       const distance = prof.MainAddress
         ? getDistance(
             parseFloat(prof.MainAddress.lat),
-            parseFloat(prof.MainAddress.lng)
+            parseFloat(prof.MainAddress.lng),
           )
         : 0;
       return {
@@ -459,7 +451,7 @@ export const searchProfessionalAvailability = async (
     });
 
     let results = (await Promise.all(resultsPromises)).filter(
-      (result) => result !== null
+      (result) => result !== null,
     ) as any[];
 
     if (hasLatLng) {

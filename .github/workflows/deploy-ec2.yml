@@ -1,0 +1,50 @@
+name: 03 - Deploy na instância EC2
+
+on:
+  workflow_run:
+    workflows: ["02 - Buildar e publicar imagem Docker"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    name: Deploy no EC2 via SSH
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+
+            # ── Decodificar .env a partir do secret Base64 ─────────────────
+            echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 -d > /home/${{ secrets.EC2_USER }}/.env
+            chmod 600 /home/${{ secrets.EC2_USER }}/.env
+
+            # ── Garantir que o Docker está ativo ────────────────────────────
+            sudo systemctl enable --now docker
+
+            # ── Construir nome da imagem (usuário/repo) ────────────────────
+            DOCKER_USER="$(echo '${{ secrets.DOCKERHUB_USERNAME }}' | tr '[:upper:]' '[:lower:]')"
+            REPO="delbicosbackend"
+            IMAGE="${DOCKER_USER}/${REPO}:latest"
+
+            # ── Parar container antigo ─────────────────────────────────────
+            sudo docker stop delbicos-backend 2>/dev/null || true
+            sudo docker rm   delbicos-backend 2>/dev/null || true
+
+            # ── Baixar imagem mais recente (repositório público) ───────────
+            sudo docker pull "${IMAGE}"
+
+            # ── Subir novo container ──────────────────────────────────────
+            sudo docker run -d \
+              --name delbicos-backend \
+              --restart unless-stopped \
+              --env-file /home/${{ secrets.EC2_USER }}/.env \
+              -p 3000:3000 \
+              "${IMAGE}"
