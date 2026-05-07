@@ -53,6 +53,15 @@ jobs:
             sudo docker stop delbicos-backend 2>/dev/null || true
             sudo docker rm   delbicos-backend 2>/dev/null || true
 
+            # ── Limpeza para evitar "no space left on device" ──────────────
+            sudo docker system prune -af --volumes || true
+            df -h || true
+            sudo docker system df || true
+
+            # Optional: keep a little log for troubleshooting
+            df -h || true
+            sudo docker system df || true
+
             # ── Baixar imagem mais recente (repositório público) ───────────
             sudo docker pull "${IMAGE}"
 
