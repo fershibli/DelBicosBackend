@@ -22,7 +22,7 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
-          ENV_FILE_BASE64: ${{ secrets.ENV_FILE_BASE64 }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           EC2_USER: ${{ secrets.EC2_USER }}
         with:
@@ -33,12 +33,12 @@ jobs:
           timeout: 120s
           command_timeout: 20m
           script_stop: true
-          envs: ENV_FILE_BASE64,DOCKERHUB_USERNAME,EC2_USER
+          envs: ENV_FILE,DOCKERHUB_USERNAME,EC2_USER
           script: |
             set -euo pipefail
 
             # ── Decodificar .env a partir do secret Base64 ─────────────────
-            echo "$ENV_FILE_BASE64" | base64 -d > /home/$EC2_USER/.env
+            echo "$ENV_FILE" | base64 -d > /home/$EC2_USER/.env
             chmod 600 /home/$EC2_USER/.env
 
             # ── Garantir que o Docker está ativo ────────────────────────────
