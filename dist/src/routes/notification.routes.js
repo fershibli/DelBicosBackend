@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const notification_controller_1 = require("../controllers/notification.controller");
+const router = (0, express_1.Router)();
+router.get('/:userId', notification_controller_1.getNotificationsByUser);
+router.patch('/:notificationId/read/:userId', notification_controller_1.markNotificationAsRead);
+router.patch('/mark-all-read/:userId', notification_controller_1.markAllNotificationsAsRead);
+router.post('/notifications/save-token', notification_controller_1.saveExpoPushToken);
+exports.default = router;
