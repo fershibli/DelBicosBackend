@@ -13,24 +13,39 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
 
     steps:
+      - name: Verificar conectividade SSH
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y netcat-openbsd
+          nc -vz -w 10 ${{ secrets.EC2_HOST }} 22
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          EC2_USER: ${{ secrets.EC2_USER }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          timeout: 120s
+          command_timeout: 20m
+          script_stop: true
+          envs: ENV_FILE,DOCKERHUB_USERNAME,EC2_USER
           script: |
             set -euo pipefail
 
             # ── Decodificar .env a partir do secret Base64 ─────────────────
-            echo "${{ secrets.ENV_FILE_BASE64 }}" | base64 -d > /home/${{ secrets.EC2_USER }}/.env
-            chmod 600 /home/${{ secrets.EC2_USER }}/.env
+            echo "$ENV_FILE" | base64 -d > /home/$EC2_USER/.env
+            chmod 600 /home/$EC2_USER/.env
 
             # ── Garantir que o Docker está ativo ────────────────────────────
             sudo systemctl enable --now docker
 
             # ── Construir nome da imagem (usuário/repo) ────────────────────
-            DOCKER_USER="$(echo '${{ secrets.DOCKERHUB_USERNAME }}' | tr '[:upper:]' '[:lower:]')"
+            DOCKER_USER="$(echo "$DOCKERHUB_USERNAME" | tr '[:upper:]' '[:lower:]')"
             REPO="delbicosbackend"
             IMAGE="${DOCKER_USER}/${REPO}:latest"
 
@@ -45,6 +60,6 @@ jobs:
             sudo docker run -d \
               --name delbicos-backend \
               --restart unless-stopped \
-              --env-file /home/${{ secrets.EC2_USER }}/.env \
+              --env-file /home/$EC2_USER/.env \
               -p 3000:3000 \
               "${IMAGE}"
