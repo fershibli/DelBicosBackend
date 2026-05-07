@@ -70,5 +70,3 @@ jobs:
           file: ./Dockerfile.prod
           push: true
           tags: ${{ steps.prepare-tags.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
