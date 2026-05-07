@@ -87,7 +87,13 @@ async function connectDatabase(): Promise<void> {
     // O 'alter: true' atualiza o banco sem apagar dados se você mudar o Model
     if (environment === "development" || process.env.DB_SYNC === "true") {
       await sequelize.sync({ alter: true });
-      console.log("✅ Tabelas sincronizadas no Neon.");
+      if (databaseUrl?.includes("aws")) {
+        console.log("✅ Tabelas sincronizadas no RDS.");
+      } else if (databaseUrl?.includes("neon")) {
+        console.log("✅ Tabelas sincronizadas no Neon.");
+      } else {
+        console.log("✅ Tabelas sincronizadas no banco local.");
+      }
     }
 
     const dialect = getDialect();
