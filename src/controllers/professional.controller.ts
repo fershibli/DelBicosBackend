@@ -6,16 +6,17 @@ import { AddressModel } from "../models/Address";
 import { ServiceModel } from "../models/Service";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
-import { ProfessionalGalleryModel } from "../models/ProfessionalGallery";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
-import { AmenitiesModel } from "../models/Amenities";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
+    console.log(lat, lng);
     const latNum = lat ? parseFloat(String(lat)) : undefined;
     const lngNum = lng ? parseFloat(String(lng)) : undefined;
+    console.log(latNum, lngNum);
     const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
+    console.log(hasLatLng);
 
     const where: any = {};
     if (termo) {
@@ -37,6 +38,8 @@ export const getProfessionals = async (req: Request, res: Response) => {
         )
       `)
       : null;
+
+    console.log(distanceLiteral);
 
     const order: any[] = [];
     if (hasLatLng && distanceLiteral) {
@@ -202,7 +205,7 @@ export const getProfessionalById = async (req: Request, res: Response) => {
     const rating =
       ratings_count > 0
         ? Math.round(
-            (ratings.reduce((s, n) => s + n, 0) / ratings_count) * 100
+            (ratings.reduce((s, n) => s + n, 0) / ratings_count) * 100,
           ) / 100
         : null;
 
@@ -219,7 +222,7 @@ export const getProfessionalById = async (req: Request, res: Response) => {
 async function getAvailableSlots(
   professionalId: number,
   date: string,
-  serviceDuration: number
+  serviceDuration: number,
 ) {
   const targetDate = new Date(`${date}T12:00:00.000Z`);
   const dayOfWeek = targetDate.getUTCDay();
@@ -296,7 +299,7 @@ async function getAvailableSlots(
 
     while (currentSlotStart < ruleEnd) {
       const slotEnd = new Date(
-        currentSlotStart.getTime() + serviceDuration * 60000
+        currentSlotStart.getTime() + serviceDuration * 60000,
       );
 
       if (slotEnd > ruleEnd) {
@@ -313,7 +316,7 @@ async function getAvailableSlots(
             hour: "2-digit",
             minute: "2-digit",
             timeZone: "UTC",
-          })
+          }),
         );
       }
       currentSlotStart.setMinutes(currentSlotStart.getMinutes() + slotInterval);
@@ -324,7 +327,7 @@ async function getAvailableSlots(
 
 export const searchProfessionalAvailability = async (
   req: Request,
-  res: Response
+  res: Response,
 ) => {
   const { subCategoryId, date, lat, lng } = req.query;
 
@@ -383,13 +386,13 @@ export const searchProfessionalAvailability = async (
 
     const resultsPromises = professionals.map(async (prof: any) => {
       const relevantService = prof.Services.find(
-        (s: any) => s.subcategory_id === Number(subCategoryId)
+        (s: any) => s.subcategory_id === Number(subCategoryId),
       );
       const serviceDuration = relevantService?.duration || 60;
       const availableTimes = await getAvailableSlots(
         prof.id,
         date as string,
-        serviceDuration
+        serviceDuration,
       );
 
       if (availableTimes.length === 0) {
@@ -412,7 +415,7 @@ export const searchProfessionalAvailability = async (
               required: false,
             },
           ],
-        }
+        },
       )) as ProfWithAppointments | null;
 
       const ratings =
@@ -422,13 +425,13 @@ export const searchProfessionalAvailability = async (
         ratingsCount > 0
           ? ratings.reduce(
               (acc: number, val: number | null | undefined) => acc + (val || 0),
-              0
+              0,
             ) / ratingsCount
           : 0;
       const distance = prof.MainAddress
         ? getDistance(
             parseFloat(prof.MainAddress.lat),
-            parseFloat(prof.MainAddress.lng)
+            parseFloat(prof.MainAddress.lng),
           )
         : 0;
       return {
@@ -448,7 +451,7 @@ export const searchProfessionalAvailability = async (
     });
 
     let results = (await Promise.all(resultsPromises)).filter(
-      (result) => result !== null
+      (result) => result !== null,
     ) as any[];
 
     if (hasLatLng) {

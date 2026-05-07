@@ -63,7 +63,6 @@ app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/professionals", professionalRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/professionals", professionalRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRouter);
 app.use("/auth", authRouter);
