@@ -15,10 +15,16 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+  mongo:
+    image: mongo:7
+    container_name: mongo-delbicos
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
   delbicos-server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: server-delbicos
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development}
@@ -36,10 +42,12 @@ services:
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-sk_API_KEY}
       - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-deliverydebicos@gmail.com}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_API_KEY}
+      - MONGODB_URI=mongodb://mongo:27017/logs_db
     ports:
       - "3000:3000"
     depends_on:
       - postgres
+      - mongo
     restart: unless-stopped
 networks:
   default:

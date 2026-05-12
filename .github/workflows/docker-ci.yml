@@ -55,6 +55,7 @@ jobs:
           else
             TAGS+=("${DOCKER_REPO}:sha-${GITHUB_SHA::8}")
           fi
+          TAGS+=("${DOCKER_REPO}:latest")
 
           {
             echo "tags<<EOF"
@@ -66,6 +67,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.prod
           push: true
           tags: ${{ steps.prepare-tags.outputs.tags }}
