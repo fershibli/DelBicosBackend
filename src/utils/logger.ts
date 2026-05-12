@@ -8,9 +8,14 @@ import WinstonCloudWatch from "winston-cloudwatch";
 import os from "os";
 
 // Inicializar Logtail se token estiver configurado
-const logtail = process.env.LOGTAIL_TOKEN
-  ? new Logtail(process.env.LOGTAIL_TOKEN)
-  : null;
+const environment = process.env.ENVIRONMENT || "development";
+const shouldEnableLogtail =
+  environment !== "development" || process.env.ENABLE_LOGTAIL === "true";
+
+const logtail =
+  shouldEnableLogtail && process.env.LOGTAIL_TOKEN
+    ? new Logtail(process.env.LOGTAIL_TOKEN)
+    : null;
 
 // Configuração de formato personalizado
 const customFormat = winston.format.combine(
@@ -19,7 +24,7 @@ const customFormat = winston.format.combine(
   winston.format.metadata({
     fillExcept: ["message", "level", "timestamp", "label"],
   }),
-  winston.format.json()
+  winston.format.json(),
 );
 
 // Formato para console (desenvolvimento)
@@ -32,7 +37,7 @@ const consoleFormat = winston.format.combine(
       metaStr = `\n${JSON.stringify(metadata, null, 2)}`;
     }
     return `[${timestamp}] ${level}: ${message}${metaStr}`;
-  })
+  }),
 );
 
 // Configurar transports
@@ -53,7 +58,6 @@ if (logtail) {
  * CloudWatch Logs — ativado fora de development OU com flag ENABLE_CLOUDWATCH=true.
  * Erros críticos são enviados imediatamente (flushOnWrite para level 'error').
  */
-const environment = process.env.ENVIRONMENT || "development";
 const shouldEnableCloudWatch =
   environment !== "development" || process.env.ENABLE_CLOUDWATCH === "true";
 
@@ -62,11 +66,6 @@ if (shouldEnableCloudWatch && process.env.AWS_ACCESS_KEY_ID_CW) {
     logGroupName: "/fatec/projeto-pi/backend",
     logStreamName: `${os.hostname()}-${new Date().toISOString().split("T")[0]}`,
     awsOptions: {
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID_CW!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_CW!,
-        sessionToken: process.env.AWS_SESSION_TOKEN_CW,
-      },
       region: process.env.AWS_REGION_CW || "us-east-1",
     },
     messageFormatter: ({ level, message, ...meta }) =>
@@ -88,11 +87,6 @@ if (shouldEnableCloudWatch && process.env.AWS_ACCESS_KEY_ID_CW) {
     logGroupName: "/fatec/projeto-pi/backend",
     logStreamName: `${os.hostname()}-${new Date().toISOString().split("T")[0]}-info`,
     awsOptions: {
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID_CW!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_CW!,
-        sessionToken: process.env.AWS_SESSION_TOKEN_CW,
-      },
       region: process.env.AWS_REGION_CW || "us-east-1",
     },
     messageFormatter: ({ level, message, ...meta }) =>
@@ -103,13 +97,16 @@ if (shouldEnableCloudWatch && process.env.AWS_ACCESS_KEY_ID_CW) {
   });
 
   cloudWatchInfoTransport.on("error", (err) => {
-    console.error("⚠️ CloudWatch info transport error (non-fatal):", err.message);
+    console.error(
+      "⚠️ CloudWatch info transport error (non-fatal):",
+      err.message,
+    );
   });
 
   transports.push(cloudWatchInfoTransport);
 
   console.log(
-    `✅ CloudWatch Logs habilitado [grupo: /fatec/projeto-pi/backend | região: ${process.env.AWS_REGION_CW || "us-east-1"}]`
+    `✅ CloudWatch Logs habilitado [grupo: /fatec/projeto-pi/backend | região: ${process.env.AWS_REGION_CW || "us-east-1"}]`,
   );
 }
 
@@ -128,7 +125,7 @@ export const logRequest = (
   statusCode: number,
   duration: number,
   userId?: number,
-  error?: string
+  error?: string,
 ) => {
   const logData = {
     type: "request",
@@ -154,7 +151,7 @@ export const logAuth = (
   userId?: number,
   email?: string,
   success: boolean = true,
-  reason?: string
+  reason?: string,
 ) => {
   const logData = {
     type: "authentication",
@@ -176,7 +173,7 @@ export const logDatabase = (
   operation: string,
   table: string,
   recordId?: number,
-  error?: string
+  error?: string,
 ) => {
   const logData = {
     type: "database",
@@ -196,7 +193,7 @@ export const logDatabase = (
 export const logError = (
   message: string,
   error: Error | unknown,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ) => {
   const errorData = {
     type: "error",

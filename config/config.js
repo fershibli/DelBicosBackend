@@ -18,10 +18,13 @@ const getDialect = () => {
  * Retorna as opções de SSL apropriadas para o dialect
  */
 // No seu src/config/config.js
-const getSSLOptions = (dialect) => {
+const getSSLOptions = (dialect, environment) => {
   if (dialect === "postgres") {
+    if (environment === "development") {
+      return { ssl: false };
+    }
     return {
-      require: true,               // Mudança sutil aqui
+      require: true,
       rejectUnauthorized: false,
     };
   }
@@ -52,8 +55,7 @@ const config = {
     host: process.env.SEQUELIZE_HOST || "localhost",
     port: Number(process.env.SEQUELIZE_PORT) || 3306,
     dialect,
-    dialect,
-    dialectOptions: getSSLOptions(dialect, "development"), 
+    dialectOptions: getSSLOptions(dialect, "development"),
     logging: process.env.DB_LOGGING === "true" ? console.log : false,
   },
   production: {

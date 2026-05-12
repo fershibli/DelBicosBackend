@@ -88,9 +88,9 @@ export const createAppointment = async (req: Request, res: Response) => {
 };
 
 export const getAllAppointments = async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.id;
+  const userId = req.params.id;
 
+  try {
     const user = await UserModel.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado" });
