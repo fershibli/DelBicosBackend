@@ -74,7 +74,7 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
     logAuth("login", user.id, email, true);
     logger.info("Login realizado com sucesso", { userId: user.id, email });
 
-    const responseUser = {
+    const responseUser: any = {
       ...userPayload,
       professional_id: professional?.id || null,
     };

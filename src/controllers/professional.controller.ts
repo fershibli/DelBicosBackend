@@ -480,12 +480,20 @@ export const createProfessional = async (
       });
     }
 
-    const { cpf, cnpj, description } = req.body;
+    let { cpf, cnpj, description } = req.body;
 
-    // Validação de campos obrigatórios
-    if (!cpf) {
+    // Remover formatação (pontos, traços, barras) e manter apenas números
+    if (cpf && typeof cpf === "string") {
+      cpf = cpf.replace(/\D/g, "");
+    }
+    if (cnpj && typeof cnpj === "string") {
+      cnpj = cnpj.replace(/\D/g, "");
+    }
+
+    // Validação: deve ter CPF ou CNPJ (pelo menos um)
+    if (!cpf && !cnpj) {
       return res.status(400).json({
-        error: "CPF é obrigatório",
+        error: "CPF ou CNPJ é obrigatório",
       });
     }
 
@@ -508,7 +516,7 @@ export const createProfessional = async (
       where: { user_id: userId },
     });
     if (existingProfessional) {
-      return res.status(409).json({
+      return res.status(400).json({
         error: "Usuário já é um profissional",
       });
     }
@@ -525,7 +533,7 @@ export const createProfessional = async (
     const newProfessional = await ProfessionalModel.create({
       user_id: userId,
       main_address_id: mainAddressId,
-      cpf,
+      cpf: cpf || undefined,
       cnpj: cnpj || undefined,
       description,
     });
@@ -550,7 +558,7 @@ export const createProfessional = async (
     );
 
     return res.status(201).json({
-      message: "Profissional criado com sucesso",
+      message: "Profissional registrado com sucesso",
       professional: professionalWithRelations,
     });
   } catch (error: any) {
