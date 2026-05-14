@@ -4,6 +4,7 @@ import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { UserModel } from "../models/User";
 import { AddressModel } from "../models/Address";
 import { ClientModel } from "../models/Client";
+import { ProfessionalModel } from "../models/Professional";
 import { generateTokenAndUserPayload } from "../utils/authUtils";
 import logger, { logAuth, logError } from "../utils/logger";
 import { saveLoginLog } from "../services/loginLog.service";
@@ -15,12 +16,16 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
   
   try {
+    console.log("\n🔍 [LOGIN] Iniciando processo de login para:", email);
+
     const user = await UserModel.findOne({ where: { email } });
     if (!user) {
       logAuth("login", undefined, email, false, "Usuário não encontrado");
       res.status(404).json({ message: "Usuário não encontrado" });
       return;
     }
+
+    console.log("✅ [LOGIN] Usuário encontrado, ID:", user.id);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -29,6 +34,8 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    console.log("✅ [LOGIN] Senha válida");
+
     const client = await ClientModel.findOne({ where: { user_id: user.id } });
     if (!client) {
       logAuth("login", user.id, email, false, "Cliente não encontrado");
@@ -36,7 +43,21 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    console.log("✅ [LOGIN] Cliente encontrado, ID:", client.id);
+
     const address = await AddressModel.findByPk(client.main_address_id);
+
+    // Buscar professional com query explícita
+    console.log(`🔍 [LOGIN] Buscando profissional para user_id: ${user.id}`);
+    const professional = await ProfessionalModel.findOne({
+      where: { user_id: user.id },
+      raw: false,
+    });
+
+    console.log("✅ [LOGIN] Professional encontrado:", {
+      exists: !!professional,
+      data: professional?.toJSON?.() || null,
+    });
 
     const { token, user: userPayload } = generateTokenAndUserPayload(
       user,
@@ -53,13 +74,32 @@ export const logInUser = async (req: Request, res: Response): Promise<void> => {
     logAuth("login", user.id, email, true);
     logger.info("Login realizado com sucesso", { userId: user.id, email });
 
+    const responseUser: any = {
+      ...userPayload,
+      professional_id: professional?.id || null,
+    };
+
+    // Se houver professional, adicionar objeto completo
+    if (professional) {
+      responseUser.professional = {
+        id: professional.id,
+        cpf: professional.cpf,
+        cnpj: professional.cnpj,
+        description: professional.description,
+        main_address_id: professional.main_address_id,
+      };
+    }
+
+    console.log("📤 [LOGIN] Retornando usuário com professional_id:", responseUser.professional_id);
+
     res.status(200).json({
       message: "Login realizado com sucesso",
       token: token,
-      user: userPayload,
+      user: responseUser,
     });
   } catch (error) {
     logError("Erro ao fazer login", error, { email });
+    console.error("❌ [LOGIN] Erro:", error);
     res.status(500).json({
       message: "Erro interno do servidor",
       error: error instanceof Error ? error.message : "Erro desconhecido",
@@ -171,7 +211,33 @@ export const getUserByToken = async (
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    res.status(200).json({ user });
+    // Buscar professional separadamente para garantir que funciona
+    const professional = await ProfessionalModel.findOne({
+      where: { user_id: userId },
+      raw: false,
+    });
+
+    console.log("[DEBUG ME] Professional encontrado:", professional?.toJSON?.() || professional);
+
+    const userData: any = user.toJSON();
+
+    const responseUser = {
+      ...userData,
+      professional_id: professional?.id || null,
+    };
+
+    // Se houver professional, adicionar objeto completo
+    if (professional) {
+      responseUser.professional = {
+        id: professional.id,
+        cpf: professional.cpf,
+        cnpj: professional.cnpj,
+        description: professional.description,
+        main_address_id: professional.main_address_id,
+      };
+    }
+
+    res.status(200).json({ user: responseUser });
   } catch (error: any) {
     logError("Erro ao buscar usuário pelo token", error, { userId });
     res.status(500).json({ error: error.message });
