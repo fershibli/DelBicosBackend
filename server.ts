@@ -1,6 +1,15 @@
 import express, { Express } from "express";
 import { setupCors } from "./src/middlewares/cors.middleware";
 import { loggingMiddleware } from "./src/middlewares/logging.middleware";
+import {
+  helmetMiddleware,
+  globalRateLimiter,
+  authRateLimiter,
+  hppMiddleware,
+  mongoSanitizeMiddleware,
+  xssSanitizer,
+  sqlInjectionGuard,
+} from "./src/middlewares/security.middleware";
 import * as dotenv from "dotenv";
 import logger from "./src/utils/logger";
 import addressRoutes from "./src/routes/address.routes";
@@ -39,6 +48,24 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Helmet – protege contra ataques comuns com HTTP headers
+app.use(helmetMiddleware);
+
+// Rate limiting – protege contra brute-force e DDoS
+app.use(globalRateLimiter);
+
+// HPP – protege contra HTTP Parameter Pollution
+app.use(hppMiddleware);
+
+// Mongo Sanitize – protege contra NoSQL injection
+app.use(mongoSanitizeMiddleware);
+
+// XSS Sanitizer – escapa HTML e scripts maliciosos
+app.use(xssSanitizer);
+
+// SQL Injection Guard – detecta e bloqueia SQL injection
+app.use(sqlInjectionGuard);
+
 setupCors(app);
 
 // Middleware de logging de requisições
@@ -65,7 +92,7 @@ app.use("/api/address", addressRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRouter);
-app.use("/auth", authRouter);
+app.use("/auth", authRateLimiter, authRouter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/favorites", favoriteRoutes);
