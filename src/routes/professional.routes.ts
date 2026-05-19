@@ -3,7 +3,9 @@ import {
   getProfessionals,
   getProfessionalById,
   searchProfessionalAvailability,
+  createProfessional,
 } from "../controllers/professional.controller";
+import authMiddleware from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -48,6 +50,46 @@ const router = Router();
 router.get("/", getProfessionals);
 
 router.get("/search-availability", searchProfessionalAvailability);
+
+/**
+ * @swagger
+ * /professionals:
+ *   post:
+ *     summary: Cria um novo profissional (usuário comum se torna profissional/colaborador)
+ *     tags: [Profissionais]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cpf
+ *               - description
+ *             properties:
+ *               cpf:
+ *                 type: string
+ *                 example: "123.456.789-00"
+ *               cnpj:
+ *                 type: string
+ *                 example: "12.345.678/0001-99"
+ *               description:
+ *                 type: string
+ *                 example: "Descrição do serviço que ele presta..."
+ *     responses:
+ *       201:
+ *         description: Profissional criado com sucesso
+ *       400:
+ *         description: Dados inválidos ou incompletos
+ *       401:
+ *         description: Usuário não autenticado
+ *       409:
+ *         description: CPF/CNPJ já registrado ou usuário já é profissional
+ */
+router.post("/", authMiddleware, createProfessional);
+
 
 /**
  * @swagger
