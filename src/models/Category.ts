@@ -15,6 +15,7 @@ export interface ICategory {
   id?: number;
   title: string;
   description?: string;
+  imageUrl?: string;
   active?: boolean;
 }
 
@@ -27,6 +28,7 @@ export class CategoryModel extends Model<
   public id!: number;
   public title!: string;
   public description?: string;
+  public imageUrl?: string;
   public active?: boolean;
 
   // Timestamps
@@ -49,6 +51,11 @@ CategoryModel.init(
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    imageUrl: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      field: "image_url",
     },
     active: {
       type: DataTypes.BOOLEAN,
