@@ -35,7 +35,7 @@ export class CategoryModel extends Model<
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
-
+  
 CategoryModel.init(
   {
     id: {
