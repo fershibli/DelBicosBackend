@@ -31,6 +31,7 @@ import adminRoutes from "./src/routes/admin.routes";
 import dashboardRoutes from "./src/routes/dashboard.routes";
 import favoriteRoutes from "./src/routes/favorite.routes";
 import avatarRouter from "./src/routes/avatar.routes";
+import { initializeCancelExpiredAppointmentsJob } from "./src/jobs/cancelExpiredAppointments";
 
 const result = dotenv.config();
 if (result.error) {
@@ -104,9 +105,15 @@ if (!isServerless) {
   const port = Number(process.env.PORT || 3000);
   app.listen(port, () => {
     logger.info(`Servidor rodando na porta ${port}`);
+    // Inicializar cron job de cancelamento de agendamentos expirados
+    initializeCancelExpiredAppointmentsJob();
+    logger.info("Cron job de cancelamento de agendamentos iniciado");
   });
 } else {
   logger.info("Servidor rodando em ambiente serverless");
+  // Ainda inicializar o cron job em ambiente serverless
+  initializeCancelExpiredAppointmentsJob();
+  logger.info("Cron job de cancelamento de agendamentos iniciado");
 }
 
 export default app;

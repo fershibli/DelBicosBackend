@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   getAllAppointments,
   confirmAppointment,
+  rejectAppointment,
+  getProfessionalAppointments,
   reviewAppointment,
   getAppointmentInvoice,
 } from "../controllers/appointment.controller";
@@ -284,6 +286,39 @@ router.get("/user/:id", getAllAppointments);
 
 /**
  * @swagger
+ * /appointments/professional/{id}:
+ *   get:
+ *     summary: Retorna todos os agendamentos de um profissional específico
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do usuário profissional
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de agendamentos recebidos pelo profissional
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Appointment'
+ *       401:
+ *         description: Usuário não autenticado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get("/professional/:id", authMiddleware, getProfessionalAppointments);
+
+/**
+ * @swagger
  * /appointments/{id}/confirm:
  *   post:
  *     summary: Confirma um agendamento pendente
@@ -316,7 +351,45 @@ router.get("/user/:id", getAllAppointments);
  *       500:
  *         description: Erro interno do servidor
  */
+router.patch("/:id/confirm", confirmAppointment);
+// Manter rota antiga para compatibilidade
 router.post("/:id/confirm", confirmAppointment);
+
+/**
+ * @swagger
+ * /appointments/{id}/reject:
+ *   patch:
+ *     summary: Recusa/Cancela um agendamento pendente
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do agendamento
+ *     responses:
+ *       200:
+ *         description: Agendamento recusado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Agendamento não está pendente ou já foi confirmado/cancelado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch("/:id/reject", rejectAppointment);
 
 /**
  * @swagger

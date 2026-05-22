@@ -143,6 +143,70 @@ export const getAllAppointments = async (req: Request, res: Response) => {
   }
 };
 
+export const getProfessionalAppointments = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const authReq = req as AuthenticatedRequest;
+
+  try {
+    const authenticatedUserId = authReq.user?.id;
+    if (!authenticatedUserId) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+
+    // Verificar se o usuário autenticado é o profissional solicitado
+    const professional = await ProfessionalModel.findOne({
+      where: { user_id: id },
+    });
+
+    if (!professional) {
+      return res.status(404).json({ error: "Profissional não encontrado" });
+    }
+
+    // Aqui você pode adicionar validação se quiser que um profissional só veja seus próprios agendamentos
+    // Por enquanto, vamos permitir listar agendamentos de qualquer profissional
+
+    const appointments = await AppointmentModel.findAll({
+      where: { professional_id: professional.id },
+      include: [
+        { model: ServiceModel, as: "Service" },
+        {
+          model: ClientModel,
+          as: "Client",
+          include: [
+            {
+              model: UserModel,
+              as: "User",
+              attributes: ["name", "avatar_uri"],
+            },
+          ],
+        },
+        {
+          model: ProfessionalModel,
+          as: "Professional",
+          include: [
+            {
+              model: UserModel,
+              as: "User",
+              attributes: ["name", "avatar_uri"],
+            },
+          ],
+        },
+      ],
+      order: [["start_time", "ASC"]],
+    });
+
+    logger.info("Agendamentos do profissional buscados com sucesso", {
+      professionalId: professional.id,
+      userId: id,
+    });
+
+    res.json(appointments);
+  } catch (error: any) {
+    logError("Erro ao buscar agendamentos do profissional", error, { userId: id });
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
 export const confirmAppointment = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
@@ -162,6 +226,62 @@ export const confirmAppointment = async (req: Request, res: Response) => {
   } catch (error: any) {
     logError("Erro ao confirmar agendamento", error, { appointmentId: id });
     res.status(500).json({ error: "Erro ao confirmar agendamento" });
+  }
+};
+
+export const rejectAppointment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const appointment = await AppointmentModel.findByPk(id, {
+      include: [
+        {
+          model: ClientModel,
+          as: "Client",
+          include: [{ model: UserModel, as: "User" }],
+        },
+        {
+          model: ServiceModel,
+          as: "Service",
+        },
+      ],
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: "Agendamento não encontrado" });
+    }
+
+    if (appointment.status !== "pending") {
+      return res.status(400).json({
+        error: `Não é possível recusar um agendamento com status '${appointment.status}'`,
+      });
+    }
+
+    appointment.status = "canceled";
+    await appointment.save();
+
+    // Criar notificação para o cliente informando a recusa
+    const apptData: any = appointment;
+    const clientUser = apptData.Client?.User;
+
+    if (clientUser) {
+      const service = apptData.Service;
+      await NotificationModel.create({
+        user_id: clientUser.id,
+        title: "Agendamento Recusado",
+        message: `Seu agendamento para o serviço '${
+          service?.title || "Serviço desconhecido"
+        }' foi recusado pelo profissional.`,
+        notification_type: "appointment",
+        related_entity_id: appointment.id,
+        is_read: false,
+      });
+    }
+
+    logger.info("Appointment recusado", { appointmentId: id });
+    res.json(appointment);
+  } catch (error: any) {
+    logError("Erro ao recusar agendamento", error, { appointmentId: id });
+    res.status(500).json({ error: "Erro ao recusar agendamento" });
   }
 };
 
