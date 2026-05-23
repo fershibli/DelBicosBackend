@@ -1,6 +1,6 @@
 {
   "name": "my-vercel-express-app",
-  "version": "5.6.0",
+  "version": "5.6.1",
   "description": "",
   "main": "server.ts",
   "scripts": {
