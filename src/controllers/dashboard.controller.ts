@@ -91,16 +91,11 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
         AND a.status = 'completed'
         AND a.completed_at IS NOT NULL
         AND a.completed_at BETWEEN :from AND :to
-      GROUP BY DATE_TRUNC_CANDIDATE
-      ORDER BY DATE_TRUNC_CANDIDATE
+      GROUP BY ${monthExpr}
+      ORDER BY ${monthExpr}
     `;
 
     let finalSql = sql;
-    if (dialect === "postgres" || dialect === "postgresql") {
-      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "EXTRACT(YEAR FROM a.completed_at), EXTRACT(MONTH FROM a.completed_at)");
-    } else {
-      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "YEAR(a.completed_at), MONTH(a.completed_at)");
-    }
 
     const results: any[] = await sequelize.query(finalSql, {
       replacements: {
