@@ -23,7 +23,9 @@ export interface IService {
   title: string;
   description?: string;
   price: number;
+  price_cents?: number;
   duration: number;
+  date?: Date;
   banner_uri?: string;
   active?: boolean;
   subcategory_id: number;
@@ -32,7 +34,7 @@ export interface IService {
 
 type ServiceCreationalAttributes = Optional<
   IService,
-  "id" | "description" | "banner_uri" | "active"
+  "id" | "description" | "price_cents" | "date" | "banner_uri" | "active"
 >;
 
 export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
@@ -40,7 +42,9 @@ export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
   public title!: string;
   public description?: string;
   public price!: number;
+  public price_cents?: number;
   public duration!: number;
+  public date?: Date;
   public banner_uri?: string;
   public active?: boolean;
   public subcategory_id!: number;
@@ -70,10 +74,20 @@ ServiceModel.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    price_cents: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "Preço em centavos (inteiro). Tem precedência sobre price.",
+    },
     duration: {
       type: DataTypes.INTEGER,
       allowNull: false,
       comment: "Duration in minutes",
+    },
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      comment: "Data de disponibilidade ou vigência do serviço",
     },
     banner_uri: {
       type: DataTypes.STRING(255),
@@ -120,5 +134,5 @@ ServiceModel.init(
         fields: ["professional_id"],
       },
     ],
-  }
+  },
 );

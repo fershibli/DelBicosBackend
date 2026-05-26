@@ -88,5 +88,5 @@ ProfessionalModel.init(
     tableName: "professional",
     underscored: true,
     timestamps: true,
-  }
+  },
 );
