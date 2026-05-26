@@ -6,6 +6,9 @@ import {
   createProfessional,
 } from "../controllers/professional.controller";
 import authMiddleware from "../middlewares/auth.middleware";
+import availabilityRouter from "./professionalAvailability.routes";
+import availabilityLockRouter from "./professionalAvailabilityLock.routes";
+import serviceRouter from "./professionalService.routes";
 
 const router = Router();
 
@@ -90,7 +93,6 @@ router.get("/search-availability", searchProfessionalAvailability);
  */
 router.post("/", authMiddleware, createProfessional);
 
-
 /**
  * @swagger
  * /professionals/{id}:
@@ -111,5 +113,14 @@ router.post("/", authMiddleware, createProfessional);
  *         description: Profissional não encontrado
  */
 router.get("/:id", getProfessionalById);
+
+// Serviços do profissional
+router.use("/:professionalId/services", serviceRouter);
+
+// Disponibilidades (CRUD) — path plural para compatibilidade com o front
+router.use("/:professionalId/availabilities", availabilityRouter);
+
+// Bloqueios de disponibilidade (criação)
+router.use("/:professionalId/availability-locks", availabilityLockRouter);
 
 export default router;

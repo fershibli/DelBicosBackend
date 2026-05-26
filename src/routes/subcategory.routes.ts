@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getAllSubCategories } from "../controllers/subCategory.controller";
+import {
+  getAllSubCategories,
+  listAllSubCategories,
+} from "../controllers/subCategory.controller";
 
 const router = Router();
 
@@ -109,6 +112,7 @@ const router = Router();
  *       500:
  *         description: Erro interno do servidor
  */
+router.get("/", listAllSubCategories);
 router.get("/category/:id", getAllSubCategories);
 
 export default router;
