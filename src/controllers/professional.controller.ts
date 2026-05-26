@@ -11,12 +11,9 @@ import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailabilit
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
-    console.log(lat, lng);
     const latNum = lat ? parseFloat(String(lat)) : undefined;
     const lngNum = lng ? parseFloat(String(lng)) : undefined;
-    console.log(latNum, lngNum);
     const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
-    console.log(hasLatLng);
 
     const where: any = {};
     if (termo) {
@@ -469,7 +466,7 @@ export const searchProfessionalAvailability = async (
 
 export const createProfessional = async (
   req: any,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const userId = req.user?.id;
@@ -554,7 +551,7 @@ export const createProfessional = async (
             attributes: ["id", "city", "state", "lat", "lng"],
           },
         ],
-      }
+      },
     );
 
     return res.status(201).json({

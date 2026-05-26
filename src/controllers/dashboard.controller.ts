@@ -7,10 +7,16 @@ import { ProfessionalModel } from "../models/Professional";
 export const getDashboardKpis = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   const userId = authReq.user?.id;
-  if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+  if (!userId)
+    return res.status(401).json({ error: "Usuário não autenticado" });
 
-  const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
-  if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
+  const professional = await ProfessionalModel.findOne({
+    where: { user_id: userId },
+  });
+  if (!professional)
+    return res
+      .status(404)
+      .json({ error: "Profissional não encontrado para este usuário" });
   const professionalId = professional.id;
 
   try {
@@ -33,7 +39,10 @@ export const getDashboardKpis = async (req: Request, res: Response) => {
     return res.json({
       totalServices: Number(results.totalServices || 0),
       totalEarnings: parseFloat(String(results.totalEarnings || 0)),
-      avgRating: results.avgRating !== null ? parseFloat(String(results.avgRating)) : undefined,
+      avgRating:
+        results.avgRating !== null
+          ? parseFloat(String(results.avgRating))
+          : undefined,
     });
   } catch (error: any) {
     console.error("Error in getDashboardKpis:", error);
@@ -44,10 +53,16 @@ export const getDashboardKpis = async (req: Request, res: Response) => {
 export const getEarningsOverTime = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   const userId = authReq.user?.id;
-  if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+  if (!userId)
+    return res.status(401).json({ error: "Usuário não autenticado" });
 
-  const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
-  if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
+  const professional = await ProfessionalModel.findOne({
+    where: { user_id: userId },
+  });
+  if (!professional)
+    return res
+      .status(404)
+      .json({ error: "Profissional não encontrado para este usuário" });
   const professionalId = professional.id;
 
   try {
@@ -68,13 +83,22 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
     const toDate = parseOrDefault(to, now)!;
 
     const queryProfessionalId = (req.query as any).professionalId;
-    const idToUse = queryProfessionalId ? Number(queryProfessionalId) : professionalId;
-    if (!idToUse || isNaN(idToUse)) return res.status(400).json({ error: "professionalId inválido" });
+    const idToUse = queryProfessionalId
+      ? Number(queryProfessionalId)
+      : professionalId;
+    if (!idToUse || isNaN(idToUse))
+      return res.status(400).json({ error: "professionalId inválido" });
 
-    const fromReplacement = fromDate.toISOString().slice(0, 19).replace("T", " ");
+    const fromReplacement = fromDate
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
     const toReplacement = toDate.toISOString().slice(0, 19).replace("T", " ");
 
-    const dialect = (sequelize.getDialect && sequelize.getDialect()) || process.env.SEQUELIZE_DIALECT || "mysql";
+    const dialect =
+      (sequelize.getDialect && sequelize.getDialect()) ||
+      process.env.SEQUELIZE_DIALECT ||
+      "mysql";
     let monthExpr: string;
     if (dialect === "postgres" || dialect === "postgresql") {
       monthExpr = "to_char(a.completed_at, 'MM-YYYY')";
@@ -82,7 +106,9 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
       monthExpr = "DATE_FORMAT(a.completed_at, '%m-%Y')";
     }
 
-    const sql = `
+    // Build SQL grouping by the same expression used in SELECT (monthExpr)
+    // This avoids Postgres error: column "a.completed_at" must appear in the GROUP BY clause
+    const finalSql = `
       SELECT ${monthExpr} AS month,
              SUM(COALESCE(a.final_price, s.price)) AS total
       FROM appointment a
@@ -91,16 +117,17 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
         AND a.status = 'completed'
         AND a.completed_at IS NOT NULL
         AND a.completed_at BETWEEN :from AND :to
-      GROUP BY DATE_TRUNC_CANDIDATE
-      ORDER BY DATE_TRUNC_CANDIDATE
+      GROUP BY ${monthExpr}
+      ORDER BY MIN(a.completed_at)
     `;
 
-    let finalSql = sql;
-    if (dialect === "postgres" || dialect === "postgresql") {
-      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "EXTRACT(YEAR FROM a.completed_at), EXTRACT(MONTH FROM a.completed_at)");
-    } else {
-      finalSql = finalSql.replace(/DATE_TRUNC_CANDIDATE/g, "YEAR(a.completed_at), MONTH(a.completed_at)");
-    }
+    // Debug: log SQL and replacements to diagnose errors
+    console.debug("[DEBUG SQL] finalSql:\n", finalSql);
+    console.debug("[DEBUG SQL] replacements:", {
+      id: idToUse,
+      from: fromReplacement,
+      to: toReplacement,
+    });
 
     const results: any[] = await sequelize.query(finalSql, {
       replacements: {
@@ -111,7 +138,10 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
       type: QueryTypes.SELECT,
     });
 
-    const mapped = results.map(r => ({ month: r.month, total: parseFloat(String(r.total || 0)) }));
+    const mapped = results.map((r) => ({
+      month: r.month,
+      total: parseFloat(String(r.total || 0)),
+    }));
     return res.json(mapped);
   } catch (error: any) {
     console.error("Error in getEarningsOverTime:", error?.stack || error);
@@ -122,10 +152,16 @@ export const getEarningsOverTime = async (req: Request, res: Response) => {
 export const getServicesByCategory = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   const userId = authReq.user?.id;
-  if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+  if (!userId)
+    return res.status(401).json({ error: "Usuário não autenticado" });
 
-  const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
-  if (!professional) return res.status(404).json({ error: "Profissional não encontrado para este usuário" });
+  const professional = await ProfessionalModel.findOne({
+    where: { user_id: userId },
+  });
+  if (!professional)
+    return res
+      .status(404)
+      .json({ error: "Profissional não encontrado para este usuário" });
   const professionalId = professional.id;
 
   try {
@@ -167,7 +203,10 @@ export const getServicesByCategory = async (req: Request, res: Response) => {
       type: QueryTypes.SELECT,
     });
 
-    const mapped = results.map(r => ({ category: r.category, count: Number(r.count) }));
+    const mapped = results.map((r) => ({
+      category: r.category,
+      count: Number(r.count),
+    }));
     return res.json(mapped);
   } catch (error: any) {
     console.error("Error in getServicesByCategory:", error);
