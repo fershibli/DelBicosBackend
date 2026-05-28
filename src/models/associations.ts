@@ -6,6 +6,7 @@ import { AddressModel } from "./Address";
 import { CategoryModel } from "./Category";
 import { SubCategoryModel } from "./Subcategory";
 import { ServiceModel } from "./Service";
+import { ServiceAvailabilityModel } from "./ServiceAvailability";
 import { AmenitiesModel } from "./Amenities";
 import { ProfessionalAmenityModel } from "./ProfessionalAmenities";
 import { ProfessionalGalleryModel } from "./ProfessionalGallery";
@@ -171,6 +172,11 @@ export function initializeAssociations() {
     as: "Subcategory",
   });
 
+  ServiceModel.belongsTo(CategoryModel, {
+    foreignKey: "category_id",
+    as: "Category",
+  });
+
   ServiceModel.belongsTo(ProfessionalModel, {
     foreignKey: "professional_id",
     as: "Professional",
@@ -179,6 +185,17 @@ export function initializeAssociations() {
   ServiceModel.hasMany(AppointmentModel, {
     foreignKey: "service_id",
     as: "Appointments",
+  });
+
+  ServiceModel.hasMany(ServiceAvailabilityModel, {
+    foreignKey: "service_id",
+    as: "Availabilities",
+  });
+
+  // ServiceAvailability associations
+  ServiceAvailabilityModel.belongsTo(ServiceModel, {
+    foreignKey: "service_id",
+    as: "Service",
   });
 
   // Amenities associations

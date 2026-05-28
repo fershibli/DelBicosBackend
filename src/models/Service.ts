@@ -28,13 +28,20 @@ export interface IService {
   date?: Date;
   banner_uri?: string;
   active?: boolean;
+  category_id?: number;
   subcategory_id: number;
   professional_id: number;
 }
 
 type ServiceCreationalAttributes = Optional<
   IService,
-  "id" | "description" | "price_cents" | "date" | "banner_uri" | "active"
+  | "id"
+  | "description"
+  | "price_cents"
+  | "date"
+  | "banner_uri"
+  | "active"
+  | "category_id"
 >;
 
 export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
@@ -47,6 +54,7 @@ export class ServiceModel extends Model<IService, ServiceCreationalAttributes> {
   public date?: Date;
   public banner_uri?: string;
   public active?: boolean;
+  public category_id?: number;
   public subcategory_id!: number;
   public professional_id!: number;
 
@@ -101,6 +109,14 @@ ServiceModel.init(
     active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    category_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "category",
+        key: "id",
+      },
     },
     subcategory_id: {
       type: DataTypes.INTEGER,
