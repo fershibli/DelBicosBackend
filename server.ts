@@ -1,4 +1,5 @@
 import express, { Express } from "express";
+import http from "http";
 import { setupCors } from "./src/middlewares/cors.middleware";
 import { loggingMiddleware } from "./src/middlewares/logging.middleware";
 import {
