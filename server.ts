@@ -31,6 +31,7 @@ import adminRoutes from "./src/routes/admin.routes";
 import dashboardRoutes from "./src/routes/dashboard.routes";
 import favoriteRoutes from "./src/routes/favorite.routes";
 import avatarRouter from "./src/routes/avatar.routes";
+import availabilityRoutes from './src/routes/professionalAvailability';
 
 const result = dotenv.config();
 if (result.error) {
@@ -97,6 +98,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/avatar", avatarRouter);
+app.use("/api/professionals", availabilityRoutes);
+
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 
