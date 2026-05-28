@@ -56,6 +56,7 @@ module.exports = {
       cpf: professionalCpfs[index],
       cnpj: cnpjs[index],
       description: descriptions[index],
+      service_radius_km: 15,
       created_at: now,
       updated_at: now,
     }));
