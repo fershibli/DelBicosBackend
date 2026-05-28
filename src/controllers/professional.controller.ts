@@ -7,6 +7,7 @@ import { ServiceModel } from "../models/Service";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
@@ -464,6 +465,45 @@ export const searchProfessionalAvailability = async (
     return res
       .status(500)
       .json({ error: "Erro interno do servidor", details: error.message });
+  }
+};
+
+export const updateProfessional = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ error: "Não autorizado" });
+  }
+
+  try {
+    const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
+    if (!professional) {
+      return res.status(404).json({ error: "Perfil profissional não encontrado" });
+    }
+
+    // Campos que podem ser atualizados
+    const { description, cpf, cnpj, main_address_id } = req.body;
+
+    const updatedFields: any = {};
+    if (description !== undefined) updatedFields.description = description;
+    if (cpf !== undefined) updatedFields.cpf = cpf;
+    if (cnpj !== undefined) updatedFields.cnpj = cnpj;
+    if (main_address_id !== undefined) updatedFields.main_address_id = main_address_id;
+
+    await professional.update(updatedFields);
+
+    // Recarregar com associações para retornar completo
+    const refreshed = await ProfessionalModel.findByPk(professional.id, {
+      include: [
+        { model: UserModel, as: "User", attributes: ["id", "name", "email", "avatar_uri", "banner_uri"] },
+        { model: AddressModel, as: "MainAddress" },
+        { model: ServiceModel, as: "Services" },
+      ],
+    });
+
+    return res.json(refreshed);
+  } catch (error: any) {
+    console.error("Erro ao atualizar profissional:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
 
