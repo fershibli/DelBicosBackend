@@ -35,7 +35,10 @@
     "docker:network": "docker network create delbicos-shared-network",
     "docker:migrate": "docker-compose exec delbicos-server npm run migrate",
     "docker:seed": "docker-compose exec delbicos-server npm run seed",
-    "test": "jest"
+    "test": "jest",
+    "test:unit": "jest --selectProjects unit --no-coverage",
+    "test:integration": "jest --selectProjects integration --no-coverage",
+    "test:all": "jest --no-coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1037.0",
@@ -76,9 +79,11 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^16.11.7",
     "@types/pg": "^8.15.5",
+    "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "jest": "~29.7.0",
+    "jest-util": "^29.7.0",
     "nodemon": "^3.1.10",
     "sequelize-cli": "^6.6.3",
     "supertest": "^6.3.3",
