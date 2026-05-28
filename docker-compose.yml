@@ -43,6 +43,9 @@ services:
       - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-deliverydebicos@gmail.com}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_API_KEY}
       - MONGODB_URI=mongodb://mongo:27017/logs_db
+    volumes:
+      - ./src:/app/src
+      - ./server.ts:/app/server.ts
     ports:
       - "3000:3000"
     depends_on:
