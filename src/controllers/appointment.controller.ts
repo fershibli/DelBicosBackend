@@ -215,6 +215,7 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 export const getAllAppointments = async (req: Request, res: Response) => {
   const userId = req.params.id;
+  const { role } = req.query;
 
   try {
     const user = await UserModel.findByPk(userId);
@@ -227,19 +228,27 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 
     let whereClause: any = {};
 
-    if (client && professional) {
-      whereClause = {
-        [require('sequelize').Op.or]: [
-          { client_id: client.id },
-          { professional_id: professional.id }
-        ]
-      };
-    } else if (client) {
+    if (role === "client") {
+      if (!client) return res.json([]);
       whereClause.client_id = client.id;
-    } else if (professional) {
+    } else if (role === "professional") {
+      if (!professional) return res.json([]);
       whereClause.professional_id = professional.id;
     } else {
-      return res.json([]);
+      if (client && professional) {
+        whereClause = {
+          [require('sequelize').Op.or]: [
+            { client_id: client.id },
+            { professional_id: professional.id }
+          ]
+        };
+      } else if (client) {
+        whereClause.client_id = client.id;
+      } else if (professional) {
+        whereClause.professional_id = professional.id;
+      } else {
+        return res.json([]);
+      }
     }
 
     const appointments = await AppointmentModel.findAll({
