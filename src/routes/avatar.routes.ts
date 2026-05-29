@@ -1,26 +1,27 @@
 import { Router } from "express";
-import { AvatarController } from "../controllers/avatar.controller"; 
+
+import { AvatarController } from "../controllers/avatar.controller";
+
 import authMiddleware from "../middlewares/auth.middleware";
 
 const router = Router();
 
-/**
- * Rotas de Gerenciamento de Arquivos e Avatar (S3 + Neon)
- */
+router.post(
+  "/upload-url",
+  authMiddleware,
+  AvatarController.getPresignedUrl
+);
 
-// Listar arquivos no bucket (útil para debug)
-router.get("/files", authMiddleware, AvatarController.listFiles);
+router.patch(
+  "/update-path",
+  authMiddleware,
+  AvatarController.updateAvatarDatabase
+);
 
-// Obter URL de visualização de qualquer arquivo no S3
-router.get("/files/:key", authMiddleware, AvatarController.getFileUrl);
-
-// 1. Gera a URL assinada para o Frontend fazer o PUT direto no S3
-router.post("/upload-url", authMiddleware, AvatarController.getPresignedUrl);
-
-// 2. Busca o avatar_uri atual do usuário no Neon
-router.get("/:id", authMiddleware, AvatarController.getUserAvatar);
-
-// 3. Atualiza o campo avatar_uri no Neon após o upload bem sucedido
-router.patch("/update-path", authMiddleware, AvatarController.updateAvatarDatabase);
+router.get(
+  "/:id",
+  authMiddleware,
+  AvatarController.getUserAvatar
+);
 
 export default router;

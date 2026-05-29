@@ -4,6 +4,7 @@ import {
   getProfessionalById,
   searchProfessionalAvailability,
   createProfessional,
+  updateProfessional,
 } from "../controllers/professional.controller";
 import authMiddleware from "../middlewares/auth.middleware";
 
@@ -89,6 +90,9 @@ router.get("/search-availability", searchProfessionalAvailability);
  *         description: CPF/CNPJ já registrado ou usuário já é profissional
  */
 router.post("/", authMiddleware, createProfessional);
+
+router.put("/me", authMiddleware, updateProfessional);
+
 
 
 /**
