@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import { Op, literal } from "sequelize";
 import { ProfessionalModel } from "../models/Professional";
 import { UserModel } from "../models/User";
@@ -7,16 +8,14 @@ import { ServiceModel } from "../models/Service";
 import { AppointmentModel } from "../models/Appointment";
 import { ClientModel } from "../models/Client";
 import { ProfessionalAvailabilityModel } from "../models/ProfessionalAvailability";
+import { ServiceAvailabilityModel } from "../models/ServiceAvailability";
 
 export const getProfessionals = async (req: Request, res: Response) => {
   try {
     const { termo, page = 0, limit = 12, lat, lng } = req.query;
-    console.log(lat, lng);
     const latNum = lat ? parseFloat(String(lat)) : undefined;
     const lngNum = lng ? parseFloat(String(lng)) : undefined;
-    console.log(latNum, lngNum);
     const hasLatLng = Number.isFinite(latNum) && Number.isFinite(lngNum);
-    console.log(hasLatLng);
 
     const where: any = {};
     if (termo) {
@@ -143,6 +142,78 @@ export const getProfessionals = async (req: Request, res: Response) => {
   }
 };
 
+export const getProfessionalRadius = async (req: any, res: Response) => {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const professionalId = Number(req.params.id);
+    if (!professionalId)
+      return res.status(400).json({ error: "ID do profissional inválido" });
+
+    const professional = await ProfessionalModel.findByPk(professionalId);
+    if (!professional)
+      return res.status(404).json({ error: "Profissional não encontrado" });
+
+    if (professional.user_id !== userId) {
+      return res.status(403).json({ error: "Não autorizado" });
+    }
+
+    return res.json({ service_radius_km: professional.service_radius_km });
+  } catch (error: any) {
+    console.error("Erro ao obter raio do profissional:", error);
+    return res
+      .status(500)
+      .json({ error: "Erro interno", details: error.message });
+  }
+};
+
+export const updateProfessionalRadius = async (req: any, res: Response) => {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const professionalId = Number(req.params.id);
+    if (!professionalId)
+      return res.status(400).json({ error: "ID do profissional inválido" });
+
+    const professional = await ProfessionalModel.findByPk(professionalId);
+    if (!professional)
+      return res.status(404).json({ error: "Profissional não encontrado" });
+
+    if (professional.user_id !== userId) {
+      return res.status(403).json({ error: "Não autorizado" });
+    }
+
+    const { service_radius_km } = req.body;
+    if (service_radius_km === undefined) {
+      return res.status(400).json({ error: "service_radius_km é obrigatório" });
+    }
+    const km = Number(service_radius_km);
+    if (!Number.isFinite(km) || km < 0) {
+      return res
+        .status(400)
+        .json({ error: "service_radius_km deve ser um número >= 0" });
+    }
+    professional.service_radius_km = Math.floor(km);
+    await professional.save();
+
+    return res.json({
+      message: "Raio atualizado",
+      service_radius_km: professional.service_radius_km,
+    });
+  } catch (error: any) {
+    console.error("Erro ao atualizar raio:", error);
+    return res
+      .status(500)
+      .json({ error: "Erro interno", details: error.message });
+  }
+};
+
 export const getProfessionalById = async (req: Request, res: Response) => {
   try {
     const professional = await ProfessionalModel.findByPk(req.params.id, {
@@ -223,12 +294,14 @@ async function getAvailableSlots(
   professionalId: number,
   date: string,
   serviceDuration: number,
+  serviceId?: number,
 ) {
   const targetDate = new Date(`${date}T12:00:00.000Z`);
-  const dayOfWeek = targetDate.getUTCDay();
+  const dayOfWeek = targetDate.getUTCDay(); // 0=Dom..6=Sáb
   const bitmaskDay = "_".repeat(dayOfWeek) + "1" + "_".repeat(6 - dayOfWeek);
 
-  const availabilityRules = await ProfessionalAvailabilityModel.findAll({
+  // ── 1. Regras de disponibilidade geral do profissional ──────────────────────
+  const professionalRules = await ProfessionalAvailabilityModel.findAll({
     where: {
       professional_id: professionalId,
       is_available: true,
@@ -246,7 +319,41 @@ async function getAvailableSlots(
     },
   });
 
+  // ── 2. Disponibilidades do serviço específico (ServiceAvailabilityModel) ────
+  // Busca pelo serviceId passado OU por todos os serviços ativos do profissional
+  // nessa subcategoria para o dia da semana correto.
+  let serviceRules: { start_time: string; end_time: string }[] = [];
+  if (serviceId) {
+    serviceRules = await ServiceAvailabilityModel.findAll({
+      where: { service_id: serviceId, day_of_week: dayOfWeek },
+    });
+  } else {
+    // Sem serviceId: busca em todos os serviços ativos do profissional
+    const profServices = await ServiceModel.findAll({
+      where: { professional_id: professionalId, active: true },
+      attributes: ["id"],
+    });
+    if (profServices.length > 0) {
+      serviceRules = await ServiceAvailabilityModel.findAll({
+        where: {
+          service_id: profServices.map((s: any) => s.id),
+          day_of_week: dayOfWeek,
+        },
+      });
+    }
+  }
+
+  // Une as duas fontes de disponibilidade
+  const allRules: { start_time: string; end_time: string }[] = [
+    ...professionalRules,
+    ...serviceRules,
+  ];
+
+  if (allRules.length === 0) return [];
+
   const startOfDay = new Date(`${date}T00:00:00.000Z`);
+
+  // ── 3. Bloqueios: agendamentos confirmados/pendentes + bloqueios explícitos ─
   const endOfDay = new Date(`${date}T23:59:59.999Z`);
 
   const appointments = await AppointmentModel.findAll({
@@ -283,10 +390,11 @@ async function getAvailableSlots(
     }),
   ];
 
+  // ── 4. Gerar slots disponíveis ───────────────────────────────────────────────
   const availableSlots: string[] = [];
   const slotInterval = 30;
 
-  for (const rule of availabilityRules) {
+  for (const rule of allRules) {
     const [startH, startM] = rule.start_time.split(":").map(Number);
     const [endH, endM] = rule.end_time.split(":").map(Number);
 
@@ -302,13 +410,11 @@ async function getAvailableSlots(
         currentSlotStart.getTime() + serviceDuration * 60000,
       );
 
-      if (slotEnd > ruleEnd) {
-        break;
-      }
+      if (slotEnd > ruleEnd) break;
 
-      const isBlocked = allBlockages.some((block) => {
-        return currentSlotStart < block.end && slotEnd > block.start;
-      });
+      const isBlocked = allBlockages.some(
+        (block) => currentSlotStart < block.end && slotEnd > block.start,
+      );
 
       if (!isBlocked) {
         availableSlots.push(
@@ -322,6 +428,7 @@ async function getAvailableSlots(
       currentSlotStart.setMinutes(currentSlotStart.getMinutes() + slotInterval);
     }
   }
+
   return [...new Set(availableSlots)].sort();
 }
 
@@ -385,15 +492,28 @@ export const searchProfessionalAvailability = async (
     };
 
     const resultsPromises = professionals.map(async (prof: any) => {
-      const relevantService = prof.Services.find(
+      // Pode haver múltiplos serviços do profissional na mesma subcategoria.
+      // Tenta cada um em ordem até encontrar o que tem slots no dia solicitado.
+      const relevantServices: any[] = prof.Services.filter(
         (s: any) => s.subcategory_id === Number(subCategoryId),
       );
-      const serviceDuration = relevantService?.duration || 60;
-      const availableTimes = await getAvailableSlots(
-        prof.id,
-        date as string,
-        serviceDuration,
-      );
+
+      let relevantService: any = null;
+      let availableTimes: string[] = [];
+
+      for (const svc of relevantServices) {
+        const slots = await getAvailableSlots(
+          prof.id,
+          date as string,
+          svc.duration || 60,
+          svc.id,
+        );
+        if (slots.length > 0) {
+          relevantService = svc;
+          availableTimes = slots;
+          break;
+        }
+      }
 
       if (availableTimes.length === 0) {
         return null;
@@ -434,6 +554,14 @@ export const searchProfessionalAvailability = async (
             parseFloat(prof.MainAddress.lng),
           )
         : 0;
+
+      // Se o profissional definiu um raio de atuação, filtra por ele quando lat/lng do usuário forem fornecidos
+      const profRadius = prof.service_radius_km
+        ? Number(prof.service_radius_km)
+        : null;
+      if (profRadius && hasLatLng && distance > profRadius) {
+        return null;
+      }
       return {
         id: prof.id,
         name: prof.User.name,
@@ -469,7 +597,7 @@ export const searchProfessionalAvailability = async (
 
 export const createProfessional = async (
   req: any,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const userId = req.user?.id;
@@ -554,7 +682,7 @@ export const createProfessional = async (
             attributes: ["id", "city", "state", "lat", "lng"],
           },
         ],
-      }
+      },
     );
 
     return res.status(201).json({
@@ -583,6 +711,76 @@ export const createProfessional = async (
     return res.status(500).json({
       error: "Erro ao criar profissional",
       details: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+export const updateProfessional = async (req: any, res: Response) => {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.id;
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const professionalId = Number(req.params.id);
+    if (!professionalId)
+      return res.status(400).json({ error: "ID do profissional inválido" });
+
+    const professional = await ProfessionalModel.findByPk(professionalId);
+    if (!professional)
+      return res.status(404).json({ error: "Profissional não encontrado" });
+
+    // Só o dono (usuário ligado ao profissional) pode atualizar
+    if (professional.user_id !== userId) {
+      return res
+        .status(403)
+        .json({ error: "Não autorizado a atualizar este profissional" });
+    }
+
+    const { description, main_address_id, service_radius_km } = req.body;
+
+    if (description !== undefined) professional.description = description;
+    if (main_address_id !== undefined)
+      professional.main_address_id = main_address_id;
+    if (service_radius_km !== undefined) {
+      const km = Number(service_radius_km);
+      if (!Number.isFinite(km) || km < 0) {
+        return res
+          .status(400)
+          .json({ error: "service_radius_km deve ser um número >= 0" });
+      }
+      professional.service_radius_km = Math.floor(km);
+    }
+
+    await professional.save();
+
+    const professionalWithRelations = await ProfessionalModel.findByPk(
+      professional.id,
+      {
+        include: [
+          {
+            model: UserModel,
+            as: "User",
+            attributes: ["id", "name", "email", "avatar_uri"],
+          },
+          {
+            model: AddressModel,
+            as: "MainAddress",
+            attributes: ["id", "city", "state", "lat", "lng"],
+          },
+        ],
+      },
+    );
+
+    return res.json({
+      message: "Profissional atualizado",
+      professional: professionalWithRelations,
+    });
+  } catch (error: any) {
+    console.error("Erro ao atualizar profissional:", error);
+    return res.status(500).json({
+      error: "Erro ao atualizar profissional",
+      details: error.message,
     });
   }
 };

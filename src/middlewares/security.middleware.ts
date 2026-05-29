@@ -13,11 +13,25 @@ export const helmetMiddleware = helmet();
 // ---------------------------------------------------------------------------
 // 2. Rate Limiting – protege contra brute-force e DDoS
 // ---------------------------------------------------------------------------
+const isDev =
+  (process.env.ENVIRONMENT || process.env.NODE_ENV || "development") ===
+  "development";
+
 export const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 200, // máximo de 200 requisições por IP por janela
+  max: isDev ? 5000 : 200, // em dev aumentado para não bloquear emulador/polling
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // pula rate limit para IPs de desenvolvimento local
+    const ip = req.ip || "";
+    return (
+      isDev &&
+      (ip.includes("127.0.0.1") ||
+        ip.includes("::1") ||
+        ip.includes("10.0.2.2"))
+    );
+  },
   message: {
     msg: "Muitas requisições deste IP. Tente novamente após 15 minutos.",
   },

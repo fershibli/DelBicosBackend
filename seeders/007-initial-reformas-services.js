@@ -69,12 +69,23 @@ module.exports = {
     const now = new Date();
     const services = [];
 
+    // Carrega serviços já existentes para evitar duplicatas (professional_id + title)
+    const existingServices = await queryInterface.sequelize.query(
+      `SELECT professional_id, title FROM service`,
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+
     professionalIds.forEach((professionalId, index) => {
       if (index < predefinedServices.length) {
         const serviceData = predefinedServices[index];
         const subcategoryId = subcategoryMap[serviceData.sub];
 
         if (subcategoryMap[serviceData.sub]) {
+          const alreadyExists = existingServices.some(
+            (es) => es.professional_id === professionalId && es.title === serviceData.title,
+          );
+          if (alreadyExists) return; // pula se já existe
+
           services.push({
             title: serviceData.title,
             description: `Serviço profissional de ${serviceData.sub} com qualidade garantida`,
@@ -91,7 +102,9 @@ module.exports = {
       }
     });
 
-    await queryInterface.bulkInsert("service", services);
+    if (services.length > 0) {
+      await queryInterface.bulkInsert("service", services);
+    }
   },
 
   async down(queryInterface, Sequelize) {

@@ -22,13 +22,139 @@ const formatTime = (dateStr: string | Date) =>
 
 export const createAppointment = async (req: Request, res: Response) => {
   try {
-    const appointment = await AppointmentModel.create(req.body);
+    const authReq = req as AuthenticatedRequest;
+    if (!authReq.user)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
-    const professional = await ProfessionalModel.findByPk(
-      appointment.professional_id
-    );
-    const client = await ClientModel.findByPk(appointment.client_id);
-    const service = await ServiceModel.findByPk(appointment.service_id);
+    // Derivar client_id do token — o usuário autenticado deve ter perfil de cliente
+    const clientRecord = await ClientModel.findOne({
+      where: { user_id: authReq.user.id },
+    });
+    if (!clientRecord)
+      return res.status(403).json({
+        error:
+          "Usuário não possui perfil de cliente. Finalize seu cadastro antes de agendar.",
+      });
+
+    const {
+      service_id,
+      professional_id,
+      address_id,
+      start_time,
+      end_time,
+      client_lat,
+      client_lng,
+    } = req.body;
+
+    if (!service_id || !professional_id || !start_time || !end_time) {
+      return res.status(400).json({
+        error:
+          "Campos obrigatórios: service_id, professional_id, start_time, end_time (ou forneça address_id ou client_lat/client_lng)",
+      });
+    }
+
+    const [professional, service] = await Promise.all([
+      ProfessionalModel.findByPk(Number(professional_id), {
+        include: [
+          {
+            model: AddressModel,
+            as: "MainAddress",
+            attributes: ["lat", "lng"],
+          },
+        ],
+      }),
+      ServiceModel.findByPk(Number(service_id)),
+    ]);
+    if (!professional)
+      return res.status(404).json({ error: "Profissional não encontrado" });
+    if (!service)
+      return res.status(404).json({ error: "Serviço não encontrado" });
+    if (!service.active)
+      return res.status(400).json({ error: "Serviço não está ativo" });
+
+    // Determina coordenadas do cliente: prioriza client_lat/client_lng, senão address_id
+    let clientLat: number | null = null;
+    let clientLng: number | null = null;
+
+    if (client_lat !== undefined && client_lng !== undefined) {
+      const latN = parseFloat(String(client_lat));
+      const lngN = parseFloat(String(client_lng));
+      if (!Number.isFinite(latN) || !Number.isFinite(lngN)) {
+        return res
+          .status(400)
+          .json({ error: "client_lat e client_lng inválidos" });
+      }
+      clientLat = latN;
+      clientLng = lngN;
+    } else if (address_id) {
+      const clientAddress = await AddressModel.findByPk(Number(address_id));
+      if (!clientAddress)
+        return res
+          .status(404)
+          .json({ error: "Endereço do cliente não encontrado" });
+      if (clientAddress.lat && clientAddress.lng) {
+        clientLat = Number(clientAddress.lat);
+        clientLng = Number(clientAddress.lng);
+      }
+    }
+
+    const computeDistanceKm = (
+      lat1: number,
+      lon1: number,
+      lat2: number,
+      lon2: number,
+    ) => {
+      const toRad = (x: number) => (x * Math.PI) / 180;
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    const profData = professional as any;
+    if (
+      profData?.MainAddress &&
+      clientLat !== null &&
+      clientLng !== null &&
+      professional.service_radius_km
+    ) {
+      const profLat = Number(profData.MainAddress.lat);
+      const profLng = Number(profData.MainAddress.lng);
+      if (
+        Number.isFinite(profLat) &&
+        Number.isFinite(profLng) &&
+        Number.isFinite(clientLat) &&
+        Number.isFinite(clientLng)
+      ) {
+        const dist = computeDistanceKm(profLat, profLng, clientLat, clientLng);
+        if (dist > Number(professional.service_radius_km)) {
+          return res.status(400).json({
+            error:
+              "O endereço do cliente está fora do raio de atuação do profissional",
+          });
+        }
+      }
+    }
+
+    const appointment = await AppointmentModel.create({
+      professional_id: Number(professional_id),
+      client_id: clientRecord.id,
+      service_id: Number(service_id),
+      address_id: Number(address_id),
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      status: "pending",
+    });
+
+    const client = clientRecord;
+    // professional e service já foram buscados acima via Promise.all
 
     if (!professional || !client || !service) {
       logger.warn("Missing linked data for notification trigger", {
@@ -44,7 +170,7 @@ export const createAppointment = async (req: Request, res: Response) => {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
-        }
+        },
       );
       const appointmentDate =
         appointment.start_time.toLocaleDateString("pt-BR");
@@ -308,7 +434,7 @@ export const reviewAppointment = async (req: Request, res: Response) => {
 
     if (!isUpdate) {
       const professional = await ProfessionalModel.findByPk(
-        appointment.professional_id
+        appointment.professional_id,
       );
       if (professional) {
         const professionalUser = await UserModel.findByPk(professional.user_id);
@@ -418,7 +544,7 @@ export const getAppointmentInvoice = async (req: Request, res: Response) => {
 
       serviceDate: formatDate(appointment.start_time),
       serviceTime: `${formatTime(appointment.start_time)} - ${formatTime(
-        appointment.end_time
+        appointment.end_time,
       )}`,
 
       total: parseFloat(apptData.Service?.price || "0"),

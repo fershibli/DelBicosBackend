@@ -1,4 +1,5 @@
 import express, { Express } from "express";
+import http from "http";
 import { setupCors } from "./src/middlewares/cors.middleware";
 import { loggingMiddleware } from "./src/middlewares/logging.middleware";
 import {
@@ -32,6 +33,10 @@ import dashboardRoutes from "./src/routes/dashboard.routes";
 import favoriteRoutes from "./src/routes/favorite.routes";
 import avatarRouter from "./src/routes/avatar.routes";
 import { startAppointmentCron } from "./src/jobs/appointmentCron";
+import serviceRoutes from "./src/routes/service.routes";
+import availabilityRoutes from "./src/routes/availability.routes";
+import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
+import uploadRoutes from "./src/routes/upload.routes";
 
 const result = dotenv.config();
 if (result.error) {
@@ -101,6 +106,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/avatar", avatarRouter);
+app.use("/api/services", serviceRoutes);
+app.use("/api/availabilities", availabilityRoutes);
+app.use("/api/availability-locks", availabilityLockRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 
