@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
+    "query": "node query.js",
     "build": "tsc -p tsconfig.build.json",
     "lint": "tsc --noEmit",
     "start": "node dist/server.js",
