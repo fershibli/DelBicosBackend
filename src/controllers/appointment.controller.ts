@@ -93,8 +93,8 @@ export const createAppointment = async (req: Request, res: Response) => {
           .status(404)
           .json({ error: "Endereço do cliente não encontrado" });
       if (clientAddress.lat && clientAddress.lng) {
-        clientLat = parseFloat(clientAddress.lat);
-        clientLng = parseFloat(clientAddress.lng);
+        clientLat = Number(clientAddress.lat);
+        clientLng = Number(clientAddress.lng);
       }
     }
 
@@ -118,14 +118,15 @@ export const createAppointment = async (req: Request, res: Response) => {
       return R * c;
     };
 
+    const profData = professional as any;
     if (
-      professional?.MainAddress &&
+      profData?.MainAddress &&
       clientLat !== null &&
       clientLng !== null &&
       professional.service_radius_km
     ) {
-      const profLat = parseFloat(professional.MainAddress.lat);
-      const profLng = parseFloat(professional.MainAddress.lng);
+      const profLat = Number(profData.MainAddress.lat);
+      const profLng = Number(profData.MainAddress.lng);
       if (
         Number.isFinite(profLat) &&
         Number.isFinite(profLng) &&
@@ -214,6 +215,7 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 export const getAllAppointments = async (req: Request, res: Response) => {
   const userId = req.params.id;
+  const { role } = req.query;
 
   try {
     const user = await UserModel.findByPk(userId);
@@ -222,13 +224,31 @@ export const getAllAppointments = async (req: Request, res: Response) => {
     }
 
     const client = await ClientModel.findOne({ where: { user_id: userId } });
+    const professional = await ProfessionalModel.findOne({ where: { user_id: userId } });
 
-    const whereClause: any = {};
+    let whereClause: any = {};
 
-    if (client) {
+    if (role === "client") {
+      if (!client) return res.json([]);
       whereClause.client_id = client.id;
+    } else if (role === "professional") {
+      if (!professional) return res.json([]);
+      whereClause.professional_id = professional.id;
     } else {
-      return res.json([]);
+      if (client && professional) {
+        whereClause = {
+          [require('sequelize').Op.or]: [
+            { client_id: client.id },
+            { professional_id: professional.id }
+          ]
+        };
+      } else if (client) {
+        whereClause.client_id = client.id;
+      } else if (professional) {
+        whereClause.professional_id = professional.id;
+      } else {
+        return res.json([]);
+      }
     }
 
     const appointments = await AppointmentModel.findAll({
@@ -289,6 +309,72 @@ export const confirmAppointment = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao confirmar agendamento" });
   }
 };
+
+export const updateAppointmentStatus = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const authReq = req as AuthenticatedRequest;
+
+  try {
+    if (status !== "confirmed" && status !== "canceled") {
+      return res.status(400).json({ error: "Status inválido. Use 'confirmed' ou 'canceled'." });
+    }
+
+    const appointment = await AppointmentModel.findByPk(id, {
+      include: [
+        { model: ClientModel, as: "Client", include: [{ model: UserModel, as: "User" }] },
+        { model: ProfessionalModel, as: "Professional", include: [{ model: UserModel, as: "User" }] },
+        { model: ServiceModel, as: "Service" },
+      ],
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: "Agendamento não encontrado" });
+    }
+
+    if (appointment.status !== "pending") {
+      return res.status(400).json({
+        error: `Não é possível alterar um agendamento com status '${appointment.status}'`,
+      });
+    }
+
+    appointment.status = status;
+    await appointment.save();
+
+    const apptData: any = appointment;
+    const clientUser = apptData.Client?.User;
+    const service = apptData.Service;
+
+    if (clientUser) {
+      if (status === "confirmed") {
+        await NotificationModel.create({
+          user_id: clientUser.id,
+          title: "Seu agendamento foi aceito!",
+          message: `O profissional aceitou seu agendamento para o serviço '${service?.title}'.`,
+          notification_type: "appointment",
+          related_entity_id: appointment.id,
+          is_read: false,
+        });
+      } else if (status === "canceled") {
+        await NotificationModel.create({
+          user_id: clientUser.id,
+          title: "Agendamento Recusado",
+          message: `O profissional não pôde aceitar o serviço '${service?.title}'.`,
+          notification_type: "appointment",
+          related_entity_id: appointment.id,
+          is_read: false,
+        });
+      }
+    }
+
+    logger.info(`Appointment status updated to ${status}`, { appointmentId: id });
+    res.json(appointment);
+  } catch (error: any) {
+    logError("Erro ao atualizar status do agendamento", error, { appointmentId: id });
+    res.status(500).json({ error: "Erro ao atualizar status do agendamento" });
+  }
+};
+
 
 export const reviewAppointment = async (req: Request, res: Response) => {
   const { id } = req.params;

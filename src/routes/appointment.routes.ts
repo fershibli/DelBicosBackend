@@ -4,6 +4,7 @@ import {
   confirmAppointment,
   reviewAppointment,
   getAppointmentInvoice,
+  updateAppointmentStatus,
   createAppointment,
 } from "../controllers/appointment.controller";
 import authMiddleware from "../middlewares/auth.middleware";
@@ -379,6 +380,43 @@ router.get("/user/:id", getAllAppointments);
  *         description: Erro interno do servidor
  */
 router.post("/:id/confirm", confirmAppointment);
+
+/**
+ * @swagger
+ * /appointments/{id}:
+ *   put:
+ *     summary: Atualiza o status de um agendamento pendente (Aceitar/Recusar)
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [confirmed, canceled]
+ *     responses:
+ *       200:
+ *         description: Status do agendamento atualizado com sucesso
+ *       400:
+ *         description: Status inválido ou agendamento não está pendente
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put("/:id", authMiddleware, updateAppointmentStatus);
+
 
 /**
  * @swagger

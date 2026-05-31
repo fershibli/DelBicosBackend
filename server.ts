@@ -32,6 +32,7 @@ import adminRoutes from "./src/routes/admin.routes";
 import dashboardRoutes from "./src/routes/dashboard.routes";
 import favoriteRoutes from "./src/routes/favorite.routes";
 import avatarRouter from "./src/routes/avatar.routes";
+import { startAppointmentCron } from "./src/jobs/appointmentCron";
 import serviceRoutes from "./src/routes/service.routes";
 import availabilityRoutes from "./src/routes/availability.routes";
 import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
@@ -46,6 +47,9 @@ initializeAssociations();
 
 logger.info("Variáveis de ambiente carregadas com sucesso");
 logger.info(`Ambiente: ${process.env.ENVIRONMENT}`);
+
+startAppointmentCron();
+logger.info("Cron jobs iniciados");
 
 const app: Express = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
@@ -118,4 +122,4 @@ if (!isServerless) {
   logger.info("Servidor rodando em ambiente serverless");
 }
 
-export default app;
+export default app;

@@ -388,6 +388,7 @@ export const createService = async (
     const {
       title,
       description,
+      price,
       price_cents,
       duration,
       date,
