@@ -57,23 +57,23 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Helmet – protege contra ataques comuns com HTTP headers
-app.use(helmetMiddleware);
+// // Helmet – protege contra ataques comuns com HTTP headers
+// app.use(helmetMiddleware);
 
-// Rate limiting – protege contra brute-force e DDoS
-app.use(globalRateLimiter);
+// // Rate limiting – protege contra brute-force e DDoS
+// app.use(globalRateLimiter);
 
-// HPP – protege contra HTTP Parameter Pollution
-app.use(hppMiddleware);
+// // HPP – protege contra HTTP Parameter Pollution
+// app.use(hppMiddleware);
 
-// Mongo Sanitize – protege contra NoSQL injection
-app.use(mongoSanitizeMiddleware);
+// // Mongo Sanitize – protege contra NoSQL injection
+// app.use(mongoSanitizeMiddleware);
 
-// XSS Sanitizer – escapa HTML e scripts maliciosos
-app.use(xssSanitizer);
+// // XSS Sanitizer – escapa HTML e scripts maliciosos
+// app.use(xssSanitizer);
 
-// SQL Injection Guard – detecta e bloqueia SQL injection
-app.use(sqlInjectionGuard);
+// // SQL Injection Guard – detecta e bloqueia SQL injection
+// app.use(sqlInjectionGuard);
 
 setupCors(app);
 
@@ -122,4 +122,4 @@ if (!isServerless) {
   logger.info("Servidor rodando em ambiente serverless");
 }
 
-export default app;
+export default app;
