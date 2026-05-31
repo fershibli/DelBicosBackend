@@ -4,8 +4,14 @@ import {
   getProfessionalById,
   searchProfessionalAvailability,
   createProfessional,
+  updateProfessional,
+  getProfessionalRadius,
+  updateProfessionalRadius,
 } from "../controllers/professional.controller";
 import authMiddleware from "../middlewares/auth.middleware";
+import availabilityRouter from "./professionalAvailability.routes";
+import availabilityLockRouter from "./professionalAvailabilityLock.routes";
+import serviceRouter from "./professionalService.routes";
 
 const router = Router();
 
@@ -90,7 +96,6 @@ router.get("/search-availability", searchProfessionalAvailability);
  */
 router.post("/", authMiddleware, createProfessional);
 
-
 /**
  * @swagger
  * /professionals/{id}:
@@ -111,5 +116,57 @@ router.post("/", authMiddleware, createProfessional);
  *         description: Profissional não encontrado
  */
 router.get("/:id", getProfessionalById);
+
+router.get("/:id/radius", authMiddleware, getProfessionalRadius);
+router.put("/:id/radius", authMiddleware, updateProfessionalRadius);
+
+/**
+ * @swagger
+ * /professionals/{id}:
+ *   put:
+ *     summary: Atualiza dados do profissional (somente o próprio profissional)
+ *     tags: [Profissionais]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *               main_address_id:
+ *                 type: integer
+ *               service_radius_km:
+ *                 type: integer
+ *                 description: Raio de atuação em km
+ *     responses:
+ *       200:
+ *         description: Profissional atualizado
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autenticado
+ *       403:
+ *         description: Não autorizado
+ */
+router.put("/:id", authMiddleware, updateProfessional);
+
+// Serviços do profissional
+router.use("/:professionalId/services", serviceRouter);
+
+// Disponibilidades (CRUD) — path plural para compatibilidade com o front
+router.use("/:professionalId/availabilities", availabilityRouter);
+
+// Bloqueios de disponibilidade (criação)
+router.use("/:professionalId/availability-locks", availabilityLockRouter);
 
 export default router;

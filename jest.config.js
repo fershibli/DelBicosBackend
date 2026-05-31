@@ -1,15 +1,32 @@
 module.exports = {
-  preset: "ts-jest", // Informa ao Jest para usar o ts-jest
-  testEnvironment: "node", // O ambiente onde os testes rodarão (Node.js para backend)
-  roots: ["<rootDir>/src"], // O diretório onde seus testes e código fonte estão
+  preset: "ts-jest",
+  testEnvironment: "node",
+  roots: ["<rootDir>/src", "<rootDir>/tests"],
   testMatch: [
-    // Padrão para encontrar arquivos de teste
-    "**/__tests__/**/*.test.ts", // Procura por arquivos .test.ts dentro de pastas __tests__
+    "**/__tests__/**/*.test.ts",
+    "**/tests/**/*.test.ts",
   ],
-  // Opcional: Coleta de cobertura de código
   collectCoverage: true,
   coverageDirectory: "coverage",
-  coverageProvider: "v8", // Ou 'babel'
-  // Opcional: Limpar mocks entre os testes
+  coverageProvider: "v8",
   clearMocks: true,
+  // Projetos separados: unit (sem banco) e integration (requer banco)
+  projects: [
+    {
+      displayName: "unit",
+      preset: "ts-jest",
+      testEnvironment: "node",
+      roots: ["<rootDir>/src"],
+      testMatch: ["**/__tests__/**/*.test.ts"],
+      clearMocks: true,
+    },
+    {
+      displayName: "integration",
+      preset: "ts-jest",
+      testEnvironment: "node",
+      roots: ["<rootDir>/tests"],
+      testMatch: ["**/tests/**/*.test.ts"],
+      clearMocks: true,
+    },
+  ],
 };
