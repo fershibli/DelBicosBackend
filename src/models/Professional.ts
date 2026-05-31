@@ -21,6 +21,7 @@ export interface IProfessional {
   cpf: string;
   cnpj?: string;
   description?: string;
+  service_radius_km?: number;
 }
 
 type ProfessionalCreationalAttributes = Optional<
@@ -38,6 +39,7 @@ export class ProfessionalModel extends Model<
   public cpf!: string;
   public cnpj?: string;
   public description?: string;
+  public service_radius_km?: number;
 
   // Timestamps
   public readonly createdAt!: Date;
@@ -82,11 +84,16 @@ ProfessionalModel.init(
       type: DataTypes.STRING(1500),
       allowNull: true,
     },
+    service_radius_km: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+    },
   },
   {
     sequelize,
     tableName: "professional",
     underscored: true,
     timestamps: true,
-  }
+  },
 );

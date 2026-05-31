@@ -4,6 +4,8 @@ import {
   confirmAppointment,
   reviewAppointment,
   getAppointmentInvoice,
+  updateAppointmentStatus,
+  createAppointment,
 } from "../controllers/appointment.controller";
 import authMiddleware from "../middlewares/auth.middleware";
 
@@ -280,6 +282,67 @@ const router = Router();
  *       500:
  *         description: Erro interno do servidor
  */
+/**
+ * @swagger
+ * /appointments:
+ *   post:
+ *     summary: Cria um novo agendamento (sem pagamento)
+ *     description: >
+ *       Cria um agendamento com status `pending`. O `client_id` é derivado
+ *       automaticamente do token JWT — o usuário autenticado deve ter perfil de cliente.
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - service_id
+ *               - professional_id
+ *               - address_id
+ *               - start_time
+ *               - end_time
+ *             properties:
+ *               service_id:
+ *                 type: integer
+ *                 example: 3
+ *               professional_id:
+ *                 type: integer
+ *                 example: 5
+ *               address_id:
+ *                 type: integer
+ *                 example: 12
+ *               start_time:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2026-06-10T14:00:00.000Z"
+ *               end_time:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2026-06-10T15:00:00.000Z"
+ *     responses:
+ *       201:
+ *         description: Agendamento criado com sucesso (status pending)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Campos obrigatórios ausentes ou serviço inativo
+ *       401:
+ *         description: Token ausente
+ *       403:
+ *         description: Usuário não possui perfil de cliente
+ *       404:
+ *         description: Profissional ou serviço não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.post("/", authMiddleware, createAppointment);
+
 router.get("/user/:id", getAllAppointments);
 
 /**
@@ -317,6 +380,43 @@ router.get("/user/:id", getAllAppointments);
  *         description: Erro interno do servidor
  */
 router.post("/:id/confirm", confirmAppointment);
+
+/**
+ * @swagger
+ * /appointments/{id}:
+ *   put:
+ *     summary: Atualiza o status de um agendamento pendente (Aceitar/Recusar)
+ *     tags: [Appointments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [confirmed, canceled]
+ *     responses:
+ *       200:
+ *         description: Status do agendamento atualizado com sucesso
+ *       400:
+ *         description: Status inválido ou agendamento não está pendente
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put("/:id", authMiddleware, updateAppointmentStatus);
+
 
 /**
  * @swagger

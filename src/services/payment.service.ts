@@ -106,11 +106,11 @@ export const PaymentService = {
     if (!user) {
       throw new Error("Cliente (usuário) não encontrado.");
     }
-    // TODO: Verifique se 'user.id' é o 'client_id' correto que o AppointmentModel espera.
-    // Se você tem uma tabela 'clients' separada, você deve buscá-la aqui.
-    // Ex: const client = await ClientModel.findOne({ where: { user_id: authenticatedUserId } });
-    // const clientId = client.id;
-    const clientId = user.id; // ASSUMINDO que o ID do usuário é o ID do cliente
+    const client = await ClientModel.findOne({ where: { user_id: authenticatedUserId } });
+    if (!client) {
+      throw new Error("Cliente não encontrado para o usuário.");
+    }
+    const clientId = client.id;
 
     try {
       const newAppointment = await AppointmentModel.create({
@@ -122,7 +122,7 @@ export const PaymentService = {
         review: undefined,
         start_time: new Date(selectedTime),
         end_time: new Date(selectedTime),
-        status: "confirmed",
+        status: "pending",
         payment_intent_id: paymentIntentId,
       });
 

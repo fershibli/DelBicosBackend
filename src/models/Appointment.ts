@@ -37,6 +37,7 @@ export interface IAppointment {
   review?: string;
   status?: "pending" | "confirmed" | "completed" | "canceled";
   payment_intent_id?: string | null;
+  createdAt?: Date;
 }
 
 type AppointmentCreationalAttributes = Optional<IAppointment, "id" | "status">;

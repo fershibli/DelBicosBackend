@@ -33,16 +33,19 @@ services:
       - SEQUELIZE_DB_NAME=${SEQUELIZE_DB_NAME:-delbicos}
       - SEQUELIZE_DB_USER=${SEQUELIZE_DB_USER:-delbicos}
       - SEQUELIZE_DB_PASS=${SEQUELIZE_DB_PASS:-postgres123}
-      # Using the Docker Compose service name, but keep localhost in .env for local development
+      # Using the Docker Compose service name directly to avoid host .env interpolation issues
       - SEQUELIZE_HOST=postgres
-      - SEQUELIZE_PORT=${SEQUELIZE_PORT:-5432}
-      - SEQUELIZE_DIALECT=${SEQUELIZE_DIALECT:-postgres}
+      - SEQUELIZE_PORT=5432
+      - SEQUELIZE_DIALECT=postgres
       - SECRET_KEY=${SECRET_KEY:-suaChaveSegura}
       - EXPIRES_IN=${EXPIRES_IN:-24h}
       - SENDGRID_API_KEY=${SENDGRID_API_KEY:-sk_API_KEY}
       - SENDER_EMAIL_VERIFICADO=${SENDER_EMAIL_VERIFICADO:-deliverydebicos@gmail.com}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_API_KEY}
       - MONGODB_URI=mongodb://mongo:27017/logs_db
+    volumes:
+      - ./src:/app/src
+      - ./server.ts:/app/server.ts
     ports:
       - "3000:3000"
     depends_on:
