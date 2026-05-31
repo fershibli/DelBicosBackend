@@ -37,6 +37,7 @@ import serviceRoutes from "./src/routes/service.routes";
 import availabilityRoutes from "./src/routes/availability.routes";
 import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
 import uploadRoutes from "./src/routes/upload.routes";
+import proxyUploadRoutes from "./src/routes/proxyUpload.routes";
 
 dotenv.config();
 
@@ -107,6 +108,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/availabilities", availabilityRoutes);
 app.use("/api/availability-locks", availabilityLockRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/proxy-upload", proxyUploadRoutes);
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 

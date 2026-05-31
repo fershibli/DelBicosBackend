@@ -1,8 +1,6 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
-import { S3Service } from "../services/s3Service";
-
-const s3Service = new S3Service();
+import { getStorageAdapter } from "../services/storage/StorageFactory";
 
 /**
  * POST /api/uploads
@@ -39,8 +37,11 @@ export const getUploadUrl = async (
     const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
     const key = `uploads/${Date.now()}_${safeName}`;
 
-    const uploadUrl = await s3Service.generateUploadUrl(key, fileType);
-    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    const { uploadUrl, fileUrl: adapterFileUrl } =
+      await getStorageAdapter().generateUploadUrl(key, fileType);
+    const fileUrl =
+      adapterFileUrl ??
+      `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
     // Retorna ambos os nomes de campo para compatibilidade com frontend e backend
     return res.json({
