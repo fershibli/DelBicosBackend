@@ -38,10 +38,7 @@ import availabilityRoutes from "./src/routes/availability.routes";
 import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
 import uploadRoutes from "./src/routes/upload.routes";
 
-const result = dotenv.config();
-if (result.error) {
-  throw result.error;
-}
+dotenv.config();
 
 initializeAssociations();
 
