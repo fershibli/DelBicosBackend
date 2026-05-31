@@ -145,9 +145,6 @@ export const listAllServices = async (req: Request, res: Response) => {
 
     const where: any = { active: true };
 
-    if (category_id && Number.isInteger(Number(category_id)))
-      where.category_id = Number(category_id);
-
     if (subcategory_id && Number.isInteger(Number(subcategory_id)))
       where.subcategory_id = Number(subcategory_id);
 
@@ -166,15 +163,20 @@ export const listAllServices = async (req: Request, res: Response) => {
       avInclude.required = true;
     }
 
+    const subInclude: any = {
+      model: SubCategoryModel,
+      as: "Subcategory",
+      attributes: ["id", "title", "category_id"],
+    };
+    if (category_id && Number.isInteger(Number(category_id))) {
+      subInclude.where = { category_id: Number(category_id) };
+    }
+
     const { count, rows } = await ServiceModel.findAndCountAll({
       where,
       include: [
         avInclude,
-        {
-          model: SubCategoryModel,
-          as: "Subcategory",
-          attributes: ["id", "title", "category_id"],
-        },
+        subInclude,
         {
           model: ProfessionalModel,
           as: "Professional",
