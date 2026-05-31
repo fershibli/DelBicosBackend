@@ -39,6 +39,9 @@ export const corsOptions: CorsOptions = {
 
 export function setupCors(app: Express) {
   const middleware = cors(corsOptions);
-  app.use(middleware);
-  app.options("*", middleware); // pré-flight
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/docs")) return next();
+    return middleware(req, res, next);
+  });
+  app.options(/^(?!\/docs).*$/, middleware); // pré-flight (exceto /docs)
 }
