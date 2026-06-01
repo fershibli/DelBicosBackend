@@ -110,6 +110,28 @@ app.use("/api/availability-locks", availabilityLockRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/proxy-upload", proxyUploadRoutes);
 
+// Test endpoint to invoke email fallback (Lambda) directly
+app.post("/test-email-fallback", async (req, res) => {
+  const { to, subject, body } = req.body || {};
+  if (!to || !subject || !body) {
+    return res
+      .status(400)
+      .json({ error: 'Fields "to", "subject", "body" are required' });
+  }
+  try {
+    // dynamic import to avoid startup dependency issues
+    const { sendViaLambda } = await import("./src/utils/emailFallback");
+    const result = await sendViaLambda({ to, subject, html: body });
+    if (result) return res.status(200).json({ ok: true });
+    return res
+      .status(502)
+      .json({ ok: false, error: "Lambda invocation failed" });
+  } catch (err) {
+    logger.error("Error in /test-email-fallback:", err as any);
+    return res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 const isServerless = process.env.IS_SERVERLESS == "true";
 
 if (!isServerless) {
