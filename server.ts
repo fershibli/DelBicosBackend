@@ -38,8 +38,10 @@ import availabilityRoutes from "./src/routes/availability.routes";
 import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
 import uploadRoutes from "./src/routes/upload.routes";
 import proxyUploadRoutes from "./src/routes/proxyUpload.routes";
+import chatRoutes from "./src/routes/chat.routes";
+import { initChatSocket } from "./src/realtime/chatSocket";
 
-dotenv.config();
+dotenv.config({ override: false });
 
 initializeAssociations();
 
@@ -109,12 +111,16 @@ app.use("/api/availabilities", availabilityRoutes);
 app.use("/api/availability-locks", availabilityLockRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/proxy-upload", proxyUploadRoutes);
+app.use("/api/chat", chatRoutes);
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 
 if (!isServerless) {
   const port = Number(process.env.PORT || 3000);
-  app.listen(port, () => {
+  // Servidor HTTP compartilhado entre Express e socket.io (chat em tempo real)
+  const httpServer = http.createServer(app);
+  initChatSocket(httpServer);
+  httpServer.listen(port, () => {
     logger.info(`Servidor rodando na porta ${port}`);
   });
 } else {
