@@ -10,6 +10,10 @@ import { AddressModel } from "../models/Address";
 import { SubCategoryModel } from "../models/Subcategory";
 import { AuthenticatedRequest } from "../interfaces/authentication.interface";
 import logger, { logError, logDatabase } from "../utils/logger";
+import {
+  ensureChatRoomForAppointment,
+  syncChatRoomStatusForAppointment,
+} from "../utils/chatRoom";
 
 const formatDate = (dateStr: string | Date) =>
   new Date(dateStr).toLocaleDateString("pt-BR");
@@ -152,6 +156,9 @@ export const createAppointment = async (req: Request, res: Response) => {
       end_time: new Date(end_time),
       status: "pending",
     });
+
+    // Cria automaticamente a sala de chat para este agendamento
+    await ensureChatRoomForAppointment(appointment);
 
     const client = clientRecord;
     // professional e service já foram buscados acima via Promise.all
@@ -340,6 +347,9 @@ export const updateAppointmentStatus = async (req: Request, res: Response) => {
 
     appointment.status = status;
     await appointment.save();
+
+    // Arquiva a sala de chat caso o agendamento seja cancelado
+    await syncChatRoomStatusForAppointment(appointment.id, status);
 
     const apptData: any = appointment;
     const clientUser = apptData.Client?.User;
