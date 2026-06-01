@@ -5,6 +5,7 @@ import { UserModel } from "../models/User";
 import { ClientModel } from "../models/Client";
 import { NotificationModel } from "../models/Notification";
 import { ServiceModel } from "../models/Service";
+import { ensureChatRoomForAppointment } from "../utils/chatRoom";
 
 dotenv.config();
 
@@ -125,6 +126,9 @@ export const PaymentService = {
         status: "pending",
         payment_intent_id: paymentIntentId,
       });
+
+      // Cria automaticamente a sala de chat para este agendamento
+      await ensureChatRoomForAppointment(newAppointment);
 
       const service = await ServiceModel.findByPk(Number(serviceId));
 

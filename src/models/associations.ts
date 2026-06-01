@@ -16,6 +16,7 @@ import { AppointmentModel } from "./Appointment";
 import { AdminServiceOrderModel } from "./AdminServiceOrder";
 import { UserTokenModel } from "./UserToken";
 import { FavoriteModel } from "./Favorite";
+import { ChatRoomModel } from "./ChatRoom";
 
 export function initializeAssociations() {
   // User associations
@@ -281,5 +282,31 @@ export function initializeAssociations() {
   FavoriteModel.belongsTo(ProfessionalModel, {
     foreignKey: "professional_id",
     as: "Professional",
+  });
+
+  // ChatRoom associations
+  AppointmentModel.hasOne(ChatRoomModel, {
+    foreignKey: "appointment_id",
+    as: "ChatRoom",
+  });
+
+  ChatRoomModel.belongsTo(AppointmentModel, {
+    foreignKey: "appointment_id",
+    as: "Appointment",
+  });
+
+  ChatRoomModel.belongsTo(ProfessionalModel, {
+    foreignKey: "professional_id",
+    as: "Professional",
+  });
+
+  ChatRoomModel.belongsTo(ClientModel, {
+    foreignKey: "client_id",
+    as: "Client",
+  });
+
+  ChatRoomModel.belongsTo(ServiceModel, {
+    foreignKey: "service_id",
+    as: "Service",
   });
 }

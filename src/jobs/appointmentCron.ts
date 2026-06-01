@@ -7,6 +7,7 @@ import { ClientModel } from '../models/Client';
 import { UserModel } from '../models/User';
 import { ServiceModel } from '../models/Service';
 import logger from '../utils/logger';
+import { archiveChatRoomForAppointment } from '../utils/chatRoom';
 
 export const startAppointmentCron = () => {
   // Roda a cada 10 minutos
@@ -35,6 +36,9 @@ export const startAppointmentCron = () => {
       for (const appointment of expiredAppointments) {
         appointment.status = 'canceled';
         await appointment.save();
+
+        // Arquiva a sala de chat do agendamento cancelado automaticamente
+        await archiveChatRoomForAppointment(appointment.id);
 
         const apptData: any = appointment;
         const clientUser = apptData.Client?.User;
