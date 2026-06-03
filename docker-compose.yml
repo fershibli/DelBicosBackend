@@ -47,7 +47,6 @@ services:
       - MONGODB_CHAT_URI=mongodb://mongo:27017/delbicos_chat
     volumes:
       - ./src:/app/src
-      - ./server.ts:/app/server.ts
     ports:
       - "3000:3000"
     depends_on:

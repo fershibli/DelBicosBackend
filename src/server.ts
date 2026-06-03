@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import http from "http";
-import { setupCors } from "./src/middlewares/cors.middleware";
-import { loggingMiddleware } from "./src/middlewares/logging.middleware";
+import { setupCors } from "./middlewares/cors.middleware";
+import { loggingMiddleware } from "./middlewares/logging.middleware";
 import {
   helmetMiddleware,
   globalRateLimiter,
@@ -10,36 +10,36 @@ import {
   mongoSanitizeMiddleware,
   xssSanitizer,
   sqlInjectionGuard,
-} from "./src/middlewares/security.middleware";
+} from "./middlewares/security.middleware";
 import * as dotenv from "dotenv";
-import logger from "./src/utils/logger";
-import addressRoutes from "./src/routes/address.routes";
-import categoryRoutes from "./src/routes/category.routes";
-import subcategoryRoutes from "./src/routes/subcategory.routes";
-import professionalRoutes from "./src/routes/professional.routes";
-import appointmentRoutes from "./src/routes/appointment.routes";
-import userRoutes from "./src/routes/user.routes";
+import logger from "./utils/logger";
+import addressRoutes from "./routes/address.routes";
+import categoryRoutes from "./routes/category.routes";
+import subcategoryRoutes from "./routes/subcategory.routes";
+import professionalRoutes from "./routes/professional.routes";
+import appointmentRoutes from "./routes/appointment.routes";
+import userRoutes from "./routes/user.routes";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import swaggerOptions from "./src/config/swagger";
-import authRouter from "./src/routes/auth.routes";
-import notificationRoutes from "./src/routes/notification.routes";
+import swaggerOptions from "./config/swagger";
+import authRouter from "./routes/auth.routes";
+import notificationRoutes from "./routes/notification.routes";
 import path from "path";
 import fs from "fs";
-import { initializeAssociations } from "./src/models/associations";
-import paymentRouter from "./src/routes/payment.routes";
-import adminRoutes from "./src/routes/admin.routes";
-import dashboardRoutes from "./src/routes/dashboard.routes";
-import favoriteRoutes from "./src/routes/favorite.routes";
-import avatarRouter from "./src/routes/avatar.routes";
-import { startAppointmentCron } from "./src/jobs/appointmentCron";
-import serviceRoutes from "./src/routes/service.routes";
-import availabilityRoutes from "./src/routes/availability.routes";
-import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
-import uploadRoutes from "./src/routes/upload.routes";
-import proxyUploadRoutes from "./src/routes/proxyUpload.routes";
-import chatRoutes from "./src/routes/chat.routes";
-import { initChatSocket } from "./src/realtime/chatSocket";
+import { initializeAssociations } from "./models/associations";
+import paymentRouter from "./routes/payment.routes";
+import adminRoutes from "./routes/admin.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
+import favoriteRoutes from "./routes/favorite.routes";
+import avatarRouter from "./routes/avatar.routes";
+import { startAppointmentCron } from "./jobs/appointmentCron";
+import serviceRoutes from "./routes/service.routes";
+import availabilityRoutes from "./routes/availability.routes";
+import availabilityLockRoutes from "./routes/availabilityLock.routes";
+import uploadRoutes from "./routes/upload.routes";
+import proxyUploadRoutes from "./routes/proxyUpload.routes";
+import chatRoutes from "./routes/chat.routes";
+import { initChatSocket } from "./realtime/chatSocket";
 
 dotenv.config({ override: false });
 
@@ -80,9 +80,8 @@ setupCors(app);
 // Middleware de logging de requisições
 app.use(loggingMiddleware);
 
-app.use(express.json());
 const baseDir =
-  process.env.ENVIRONMENT === "production" ? process.cwd() : __dirname;
+  process.env.ENVIRONMENT === "production" ? process.cwd() : path.resolve(__dirname, "..");
 const AVATAR_BUCKET_PATH = path.resolve(baseDir, "avatarBucket");
 if (!fs.existsSync(AVATAR_BUCKET_PATH)) {
   fs.mkdirSync(AVATAR_BUCKET_PATH, { recursive: true });
@@ -123,7 +122,7 @@ app.post("/test-email-fallback", async (req, res) => {
   }
   try {
     // dynamic import to avoid startup dependency issues
-    const { sendViaLambda } = await import("./src/utils/emailFallback");
+    const { sendViaLambda } = await import("./utils/emailFallback");
     const result = await sendViaLambda({ to, subject, html: body });
     if (result) return res.status(200).json({ ok: true });
     return res

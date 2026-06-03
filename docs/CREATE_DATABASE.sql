@@ -32,8 +32,8 @@ CREATE TABLE address (
 CREATE TABLE admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-)
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
 CREATE TABLE client (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,8 +41,8 @@ CREATE TABLE client (
     main_address_id INT,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (main_address_id) REFERENCES address(id),
-)
+    FOREIGN KEY (main_address_id) REFERENCES address(id)
+);
 
 CREATE TABLE professional (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,7 +50,7 @@ CREATE TABLE professional (
     main_address_id INT,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     cnpj VARCHAR(18) UNIQUE,
-    description STRING(1500),
+    description VARCHAR(1500),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (main_address_id) REFERENCES address(id)
 );
@@ -93,8 +93,8 @@ CREATE TABLE amenities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description TEXT,
-    active BOOLEAN DEFAULT TRUE,
-    );
+    active BOOLEAN DEFAULT TRUE
+);
 
 CREATE TABLE professional_amenities (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -205,7 +205,7 @@ CREATE TABLE appointment (
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
     rating INT CHECK (rating BETWEEN 1 AND 5),
-    review STRING(1000),
+    review VARCHAR(1000),
     status ENUM('pending', 'confirmed', 'completed', 'canceled') DEFAULT 'pending',
     FOREIGN KEY (professional_id) REFERENCES professional(id),
     FOREIGN KEY (client_id) REFERENCES client(id),
@@ -224,5 +224,6 @@ CREATE TABLE admin_service_order (
     status ENUM('pending', 'in_progress', 'completed', 'canceled') DEFAULT 'pending',
     FOREIGN KEY (admin_id) REFERENCES admin(id),
     FOREIGN KEY (appointment_id) REFERENCES appointment(id),
-    INDEX idx_status_check (status, INDEX idx_appointment_check (appointment_id, status)
+    INDEX idx_status_check (status),
+    INDEX idx_appointment_check (appointment_id, status)
 );
