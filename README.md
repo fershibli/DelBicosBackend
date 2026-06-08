@@ -8,7 +8,7 @@
 
 <p align="center">
 
-[Backend](#delbicos-backend) | [Tecnologies](#️-tecnologies) | [Team](#-team) | [Project Structure](#-project-structure) | [Frontend Project](https://github.com/fershibli/DelBicosV2)
+[Backend](#delbicos-backend) | [Tecnologies](#️-tecnologies) | [Team](#-team) | [Project Structure](#-project-structure) | [Frontend Project](https://github.com/fershibli/DelBicosV2) | [Docs](https://github.com/DelBicos/docs)
 
 </p>
 
