@@ -4,6 +4,10 @@ import {
   getChatMessages,
   getChatRooms,
 } from "../controllers/chat.controller";
+import {
+  sendBotMessage,
+  getBotSession,
+} from "../controllers/botChat.controller";
 
 const chatRouter = Router();
 
@@ -21,5 +25,22 @@ chatRouter.get("/rooms", authMiddleware, getChatRooms);
  * @query   cursor (ISO date), limit (1..50)
  */
 chatRouter.get("/rooms/:roomId/messages", authMiddleware, getChatMessages);
+
+// ── Chatbot com NLU ──────────────────────────────────────────────────────────
+
+/**
+ * @route   POST /api/chat/bot/message
+ * @desc    Envia mensagem ao chatbot e recebe resposta + estado da sessão
+ * @access  Private
+ * @body    { message: string, session_id?: number, channel?: string }
+ */
+chatRouter.post("/bot/message", authMiddleware, sendBotMessage as any);
+
+/**
+ * @route   GET /api/chat/bot/session/:id
+ * @desc    Retorna o histórico completo de uma sessão de chatbot
+ * @access  Private
+ */
+chatRouter.get("/bot/session/:id", authMiddleware, getBotSession as any);
 
 export default chatRouter;
