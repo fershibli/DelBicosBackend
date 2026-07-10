@@ -14,14 +14,17 @@ import { logError } from "../utils/logger";
  */
 export const getChatRooms = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: "Usuário não autenticado" });
     }
 
-    const rooms = await listRooms(req.user.id);
+    const limitRaw = Number(req.query.limit);
+    const limit = Number.isFinite(limitRaw) ? limitRaw : undefined;
+
+    const rooms = await listRooms(req.user.id, { limit });
     return res.json(rooms);
   } catch (error: any) {
     logError("Erro ao listar salas de chat", error);
@@ -35,7 +38,7 @@ export const getChatRooms = async (
  */
 export const getChatMessages = async (
   req: AuthenticatedRequest,
-  res: Response
+  res: Response,
 ) => {
   try {
     if (!req.user) {
