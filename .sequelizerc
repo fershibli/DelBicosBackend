@@ -1,4 +1,9 @@
 const path = require("path");
+require("dotenv").config();
+
+if (!process.env.NODE_ENV && process.env.ENVIRONMENT) {
+  process.env.NODE_ENV = process.env.ENVIRONMENT;
+}
 
 module.exports = {
   config: path.resolve("./config", "config.js"),
