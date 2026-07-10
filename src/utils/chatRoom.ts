@@ -5,6 +5,8 @@ import { ClientModel } from "../models/Client";
 import { ProfessionalModel } from "../models/Professional";
 import logger from "./logger";
 
+const CHAT_SYNC_BATCH_SIZE = 20;
+
 interface AppointmentLike {
   id: number;
   professional_id: number;
@@ -19,7 +21,7 @@ interface AppointmentLike {
  * Nunca lança erro para não bloquear o fluxo de criação do agendamento.
  */
 export async function ensureChatRoomForAppointment(
-  appointment: AppointmentLike
+  appointment: AppointmentLike,
 ): Promise<ChatRoomModel | null> {
   try {
     const [room] = await ChatRoomModel.findOrCreate({
@@ -47,12 +49,12 @@ export async function ensureChatRoomForAppointment(
  * (completed) ou cancelado (canceled). Somente leitura após arquivar.
  */
 export async function archiveChatRoomForAppointment(
-  appointmentId: number
+  appointmentId: number,
 ): Promise<void> {
   try {
     await ChatRoomModel.update(
       { status: "archived" },
-      { where: { appointment_id: appointmentId } }
+      { where: { appointment_id: appointmentId } },
     );
   } catch (error) {
     logger.error("Erro ao arquivar sala de chat do agendamento", {
@@ -68,7 +70,7 @@ export async function archiveChatRoomForAppointment(
  */
 export async function syncChatRoomStatusForAppointment(
   appointmentId: number,
-  appointmentStatus: string
+  appointmentStatus: string,
 ): Promise<void> {
   if (appointmentStatus === "completed" || appointmentStatus === "canceled") {
     await archiveChatRoomForAppointment(appointmentId);
@@ -104,14 +106,24 @@ export async function syncChatRoomsForUser(userId: number): Promise<void> {
       ],
     });
 
-    for (const appointment of appointments) {
-      await ensureChatRoomForAppointment(appointment);
-      if (appointment.status) {
-        await syncChatRoomStatusForAppointment(
-          appointment.id,
-          appointment.status
-        );
-      }
+    for (
+      let index = 0;
+      index < appointments.length;
+      index += CHAT_SYNC_BATCH_SIZE
+    ) {
+      const batch = appointments.slice(index, index + CHAT_SYNC_BATCH_SIZE);
+
+      await Promise.all(
+        batch.map(async (appointment) => {
+          await ensureChatRoomForAppointment(appointment);
+          if (appointment.status) {
+            await syncChatRoomStatusForAppointment(
+              appointment.id,
+              appointment.status,
+            );
+          }
+        }),
+      );
     }
   } catch (error) {
     logger.error("Erro ao sincronizar salas de chat do usuário", {
@@ -125,7 +137,7 @@ export async function syncChatRoomsForUser(userId: number): Promise<void> {
  * Retorna o agendamento associado a uma sala (usado por validações de socket).
  */
 export async function getAppointmentForRoom(
-  roomId: number
+  roomId: number,
 ): Promise<AppointmentModel | null> {
   const room = await ChatRoomModel.findByPk(roomId);
   if (!room) return null;
