@@ -20,6 +20,15 @@ const swaggerOptions: Options = {
       version: "1.0.0",
       description: "Documentação das rotas da API DelBicos",
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
     servers: [
       { url: "http://localhost:3000/api", description: "Servidor local" },
       {

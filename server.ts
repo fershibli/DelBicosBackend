@@ -39,6 +39,7 @@ import availabilityLockRoutes from "./src/routes/availabilityLock.routes";
 import uploadRoutes from "./src/routes/upload.routes";
 import proxyUploadRoutes from "./src/routes/proxyUpload.routes";
 import chatRoutes from "./src/routes/chat.routes";
+import emailRoutes from "./src/routes/email.routes";
 import { initChatSocket } from "./src/realtime/chatSocket";
 
 dotenv.config({ override: false });
@@ -112,28 +113,7 @@ app.use("/api/availability-locks", availabilityLockRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/proxy-upload", proxyUploadRoutes);
 app.use("/api/chat", chatRoutes);
-
-// Test endpoint to invoke email fallback (Lambda) directly
-app.post("/test-email-fallback", async (req, res) => {
-  const { to, subject, body } = req.body || {};
-  if (!to || !subject || !body) {
-    return res
-      .status(400)
-      .json({ error: 'Fields "to", "subject", "body" are required' });
-  }
-  try {
-    // dynamic import to avoid startup dependency issues
-    const { sendViaLambda } = await import("./src/utils/emailFallback");
-    const result = await sendViaLambda({ to, subject, html: body });
-    if (result) return res.status(200).json({ ok: true });
-    return res
-      .status(502)
-      .json({ ok: false, error: "Lambda invocation failed" });
-  } catch (err) {
-    logger.error("Error in /test-email-fallback:", err as any);
-    return res.status(500).json({ ok: false, error: String(err) });
-  }
-});
+app.use("/api/utilities", emailRoutes);
 
 const isServerless = process.env.IS_SERVERLESS == "true";
 
