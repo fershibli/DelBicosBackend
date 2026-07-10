@@ -7,6 +7,14 @@ import { UserModel } from "../models/User";
 import { ChatMessage, IChatMessage } from "../models/ChatMessage";
 import { syncChatRoomsForUser } from "../utils/chatRoom";
 import { isChatMongoReady } from "../config/database";
+import logger from "../utils/logger";
+
+const DEFAULT_CHAT_ROOMS_LIMIT = 50;
+const MAX_CHAT_ROOMS_LIMIT = 100;
+const CHAT_ROOMS_SYNC_COOLDOWN_MS = 5 * 60 * 1000;
+
+const lastChatRoomsSyncAtByUser = new Map<number, number>();
+const inFlightChatRoomsSyncByUser = new Map<number, Promise<void>>();
 
 export class ChatMongoUnavailableError extends Error {
   constructor() {
@@ -60,7 +68,7 @@ export interface ChatMessageDTO {
  * Resolve os perfis (client/professional) de um usuário.
  */
 export async function resolveParticipant(
-  userId: number
+  userId: number,
 ): Promise<ChatParticipant> {
   const [client, professional] = await Promise.all([
     ClientModel.findOne({ where: { user_id: userId } }),
@@ -79,7 +87,7 @@ export async function resolveParticipant(
  */
 export async function assertParticipant(
   roomId: number,
-  userId: number
+  userId: number,
 ): Promise<{ room: ChatRoomModel; role: ChatRole } | null> {
   const room = await ChatRoomModel.findByPk(roomId);
   if (!room) return null;
@@ -106,16 +114,50 @@ const mapMessage = (doc: IChatMessage & { _id: any }): ChatMessageDTO => ({
   created_at: doc.created_at,
 });
 
+function normalizeRoomsLimit(limit?: number): number {
+  if (!Number.isFinite(limit)) return DEFAULT_CHAT_ROOMS_LIMIT;
+  const parsedLimit = Math.trunc(Number(limit));
+  if (parsedLimit < 1) return DEFAULT_CHAT_ROOMS_LIMIT;
+  return Math.min(parsedLimit, MAX_CHAT_ROOMS_LIMIT);
+}
+
+function scheduleChatRoomsSync(userId: number): void {
+  if (inFlightChatRoomsSyncByUser.has(userId)) return;
+
+  const now = Date.now();
+  const lastSyncAt = lastChatRoomsSyncAtByUser.get(userId) ?? 0;
+  if (now - lastSyncAt < CHAT_ROOMS_SYNC_COOLDOWN_MS) return;
+
+  const syncTask = syncChatRoomsForUser(userId)
+    .catch((error) => {
+      logger.warn("Falha no sync assíncrono de salas de chat", {
+        userId,
+        error,
+      });
+    })
+    .finally(() => {
+      inFlightChatRoomsSyncByUser.delete(userId);
+      lastChatRoomsSyncAtByUser.set(userId, Date.now());
+    });
+
+  inFlightChatRoomsSyncByUser.set(userId, syncTask);
+}
+
 /**
  * Lista as salas de chat do usuário com dados do correspondente e última mensagem.
  */
-export async function listRooms(userId: number): Promise<ChatRoomListItem[]> {
+export async function listRooms(
+  userId: number,
+  options?: { limit?: number },
+): Promise<ChatRoomListItem[]> {
   const { clientId, professionalId } = await resolveParticipant(userId);
 
   if (clientId === null && professionalId === null) return [];
 
-  // Garante salas para agendamentos existentes (criados antes do chat ou sem sala)
-  await syncChatRoomsForUser(userId);
+  // O sync roda em background para não bloquear a leitura em contas com histórico grande.
+  scheduleChatRoomsSync(userId);
+
+  const limit = normalizeRoomsLimit(options?.limit);
 
   const orConditions: any[] = [];
   if (clientId !== null) orConditions.push({ client_id: clientId });
@@ -159,20 +201,7 @@ export async function listRooms(userId: number): Promise<ChatRoomListItem[]> {
       [literal("last_message_at IS NULL"), "ASC"],
       ["last_message_at", "DESC"],
     ],
-  });
-
-  // Garante arquivadas no fim e mais recentes no topo (dentro de cada grupo)
-  rooms.sort((a, b) => {
-    if (a.status !== b.status) {
-      return a.status === "active" ? -1 : 1;
-    }
-    const aTime = a.last_message_at
-      ? new Date(a.last_message_at).getTime()
-      : 0;
-    const bTime = b.last_message_at
-      ? new Date(b.last_message_at).getTime()
-      : 0;
-    return bTime - aTime;
+    limit,
   });
 
   return rooms.map((room) => {
@@ -208,7 +237,7 @@ export async function listRooms(userId: number): Promise<ChatRoomListItem[]> {
 export async function getMessages(
   roomId: number,
   cursor?: string,
-  limit = 20
+  limit = 20,
 ): Promise<{ messages: ChatMessageDTO[]; nextCursor: string | null }> {
   assertChatMongoReady();
 
@@ -227,9 +256,7 @@ export async function getMessages(
 
   const messages = docs.map(mapMessage);
   const nextCursor =
-    docs.length === limit
-      ? docs[docs.length - 1].sent_at.toISOString()
-      : null;
+    docs.length === limit ? docs[docs.length - 1].sent_at.toISOString() : null;
 
   return { messages, nextCursor };
 }
@@ -275,7 +302,7 @@ export async function persistMessage(params: {
       last_message_at: sentAt,
       last_sender_user_id: senderUserId,
     },
-    { where: { id: roomId } }
+    { where: { id: roomId } },
   );
 
   return {
