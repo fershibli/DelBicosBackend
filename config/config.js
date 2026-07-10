@@ -2,7 +2,7 @@ require("dotenv").config();
 
 /**
  * Determina o dialect do banco de dados
- * Prioridade: SEQUELIZE_DIALECT > RDS_DIALECT > "mysql"
+ * Prioridade: SEQUELIZE_DIALECT > RDS_DIALECT > "postgres"
  */
 const getDialect = () => {
   if (process.env.SEQUELIZE_DIALECT) {
@@ -20,12 +20,14 @@ const getDialect = () => {
 // No seu src/config/config.js
 const getSSLOptions = (dialect, environment) => {
   if (dialect === "postgres") {
-    if (environment === "development") {
-      return { ssl: false };
+    if (environment === "development" && !process.env.DATABASE_URL) {
+      return undefined;
     }
     return {
-      require: true,
-      rejectUnauthorized: false,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
     };
   }
   return undefined;
@@ -33,6 +35,10 @@ const getSSLOptions = (dialect, environment) => {
 
 const env = process.env.ENVIRONMENT || process.env.NODE_ENV || "development";
 const dialect = getDialect();
+
+const getDefaultPort = (currentDialect) => {
+  return currentDialect === "postgres" ? 5432 : 3306;
+};
 
 if (process.env.__DEV__) {
   console.log("🔧 Sequelize Configuration:");
@@ -53,29 +59,24 @@ const config = {
     password: process.env.SEQUELIZE_DB_PASS || "password",
     database: process.env.SEQUELIZE_DB_NAME || "my_database",
     host: process.env.SEQUELIZE_HOST || "localhost",
-    port: Number(process.env.SEQUELIZE_PORT) || 3306,
+    port: Number(process.env.SEQUELIZE_PORT) || getDefaultPort(dialect),
     dialect,
     dialectOptions: getSSLOptions(dialect, "development"),
     logging: process.env.DB_LOGGING === "true" ? console.log : false,
   },
   production: {
     // Opção 1: DATABASE_URL (Neon Postgres)
-    use_env_variable: process.env.DATABASE_URL ? "DATABASE_URL" : undefined,
+    ...(process.env.DATABASE_URL ? { use_env_variable: "DATABASE_URL" } : {}),
     // Opção 2: Variáveis individuais (AWS RDS MySQL)
     username: process.env.SEQUELIZE_DB_USER,
     password: process.env.SEQUELIZE_DB_PASS,
     database: process.env.SEQUELIZE_DB_NAME,
     host: process.env.SEQUELIZE_HOST,
-    port: Number(process.env.SEQUELIZE_PORT) || 3306,
+    port: Number(process.env.SEQUELIZE_PORT) || getDefaultPort(dialect),
     dialect,
     dialectOptions: getSSLOptions(dialect, env),
     logging: process.env.DB_LOGGING === "true" ? console.log : false,
   },
 };
 
-// Se use_env_variable é undefined, remover a propriedade
-if (config.production.use_env_variable === undefined) {
-  delete config.production.use_env_variable;
-}
-
-module.exports = config[env];
+module.exports = config;
