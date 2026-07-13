@@ -109,6 +109,16 @@ const chatRouter = Router();
  *     tags: [Chat]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Limite de salas retornadas por chamada
  *     responses:
  *       200:
  *         description: Lista de salas com correspondente e última mensagem
