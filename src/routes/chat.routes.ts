@@ -8,6 +8,7 @@ import {
 import {
   sendBotMessage,
   getBotSession,
+  getActiveBotSession,
 } from "../controllers/botChat.controller";
 
 /**
@@ -57,6 +58,7 @@ chatRouter.post("/bot/message", authMiddleware, botMessageRateLimit, sendBotMess
  * @desc    Retorna o histórico completo de uma sessão de chatbot
  * @access  Private
  */
+chatRouter.get("/bot/session/active", authMiddleware, getActiveBotSession as any);
 chatRouter.get("/bot/session/:id", authMiddleware, getBotSession as any);
 
 export default chatRouter;
