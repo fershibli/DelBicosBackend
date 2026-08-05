@@ -6,6 +6,7 @@ import { ClientModel } from "../models/Client";
 import { NotificationModel } from "../models/Notification";
 import { ServiceModel } from "../models/Service";
 import { ensureChatRoomForAppointment } from "../utils/chatRoom";
+import { syncBotSessionsForAppointmentStatus } from "./botAppointmentStatus.service";
 
 dotenv.config();
 
@@ -130,7 +131,7 @@ export const PaymentService = {
         appointment = existing;
 
         await NotificationModel.create({
-          user_id: clientId,
+          user_id: client.user_id,
           title: "Pagamento Confirmado",
           message: `O pagamento para o seu agendamento do serviço '${service.title}' no dia ${selectedTime} foi confirmado!`,
           notification_type: "appointment",
@@ -155,7 +156,7 @@ export const PaymentService = {
         await ensureChatRoomForAppointment(appointment);
 
         await NotificationModel.create({
-          user_id: clientId,
+          user_id: client.user_id,
           title: "Agendamento Criado com Sucesso",
           message: `Seu agendamento para o serviço '${service.title}' no dia ${selectedTime} foi criado. Aguardando confirmação do profissional.`,
           notification_type: "appointment",
@@ -164,6 +165,17 @@ export const PaymentService = {
         });
       }
 
+      try {
+        await syncBotSessionsForAppointmentStatus(appointment);
+      } catch (syncError: any) {
+        // O pagamento j\u00e1 foi confirmado e persistido. Uma falha no push n\u00e3o
+        // pode provocar reembolso nem desfazer o agendamento; o polling do
+        // frontend continuar\u00e1 consultando o status gravado no banco.
+        console.error(
+          "[PaymentService] Falha ao sincronizar status no chatbot:",
+          syncError.message,
+        );
+      }
       return appointment;
     } catch (dbError: any) {
       console.error(
