@@ -1,10 +1,9 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  roots: ["<rootDir>/src", "<rootDir>/tests"],
+  roots: ["<rootDir>/src"],
   testMatch: [
     "**/__tests__/**/*.test.ts",
-    "**/tests/**/*.test.ts",
   ],
   collectCoverage: true,
   coverageDirectory: "coverage",
@@ -18,14 +17,6 @@ module.exports = {
       testEnvironment: "node",
       roots: ["<rootDir>/src"],
       testMatch: ["**/__tests__/**/*.test.ts"],
-      clearMocks: true,
-    },
-    {
-      displayName: "integration",
-      preset: "ts-jest",
-      testEnvironment: "node",
-      roots: ["<rootDir>/tests"],
-      testMatch: ["**/tests/**/*.test.ts"],
       clearMocks: true,
     },
   ],

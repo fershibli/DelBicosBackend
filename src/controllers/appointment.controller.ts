@@ -220,6 +220,19 @@ export const createAppointment = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Busca todos os agendamentos associados a um usuário específico.
+ *
+ * Suporta filtragem por perfil (`role` query param: 'client' ou 'professional').
+ * Popula todas as associações necessárias para exibição completa na visão do cliente e do prestador:
+ * - `Service` com sua respetiva `Subcategory`
+ * - `Client` e `Professional` com dados de perfil do usuário (`name`, `avatar_uri`, `phone`, `email`)
+ * - `Address` completo do local de atendimento (`street`, `number`, `complement`, `neighborhood`, `city`, `state`, `postal_code`)
+ * - Campo computado `payment_method` ("Cartão de Crédito")
+ *
+ * @param req Request do Express contendo o ID do usuário em `req.params.id` e filtro opcional `role` em `req.query`.
+ * @param res Response do Express retornando a lista de agendamentos formatados em formato JSON.
+ */
 export const getAllAppointments = async (req: Request, res: Response) => {
   const userId = req.params.id;
   const { role } = req.query;
