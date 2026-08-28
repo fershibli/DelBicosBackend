@@ -261,7 +261,11 @@ export const getAllAppointments = async (req: Request, res: Response) => {
     const appointments = await AppointmentModel.findAll({
       where: whereClause,
       include: [
-        { model: ServiceModel, as: "Service" },
+        {
+          model: ServiceModel,
+          as: "Service",
+          include: [{ model: SubCategoryModel, as: "Subcategory" }],
+        },
         {
           model: ClientModel,
           as: "Client",
@@ -269,7 +273,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: ["name", "avatar_uri"],
+              attributes: ["name", "avatar_uri", "phone", "email"],
             },
           ],
         },
@@ -280,15 +284,27 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: ["name", "avatar_uri"],
+              attributes: ["name", "avatar_uri", "phone", "email"],
             },
           ],
+        },
+        {
+          model: AddressModel,
+          as: "Address",
         },
       ],
       order: [["start_time", "ASC"]],
     });
 
-    res.json(appointments);
+    const formattedAppointments = appointments.map((apt: any) => {
+      const json = apt.toJSON();
+      json.payment_method = json.payment_intent_id
+        ? "Cartão de Crédito"
+        : "Cartão de Crédito";
+      return json;
+    });
+
+    res.json(formattedAppointments);
   } catch (error: any) {
     logError("Erro ao buscar appointments", error, { userId });
     res.status(500).json({ error: "Erro interno do servidor" });
