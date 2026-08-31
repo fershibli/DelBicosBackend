@@ -220,6 +220,19 @@ export const createAppointment = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Busca todos os agendamentos associados a um usuário específico.
+ *
+ * Suporta filtragem por perfil (`role` query param: 'client' ou 'professional').
+ * Popula todas as associações necessárias para exibição completa na visão do cliente e do prestador:
+ * - `Service` com sua respetiva `Subcategory`
+ * - `Client` e `Professional` com dados de perfil do usuário (`name`, `avatar_uri`, `phone`, `email`)
+ * - `Address` completo do local de atendimento (`street`, `number`, `complement`, `neighborhood`, `city`, `state`, `postal_code`)
+ * - Campo computado `payment_method` ("Cartão de Crédito")
+ *
+ * @param req Request do Express contendo o ID do usuário em `req.params.id` e filtro opcional `role` em `req.query`.
+ * @param res Response do Express retornando a lista de agendamentos formatados em formato JSON.
+ */
 export const getAllAppointments = async (req: Request, res: Response) => {
   const userId = req.params.id;
   const { role } = req.query;
@@ -261,7 +274,11 @@ export const getAllAppointments = async (req: Request, res: Response) => {
     const appointments = await AppointmentModel.findAll({
       where: whereClause,
       include: [
-        { model: ServiceModel, as: "Service" },
+        {
+          model: ServiceModel,
+          as: "Service",
+          include: [{ model: SubCategoryModel, as: "Subcategory" }],
+        },
         {
           model: ClientModel,
           as: "Client",
@@ -269,7 +286,7 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: ["name", "avatar_uri"],
+              attributes: ["name", "avatar_uri", "phone", "email"],
             },
           ],
         },
@@ -280,15 +297,27 @@ export const getAllAppointments = async (req: Request, res: Response) => {
             {
               model: UserModel,
               as: "User",
-              attributes: ["name", "avatar_uri"],
+              attributes: ["name", "avatar_uri", "phone", "email"],
             },
           ],
+        },
+        {
+          model: AddressModel,
+          as: "Address",
         },
       ],
       order: [["start_time", "ASC"]],
     });
 
-    res.json(appointments);
+    const formattedAppointments = appointments.map((apt: any) => {
+      const json = apt.toJSON();
+      json.payment_method = json.payment_intent_id
+        ? "Cartão de Crédito"
+        : "Cartão de Crédito";
+      return json;
+    });
+
+    res.json(formattedAppointments);
   } catch (error: any) {
     logError("Erro ao buscar appointments", error, { userId });
     res.status(500).json({ error: "Erro interno do servidor" });
