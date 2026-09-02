@@ -2,7 +2,7 @@ import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../config/database";
 import { customAlphabet } from 'nanoid';
 
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const generateShortId = customAlphabet(alphabet, 6);
 
 /*
