@@ -174,5 +174,24 @@ AppointmentModel.init(
       }
     ],
     timestamps: true,
+    hooks: {
+      beforeCreate: async (appointment: AppointmentModel) => {
+        let shortId: string;
+        let attempts = 0;
+        let unique = false;
+        while (!unique) {
+          shortId = generateShortId();
+          attempts++;
+          if (attempts > 100) {
+            throw new Error('Não foi possível gerar short_id único após 100 tentativas');
+          }
+          const existing = await AppointmentModel.findOne({ where: { short_id: shortId } });
+          if (!existing) {
+            appointment.short_id = shortId;
+            unique = true;
+          }
+        }
+      }
+    }
   }
 );
