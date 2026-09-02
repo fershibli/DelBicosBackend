@@ -2,7 +2,7 @@
 
 const { customAlphabet } = require('nanoid');
 
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const generateShortId = customAlphabet(alphabet, 6);
 
 /** @type {import('sequelize-cli').Migration} */
